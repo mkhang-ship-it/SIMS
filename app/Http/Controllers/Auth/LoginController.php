@@ -1,0 +1,78 @@
+<?php
+
+// LoginController.php - Updated to provide specific error messages
+// Methods: showLoginForm(), login(), logout() for handling user authentication
+// Added specific error messages for email not found vs wrong password, removed remember functionality
+
+namespace App\Http\Controllers\Auth;
+
+use App\Http\Controllers\Controller;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
+
+class LoginController extends Controller
+{
+    /**
+     * Show the login form
+     */
+    public function showLoginForm()
+    {
+        return view('auth.login');
+    }
+
+    /**
+     * Handle login request
+     */
+    public function login(Request $request)
+    {
+        // Validate the form data
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|string',
+        ]);
+
+        // Check if user exists with this email
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            // Email not found
+            throw ValidationException::withMessages([
+                'email' => ['Email đã nhập không tồn tại trong hệ thống.'],
+            ]);
+        }
+
+        // Check if password is correct
+        if (!Hash::check($request->password, $user->password)) {
+            // Wrong password
+            throw ValidationException::withMessages([
+                'password' => ['Mật khẩu đã nhập không chính xác.'],
+            ]);
+        }
+
+        // Authentication successful
+        Auth::login($user);
+        $request->session()->regenerate();
+
+        if ($user->club_id) {
+            return redirect()->intended(route('backend.club.dashboard'))->with('success', 'Đăng nhập thành công!');
+        } else {
+            return redirect()->intended(route('backend.dashboard'))->with('success', 'Đăng nhập thành công!');
+        }
+    }
+
+    /**
+     * Handle logout request
+     */
+    public function logout(Request $request)
+    {
+        Auth::logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('login');
+    }
+}

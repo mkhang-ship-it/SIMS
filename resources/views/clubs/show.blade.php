@@ -1,5 +1,8 @@
 {{-- Club show page - Fixed null role reference error by adding null checks for $leader->role and $member->role --}}
 {{-- Updated: Member details modal is now included from a separate partial file for each user --}}
+{{-- [2024-07-14] Updated: remove unique:users,email from form, add AJAX email check, show message if user exists, password required only if new user --}}
+{{-- [2024-12-19] Updated: Removed addUserModal and related functionality --}}
+{{-- [2024-12-19] Updated: Fixed member display to use new UserClubRole pivot table structure instead of direct role_id relationship --}}
 @extends('layouts.app')
 
 @section('content')
@@ -115,12 +118,6 @@
                                             </li>
                                         </ul>
                                     </div>
-                                    <div>
-                                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal"
-                                            data-bs-target="#addUserModal">
-                                            <i class="ri-add-line me-1"></i>Thêm Mới
-                                        </button>
-                                    </div>
                                 </div>
                                 <div class="p-3">
                                     <div class="tab-content" id="myTabContent">
@@ -144,7 +141,7 @@
                                                                             {{ $leader->email }}</p>
                                                                         <div class="d-flex justify-content-center">
                                                                             <span
-                                                                                class="badge bg-primary-transparent rounded-pill me-2">{{ $leader->role->name }}</span>
+                                                                                class="badge bg-primary-transparent rounded-pill me-2">{{ $leader->club_role->name }}</span>
                                                                             <span
                                                                                 class="badge bg-secondary-transparent rounded-pill me-2">{{ $leader->student_code }}</span>
                                                                         </div>
@@ -189,7 +186,7 @@
                                                                             {{ $member->email }}</p>
                                                                         <div class="d-flex justify-content-center">
                                                                             <span
-                                                                                class="badge bg-success-transparent rounded-pill me-2">{{ $member->role->name }}</span>
+                                                                                class="badge bg-success-transparent rounded-pill me-2">{{ $member->club_role->name }}</span>
                                                                             <span
                                                                                 class="badge bg-secondary-transparent rounded-pill me-2">{{ $member->student_code }}</span>
                                                                         </div>
@@ -222,87 +219,6 @@
             </div>
         </div>
         <!--End::row-1 -->
-
-        <!-- Add User Modal -->
-        <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true"
-            data-bs-backdrop="static" data-bs-keyboard="false">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h6 class="modal-title" id="addUserModalLabel">Thêm Thành Viên Mới</h6>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <form action="{{ route('backend.clubs.users.store', $club->id) }}" method="POST">
-                        @csrf
-                        <div class="modal-body">
-                            <div class="row">
-                                <div class="col-xl-12 mb-3">
-                                    <label for="name" class="form-label">Họ và Tên <span
-                                            class="text-danger">*</span></label>
-                                    <input type="text" class="form-control @error('name') is-invalid @enderror"
-                                        id="name" name="name" placeholder="Nhập họ và tên"
-                                        value="{{ old('name') }}" required>
-                                    @error('name')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                                <div class="col-xl-12 mb-3">
-                                    <label for="email" class="form-label">Email <span
-                                            class="text-danger">*</span></label>
-                                    <input type="email" class="form-control @error('email') is-invalid @enderror"
-                                        id="email" name="email" placeholder="Nhập địa chỉ email"
-                                        value="{{ old('email') }}" required>
-                                    @error('email')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                                <div class="col-xl-12 mb-3">
-                                    <label for="password" class="form-label">Mật Khẩu <span
-                                            class="text-danger">*</span></label>
-                                    <input type="password" class="form-control @error('password') is-invalid @enderror"
-                                        id="password" name="password" placeholder="Nhập mật khẩu" required
-                                        minlength="8">
-                                    @error('password')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                                <div class="col-xl-12 mb-3">
-                                    <label for="password_confirmation" class="form-label">Xác Nhận Mật Khẩu <span
-                                            class="text-danger">*</span></label>
-                                    <input type="password"
-                                        class="form-control @error('password_confirmation') is-invalid @enderror"
-                                        id="password_confirmation" name="password_confirmation"
-                                        placeholder="Nhập lại mật khẩu" required minlength="8">
-                                    @error('password_confirmation')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                                <div class="col-xl-12 mb-3">
-                                    <label for="role_id" class="form-label">Vai Trò <span
-                                            class="text-danger">*</span></label>
-                                    <select class="form-select @error('role_id') is-invalid @enderror" id="role_id"
-                                        name="role_id" required>
-                                        <option value="">Chọn vai trò</option>
-                                        @foreach ($club->roles()->where('type', 'branch')->where('status', 'active')->get() as $role)
-                                            <option value="{{ $role->id }}"
-                                                {{ old('role_id') == $role->id ? 'selected' : '' }}>{{ $role->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    @error('role_id')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                            <button type="submit" class="btn btn-primary">Thêm Thành Viên</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
     </div>
 @endsection
 

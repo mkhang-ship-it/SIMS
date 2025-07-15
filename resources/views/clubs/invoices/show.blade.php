@@ -4,6 +4,8 @@
 {{-- Updated: Fixed payment amount to remaining amount and payment method to Cash (Tiền Mặt) for payment recording form --}}
 {{-- Updated: Limited payment date selection from invoice creation date to due date --}}
 {{-- Updated: Changed all date inputs to datetime-local for due_date and payment_date to support time selection --}}
+{{-- Updated: Thêm nút Xuất PDF (gọi route export PDF) vào giao diện chi tiết hóa đơn --}}
+{{-- Updated: Fixed payment form indentation and validation issues --}}
 @extends('layouts.app')
 
 @section('content')
@@ -83,8 +85,9 @@
                         <div class="ms-auto mt-md-0 mt-2">
                             <button class="btn btn-sm btn-secondary me-1" onclick="javascript:window.print();">In Hóa Đơn<i
                                     class="ri-printer-line ms-1 align-middle d-inline-block"></i></button>
-                            <button class="btn btn-sm btn-primary">Xuất PDF<i
-                                    class="ri-file-pdf-line ms-1 align-middle d-inline-block"></i></button>
+                            <a class="btn btn-sm btn-primary"
+                                href="{{ route('backend.club.invoices.export.pdf', $invoice) }}" target="">Xuất PDF<i
+                                    class="ri-file-pdf-line ms-1 align-middle d-inline-block"></i></a>
                         </div>
                     </div>
                     <div class="card-body">

@@ -1,12 +1,16 @@
 <?php
 
 /**
- * DatabaseSeeder - Updated to include MajorSeeder, SemesterSeeder, CourseSeeder, and QuoteSeeder
+ * DatabaseSeeder - Updated to include MajorSeeder, SemesterSeeder, CourseSeeder, QuoteSeeder, ProvinceSeeder, CommuneSeeder, ClubSeeder, và EventSeeder
  * MajorSeeder: Seeds major data with parent-child relationships for Computer Programming,
  * Business Administration, Graphic Design, Semiconductor Technology, and Esports majors
  * SemesterSeeder: Seeds academic semester data with Fall, Spring, and Summer semesters
  * CourseSeeder: Seeds course data related to various academic programs
  * QuoteSeeder: Seeds patriotic Vietnamese quotes from Hồ Chí Minh and other sources
+ * ProvinceSeeder: Seeds province data from communes.json file
+ * CommuneSeeder: Seeds commune data from communes.json file
+ * ClubSeeder: Seeds 10 diverse clubs with sample data
+ * EventSeeder: Seeds events cho tất cả các club, mỗi club 2-3 sự kiện từ 01/07/2025 đến 30/07/2025
  */
 
 namespace Database\Seeders;
@@ -32,6 +36,11 @@ class DatabaseSeeder extends Seeder
             SemesterSeeder::class,
             CourseSeeder::class,
             QuoteSeeder::class,
+            ProvinceSeeder::class,
+            CommuneSeeder::class,
+            ClubSeeder::class,
+            AwardSeeder::class, // Gọi seeder giải thưởng cho user trong club
+            EventSeeder::class, // Gọi seeder sự kiện cho các club
         ]);
 
         // Create roles first

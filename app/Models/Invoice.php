@@ -4,6 +4,7 @@
 // Auto-generates: invoice_code in format INV-{year}-{6 random numbers}
 // Auto-sets: due_date = created_at + 7 days if not provided
 // Status workflow: pending (default) -> paid/overdue
+// Updated: Fixed remaining_amount calculation to prevent negative values
 
 namespace App\Models;
 
@@ -164,7 +165,8 @@ class Invoice extends Model
      */
     public function getRemainingAmountAttribute()
     {
-        return $this->total_amount - $this->total_paid;
+        $remaining = $this->total_amount - $this->total_paid;
+        return max(0, $remaining); // Đảm bảo không trả về giá trị âm
     }
 
     /**

@@ -56,9 +56,12 @@ class LoginController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        if ($user->club_id) {
+        // [AI CHANGE 2024-07-14] Ưu tiên club mặc định
+        if ($user->default_club_id) {
+            $request->session()->put('club_id', $user->default_club_id);
             return redirect()->intended(route('backend.club.dashboard'))->with('success', 'Đăng nhập thành công!');
         } else {
+            $request->session()->forget('club_id');
             return redirect()->intended(route('backend.dashboard'))->with('success', 'Đăng nhập thành công!');
         }
     }

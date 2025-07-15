@@ -135,8 +135,7 @@
                                                 $event = $checkin->event;
                                             @endphp
                                             <tr>
-                                                <td class="text-center">{{ $participatedEvents->firstItem() + $index }}
-                                                </td>
+                                                <td class="text-center">{{ $loop->iteration }}</td>
                                                 <td>
                                                     <div class="d-flex align-items-start">
                                                         <div class="me-2">
@@ -213,7 +212,6 @@
                                     </tbody>
                                 </table>
                             </div>
-
                         @else
                             <div class="text-center py-5">
                                 <div class="mb-3">

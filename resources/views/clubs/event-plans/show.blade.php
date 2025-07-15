@@ -245,3 +245,26 @@ Updated: Added Excel export button in header to export comprehensive event infor
         }
     }
 </style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tabKey = 'eventPlanActiveTab';
+        const tabTriggerList = [].slice.call(document.querySelectorAll(
+            '#eventPlanTabs button[data-bs-toggle="tab"]'));
+
+        const savedTabId = localStorage.getItem(tabKey);
+        if (savedTabId) {
+            const savedTab = document.querySelector(`#eventPlanTabs button#${savedTabId}`);
+            if (savedTab) {
+                const tab = new bootstrap.Tab(savedTab);
+                tab.show();
+            }
+        }
+
+        tabTriggerList.forEach(function(tabTriggerEl) {
+            tabTriggerEl.addEventListener('shown.bs.tab', function(event) {
+                localStorage.setItem(tabKey, event.target.id);
+            });
+        });
+    });
+</script>

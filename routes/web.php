@@ -38,6 +38,11 @@ use App\Http\Controllers\Club\ExpenseController as ClubExpenseController;
 use App\Http\Controllers\QuoteController;
 use App\Http\Controllers\EventImageController;
 use App\Http\Controllers\EventPlanController;
+use App\Http\Controllers\MyProfileController;
+use App\Http\Controllers\MemberController;
+use App\Http\Controllers\Club\MyProfileController as ClubMyProfileController;
+use App\Http\Controllers\Club\SettingController as ClubSettingController;
+use App\Models\User;
 
 Route::get('/', function () {
     if (!Auth::check()) {
@@ -66,6 +71,10 @@ Route::middleware(['auth'])->group(function () {
     Route::name('backend.')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware('CheckPermission:dashboard,view,central');
 
+        Route::get('/my-profile', [MyProfileController::class, 'index'])->name('my-profile.index')->middleware('CheckPermission:user_management,my_profile,central');
+        Route::post('/my-profile/update', [MyProfileController::class, 'update'])->name('my-profile.update')->middleware('CheckPermission:user_management,my_profile,central');
+        Route::post('/my-profile/update-password', [MyProfileController::class, 'updatePassword'])->name('my-profile.update-password')->middleware('CheckPermission:user_management,my_profile,central');
+
         // Courses routes
         Route::get('/courses', [CourseController::class, 'index'])->name('courses.index')->middleware('CheckPermission:course_management,view,central');
         Route::get('/courses/create', [CourseController::class, 'create'])->name('courses.create')->middleware('CheckPermission:course_management,create,central');
@@ -90,7 +99,6 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/clubs/{club}', [ClubController::class, 'update'])->name('clubs.update')->middleware('CheckPermission:club_management,edit,central');
         Route::delete('/clubs/{club}', [ClubController::class, 'destroy'])->name('clubs.destroy')->middleware('CheckPermission:club_management,delete,central');
         Route::get('/clubs/{club}', [ClubController::class, 'show'])->name('clubs.show')->middleware('CheckPermission:club_management,view,central');
-        Route::post('/clubs/{club}/users', [ClubController::class, 'storeUser'])->name('clubs.users.store')->middleware('CheckPermission:club_management,create,central');
 
         // Slots routes
         Route::get('/slots', [SlotController::class, 'index'])->name('slots.index')->middleware('CheckPermission:slot_management,view,central');
@@ -140,6 +148,17 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/quotes/{quote}/edit', [QuoteController::class, 'edit'])->name('quotes.edit')->middleware('CheckPermission:quote_management,edit,central');
         Route::put('/quotes/{quote}', [QuoteController::class, 'update'])->name('quotes.update')->middleware('CheckPermission:quote_management,edit,central');
         Route::delete('/quotes/{quote}', [QuoteController::class, 'destroy'])->name('quotes.destroy')->middleware('CheckPermission:quote_management,delete,central');
+
+        // Members routes
+        Route::get('/members', [MemberController::class, 'index'])->name('members.index')->middleware('CheckPermission:member_management,view,central');
+        Route::post('/members', [MemberController::class, 'store'])->name('members.store')->middleware('CheckPermission:member_management,create,central');
+        Route::put('/members/{member}', [MemberController::class, 'update'])->name('members.update')->middleware('CheckPermission:member_management,edit,central');
+        Route::delete('/members/{member}', [MemberController::class, 'destroy'])->name('members.destroy')->middleware('CheckPermission:member_management,delete,central');
+        Route::post('/members/assign-to-club', [MemberController::class, 'assignToClub'])->name('members.assign-to-club')->middleware('CheckPermission:member_management,create,central');
+        Route::post('/members/remove-from-club', [MemberController::class, 'removeFromClub'])->name('members.remove-from-club')->middleware('CheckPermission:member_management,delete,central');
+        Route::post('/members/update-club-role', [MemberController::class, 'updateClubRole'])->name('members.update-club-role')->middleware('CheckPermission:member_management,edit,central');
+        Route::get('/members/get-club-roles', [MemberController::class, 'getClubRoles'])->name('members.get-club-roles')->middleware('CheckPermission:member_management,view,central');
+        Route::get('/members/check-email', [MemberController::class, 'checkUserEmail'])->name('members.check-email')->middleware('CheckPermission:member_management,view,central');
     });
 });
 
@@ -147,6 +166,13 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth'])->prefix('club')->group(function () {
     Route::name('backend.club.')->group(function () {
         Route::get('/dashboard', [ClubDashboardController::class, 'index'])->name('dashboard')->middleware('CheckPermission:dashboard,view,branch');
+
+        Route::get('/my-profile', [ClubMyProfileController::class, 'index'])->name('my-profile.index')->middleware('CheckPermission:member_management,my_profile,branch');
+        Route::post('/my-profile/update', [ClubMyProfileController::class, 'update'])->name('my-profile.update')->middleware('CheckPermission:member_management,my_profile,branch');
+        Route::post('/my-profile/update-password', [ClubMyProfileController::class, 'updatePassword'])->name('my-profile.update-password')->middleware('CheckPermission:member_management,my_profile,branch');
+        Route::post('/my-profile/update-bank-account', [ClubMyProfileController::class, 'updateBankAccount'])->name('my-profile.update-bank-account')->middleware('CheckPermission:member_management,my_profile,branch');
+        Route::post('/my-profile/update-address', [ClubMyProfileController::class, 'updateAddress'])->name('my-profile.update-address')->middleware('CheckPermission:member_management,my_profile,branch');
+        Route::get('/my-profile/get-communes', [ClubMyProfileController::class, 'getCommunes'])->name('my-profile.get-communes')->middleware('CheckPermission:member_management,my_profile,branch');
 
         // Roles routes
         Route::get('/roles', [ClubRoleController::class, 'index'])->name('roles.index')->middleware('CheckPermission:role_management,view,branch');
@@ -241,6 +267,8 @@ Route::middleware(['auth'])->prefix('club')->group(function () {
         Route::put('/invoices/{invoice}', [ClubInvoiceController::class, 'update'])->name('invoices.update')->middleware('CheckPermission:invoice_management,edit,branch');
         Route::delete('/invoices/{invoice}', [ClubInvoiceController::class, 'destroy'])->name('invoices.destroy')->middleware('CheckPermission:invoice_management,delete,branch');
         Route::delete('/invoices/bulk-destroy', [ClubInvoiceController::class, 'bulkDestroy'])->name('invoices.bulk-destroy')->middleware('CheckPermission:invoice_management,delete,branch');
+        // Export PDF route
+        Route::get('/invoices/{invoice}/export/pdf', [ClubInvoiceController::class, 'exportPdf'])->name('invoices.export.pdf')->middleware('CheckPermission:invoice_management,view,branch');
 
         // Mark as paid route
         Route::post('/invoices/{invoice}/transactions/mark-as-paid', [ClubInvoiceController::class, 'markAsPaid'])->name('invoices.transactions.mark-as-paid')->middleware('CheckPermission:invoice_management,mark_as_paid,branch');
@@ -269,5 +297,20 @@ Route::middleware(['auth'])->prefix('club')->group(function () {
         Route::put('/my-expenses/{expense}', [ClubExpenseController::class, 'myUpdate'])->name('expenses.my-update')->middleware('CheckPermission:expense_management,my_edit,branch');
         Route::delete('/my-expenses/{expense}', [ClubExpenseController::class, 'myDestroy'])->name('expenses.my-destroy')->middleware('CheckPermission:expense_management,my_delete,branch');
         Route::delete('/my-expenses/bulk/destroy', [ClubExpenseController::class, 'myBulkDestroy'])->name('expenses.my-bulk-destroy')->middleware('CheckPermission:expense_management,my_delete,branch');
+
+        // Settings routes
+        Route::get('/settings', [ClubSettingController::class, 'index'])->name('settings.index')->middleware('CheckPermission:setting_management,view,branch');
+        // Update general settings
+        Route::post('/settings/general', [ClubSettingController::class, 'updateGeneralSettings'])->name('settings.general.update')->middleware('CheckPermission:setting_management,general,branch');
+        // Update word commitment template
+        Route::post('/settings/word-commitment-template', [ClubSettingController::class, 'updateWordCommitmentTemplate'])->name('settings.word-commitment-template.update')->middleware('CheckPermission:setting_management,word_template,branch');
+        // Download word commitment template
+        Route::get('/settings/word-commitment-template/download', [ClubSettingController::class, 'downloadWordCommitmentTemplate'])->name('settings.word-commitment-template.download')->middleware('CheckPermission:setting_management,word_template,branch');
+        // Bank settings routes
+        Route::get('/settings/banks', [ClubSettingController::class, 'getBanksFromAPI'])->name('settings.banks.api')->middleware('CheckPermission:setting_management,payment,branch');
+        Route::post('/settings/bank', [ClubSettingController::class, 'updateBankSettings'])->name('settings.bank.update')->middleware('CheckPermission:setting_management,payment,branch');
     });
 });
+
+// [AI CHANGE 2024-07-14] Route đổi club mặc định cho user
+Route::post('/switch-default-club', [App\Http\Controllers\SwitchClubController::class, 'switch'])->name('switch.default.club')->middleware('auth');

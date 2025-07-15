@@ -1,20 +1,23 @@
 <?php
-// AwardRecipient Model - Pivot model for award recipients with individual attachments
-// Handles many-to-many relationship between awards and users with additional attachment field
+// Updated: AwardRecipient Model - Explicitly set table name to 'award_recipients' to avoid singular/plural issues in queries
+// Handles many-to-many relationship between awards and user_club_roles with individual attachment field
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class AwardRecipient extends Model
+class AwardRecipient extends Pivot
 {
     use HasUuids;
 
+    // Fix: Explicitly set table name to avoid Eloquent using 'award_recipient' (singular)
+    protected $table = 'award_recipients';
+
     protected $fillable = [
         'award_id',
-        'user_id',
+        'user_club_role_id',
         'attachment'
     ];
 
@@ -27,10 +30,18 @@ class AwardRecipient extends Model
     }
 
     /**
-     * Get the user (recipient) this record belongs to
+     * Get the user_club_role (membership) this record belongs to
      */
-    public function user(): BelongsTo
+    public function userClubRole(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(UserClubRole::class);
+    }
+
+    /**
+     * Get the user for this recipient (shortcut)
+     */
+    public function user()
+    {
+        return $this->userClubRole ? $this->userClubRole->user() : null;
     }
 }

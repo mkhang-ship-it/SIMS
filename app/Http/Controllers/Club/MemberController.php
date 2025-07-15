@@ -1,8 +1,9 @@
 <?php
-// Updated: Added avatar file upload functionality with validation, storage, and deletion
-// Features: Full CRUD for members with file upload support for avatars
+// Updated: Hiển thị thành viên theo bảng UserClubRole dựa vào session('club_id'), eager load user, major, course, role
+// Features: Full CRUD for members với file upload avatar, hiển thị thành viên theo club qua bảng user_club_roles
+// Update: Khi chỉnh sửa thành viên, cập nhật đồng thời bảng users và user_club_roles (role, status)
 // Fields: name, email, password, avatar (file upload), gender, birthday, identity_card_code, phone, student_code, major_id, course_id, role_id, status
-// Modified: Only show child majors (specific majors) in dropdown selections, added file upload handling
+// Modified: Chỉ hiển thị chuyên ngành con trong dropdown, thêm xử lý file upload, lấy thành viên qua UserClubRole
 
 namespace App\Http\Controllers\Club;
 
@@ -11,6 +12,7 @@ use App\Models\User;
 use App\Models\Role;
 use App\Models\Major;
 use App\Models\Course;
+use App\Models\UserClubRole;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
@@ -21,13 +23,15 @@ class MemberController extends Controller
 {
     public function index()
     {
+        $clubId = session('club_id');
         $user = Auth::user();
 
-        $members = User::with(['role', 'major', 'course'])
-            ->where('club_id', $user->club_id)
-            ->paginate(10);
+        // Lấy danh sách UserClubRole theo club_id, eager load user, major, course, role
+        $members = UserClubRole::with(['user.major', 'user.course', 'role'])
+            ->where('club_id', $clubId)
+            ->get();
 
-        $roles = Role::where('club_id', $user->club_id)
+        $roles = Role::where('club_id', $clubId)
             ->where('status', 'active')
             ->get();
 
@@ -83,13 +87,16 @@ class MemberController extends Controller
             ->with('success', 'Thành viên đã được thêm thành công.');
     }
 
-    public function update(Request $request, User $member)
+    public function update(Request $request, $userId)
     {
+        $clubId = session('club_id');
         $user = Auth::user();
 
-        if ($member->club_id !== $user->club_id) {
+        $member = User::findOrFail($userId);
+        $userClubRole = UserClubRole::where('user_id', $userId)->where('club_id', $clubId)->first();
+        if (!$userClubRole) {
             return redirect()->route('backend.club.members.index')
-                ->with('error', 'Bạn không có quyền chỉnh sửa thành viên này.');
+                ->with('error', 'Không tìm thấy thành viên trong câu lạc bộ này.');
         }
 
         $validatedData = $request->validate([
@@ -114,30 +121,41 @@ class MemberController extends Controller
         ]);
 
         $role = Role::where('id', $validatedData['role_id'])
-            ->where('club_id', $user->club_id)
+            ->where('club_id', $clubId)
             ->first();
-
         if (!$role) {
             return redirect()->back()->withErrors(['role_id' => 'Vai trò không hợp lệ.']);
         }
 
         // Handle avatar upload
         if ($request->hasFile('avatar')) {
-            // Delete old avatar if exists
             if ($member->avatar && Storage::disk('public')->exists($member->avatar)) {
                 Storage::disk('public')->delete($member->avatar);
             }
-
             $avatarPath = $request->file('avatar')->store('avatars', 'public');
-            $validatedData['avatar'] = $avatarPath;
+            $member->avatar = $avatarPath;
         }
 
+        // Update user fields
+        $member->name = $validatedData['name'];
+        $member->email = $validatedData['email'];
+        $member->gender = $validatedData['gender'] ?? null;
+        $member->birthday = $validatedData['birthday'] ?? null;
+        $member->identity_card_code = $validatedData['identity_card_code'] ?? null;
+        $member->phone = $validatedData['phone'] ?? null;
+        $member->student_code = $validatedData['student_code'] ?? null;
+        $member->major_id = $validatedData['major_id'] ?? null;
+        $member->course_id = $validatedData['course_id'] ?? null;
         if ($request->filled('password')) {
             $request->validate(['password' => 'string|min:8']);
-            $validatedData['password'] = Hash::make($request->password);
+            $member->password = Hash::make($request->password);
         }
+        $member->save();
 
-        $member->update($validatedData);
+        // Update UserClubRole fields
+        $userClubRole->role_id = $validatedData['role_id'];
+        $userClubRole->status = $validatedData['status'];
+        $userClubRole->save();
 
         return redirect()->route('backend.club.members.index')
             ->with('success', 'Thành viên đã được cập nhật thành công.');

@@ -3,10 +3,11 @@
 // Updated to automatically create default roles when creating a club and run ModuleClubSeeder
 // Chủ Nhiệm role is assigned all permissions automatically
 // Handles CRUD operations for clubs with image storage support
-// Added storeUser method to handle adding new users to specific clubs
 // Fixed show method to properly load User objects instead of Role objects for leaders/members display
 // Updated role creation to include club name to avoid unique constraint violations
 // Updated destroy method to delete all related data including users, events, awards, invoices and their related data
+// [2024-12-19] Updated: Removed storeUser and checkUserEmail methods and related functionality
+// [2024-12-19] Updated: Fixed show method to use new UserClubRole pivot table structure instead of direct role_id relationship
 
 namespace App\Http\Controllers;
 
@@ -23,6 +24,7 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Event;
 use App\Models\Award;
 use App\Models\Invoice;
+use App\Models\Module;
 
 class ClubController extends Controller
 {
@@ -34,13 +36,31 @@ class ClubController extends Controller
 
     public function show(Club $club)
     {
-        // Get leader roles for this club
-        $leaderRoles = $club->roles()->where('is_leader', 'leader')->pluck('id');
-        $leaders = User::whereIn('role_id', $leaderRoles)->with(['role', 'major', 'course'])->get();
+        // Get leaders for this club using the new UserClubRole pivot table
+        $leaders = $club->userClubRoles()
+            ->whereHas('role', function ($query) {
+                $query->where('is_leader', 'leader');
+            })
+            ->with(['user.major', 'user.course', 'role'])
+            ->get()
+            ->map(function ($userClubRole) {
+                $user = $userClubRole->user;
+                $user->club_role = $userClubRole->role; // Add the role from pivot table
+                return $user;
+            });
 
-        // Get member roles for this club
-        $memberRoles = $club->roles()->where('is_leader', 'member')->pluck('id');
-        $members = User::whereIn('role_id', $memberRoles)->with(['role', 'major', 'course'])->get();
+        // Get members for this club using the new UserClubRole pivot table
+        $members = $club->userClubRoles()
+            ->whereHas('role', function ($query) {
+                $query->where('is_leader', 'member');
+            })
+            ->with(['user.major', 'user.course', 'role'])
+            ->get()
+            ->map(function ($userClubRole) {
+                $user = $userClubRole->user;
+                $user->club_role = $userClubRole->role; // Add the role from pivot table
+                return $user;
+            });
 
         // Get events for this club
         $events = Event::where('club_id', $club->id)->where('status', 'completed')->get();
@@ -56,7 +76,6 @@ class ClubController extends Controller
             'phone' => 'required|string|max:20',
             'address' => 'required|string|max:500',
             'status' => 'required|string|in:active,inactive',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         try {
@@ -69,14 +88,6 @@ class ClubController extends Controller
                 'address' => $request->address,
                 'status' => $request->status,
             ];
-
-            // Handle image upload
-            if ($request->hasFile('image')) {
-                $image = $request->file('image');
-                $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-                $imagePath = $image->storeAs('clubs', $imageName, 'public');
-                $clubData['image'] = $imagePath;
-            }
 
             $club = Club::create($clubData);
 
@@ -106,8 +117,12 @@ class ClubController extends Controller
             ]);
 
             // Assign all permissions to the "Chủ Nhiệm" role
-            $allPermissions = Permission::all();
-            $chuNhiemRole->permissions()->attach($allPermissions->pluck('id'));
+            // $allPermissions = Permission::all();
+            // $chuNhiemRole->permissions()->attach($allPermissions->pluck('id'));
+
+            $branchModuleIds = Module::where('type', 'branch')->pluck('id');
+            $branchPermissions = Permission::whereIn('module_id', $branchModuleIds)->pluck('id');
+            $chuNhiemRole->permissions()->attach($branchPermissions);
 
             DB::commit();
 
@@ -132,7 +147,6 @@ class ClubController extends Controller
             'phone' => 'required|string|max:20',
             'address' => 'required|string|max:500',
             'status' => 'required|string|in:active,inactive',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         $clubData = [
@@ -143,28 +157,22 @@ class ClubController extends Controller
             'status' => $request->status,
         ];
 
-        // Handle image upload
-        if ($request->hasFile('image')) {
-            // Delete old image if exists
-            if ($club->image) {
-                Storage::disk('public')->delete($club->image);
-            }
-
-            $image = $request->file('image');
-            $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-            $imagePath = $image->storeAs('clubs', $imageName, 'public');
-            $clubData['image'] = $imagePath;
-        }
-
         $club->update($clubData);
 
         return redirect()->route('backend.clubs.index')->with('success', 'Câu lạc bộ đã được cập nhật thành công!');
     }
 
+    // Updated destroy() to handle foreign key constraint violation with sessions table when deleting users.
     public function destroy(Club $club)
     {
         try {
             DB::beginTransaction();
+
+            // Delete all sessions of users in this club to avoid foreign key constraint errors
+            $userIds = User::where('club_id', $club->id)->pluck('id');
+            if ($userIds->count() > 0) {
+                DB::table('sessions')->whereIn('user_id', $userIds)->delete();
+            }
 
             // Delete all users associated with this club
             $users = User::where('club_id', $club->id)->get();
@@ -254,9 +262,11 @@ class ClubController extends Controller
                 $role->delete();
             }
 
-            // Delete club image if exists
-            if ($club->image) {
-                Storage::disk('public')->delete($club->image);
+            // Delete all club images if exist (shortened)
+            foreach (['image_square_light', 'image_square_dark', 'image_horizontal_light', 'image_horizontal_dark'] as $img) {
+                if ($club->$img) {
+                    Storage::disk('public')->delete($club->$img);
+                }
             }
 
             $club->delete();
@@ -267,45 +277,6 @@ class ClubController extends Controller
         } catch (\Exception $e) {
             DB::rollback();
             return redirect()->back()->with('error', 'Có lỗi xảy ra khi xóa câu lạc bộ: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * Store a new user for a specific club
-     */
-    public function storeUser(Request $request, Club $club)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email',
-            'password' => 'required|string|min:8|confirmed',
-            'role_id' => 'required|exists:roles,id',
-        ]);
-
-        try {
-            // Verify that the role belongs to the current club and is of type 'branch'
-            $role = Role::where('id', $request->role_id)
-                ->where('club_id', $club->id)
-                ->where('type', 'branch')
-                ->where('status', 'active')
-                ->first();
-
-            if (!$role) {
-                return redirect()->back()->with('error', 'Vai trò được chọn không hợp lệ cho câu lạc bộ này!');
-            }
-
-            $user = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
-                'role_id' => $request->role_id,
-                'club_id' => $club->id,
-                'status' => 'active',
-            ]);
-
-            return redirect()->back()->with('success', 'Thành viên mới đã được thêm vào câu lạc bộ thành công!');
-        } catch (\Exception $e) {
-            return redirect()->back()->withInput()->with('error', 'Có lỗi xảy ra khi thêm thành viên: ' . $e->getMessage());
         }
     }
 }

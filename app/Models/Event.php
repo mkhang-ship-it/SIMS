@@ -1,9 +1,6 @@
 <?php
-// Event Model - Club event management system with updated status workflow
-// Handles events with auto-generated event codes, QR hash for checkin, single slot timing, and specific event dates
-// Updated to include event_date field for precise scheduling and QR code time validation
-// Updated: Changed status from 2 states to 4 states workflow (pending, active, cancelled, completed)
-// Updated: Added relationship with EventImage model for multiple image management
+// Updated: Event Model - Added inline logic for status options and role-based permissions
+// Updated: getAvailableStatusOptions now checks if user role type is 'central' in roles table
 
 namespace App\Models;
 
@@ -166,19 +163,20 @@ class Event extends Model
     }
 
     /**
-     * Get available status options for user based on current status and user role
+     * Get available status options for user based on current status and user role type (central only)
+     * @param \App\Models\User $user
+     * @return array
      */
-    public function getAvailableStatusOptions($userRole = 'user')
+    public function getAvailableStatusOptions($user)
     {
         // If completed, no status changes allowed
         if ($this->status === 'completed') {
             return [];
         }
 
-        // For admin/super admin, they can approve pending events to active
-        if (in_array($userRole, ['admin', 'super_admin'])) {
+        // Only allow if user role type is 'central'
+        if ($user && $user->role && $user->role->type === 'central') {
             $options = [];
-
             if ($this->status === 'pending') {
                 $options['active'] = 'Duyệt Sự Kiện';
                 $options['cancelled'] = 'Hủy Sự Kiện';
@@ -189,11 +187,10 @@ class Event extends Model
                 $options['pending'] = 'Chờ Duyệt';
                 $options['cancelled'] = 'Đã Hủy';
             }
-
             return $options;
         }
 
-        // For regular users
+        // For all other users, only allow limited status changes
         switch ($this->status) {
             case 'pending':
                 return [

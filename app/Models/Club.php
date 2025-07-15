@@ -1,6 +1,7 @@
 <?php
-// Updated: Added events() relationship to Club model to support 3-step filter flow for event images
+// Updated: Đổi tên các trường image_vertical_light và image_vertical_dark thành image_square_light và image_square_dark trong $fillable
 // Added roles(), awards(), invoices() and events() relationships to manage club-specific data
+// Updated: Thêm quan hệ userClubRoles (hasMany) và users (belongsToMany qua user_club_roles) cho multi-club
 
 namespace App\Models;
 
@@ -11,7 +12,18 @@ class Club extends Model
 {
     use HasUuids;
 
-    protected $fillable = ['name', 'email', 'phone', 'address', 'status', 'image'];
+    protected $fillable = [
+        'name',
+        'email',
+        'phone',
+        'address',
+        'status',
+        'image',
+        'image_horizontal_light',
+        'image_horizontal_dark',
+        'image_square_light',
+        'image_square_dark'
+    ];
 
     /**
      * Get all roles for this club
@@ -43,5 +55,23 @@ class Club extends Model
     public function events()
     {
         return $this->hasMany(Event::class);
+    }
+
+    /**
+     * Quan hệ: club có nhiều userClubRoles (pivot)
+     */
+    public function userClubRoles()
+    {
+        return $this->hasMany(UserClubRole::class);
+    }
+
+    /**
+     * Quan hệ: club có nhiều user (dùng belongsToMany qua user_club_roles)
+     */
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'user_club_roles', 'club_id', 'user_id')
+            ->withPivot(['role_id', 'joined_at', 'status', 'id'])
+            ->withTimestamps();
     }
 }

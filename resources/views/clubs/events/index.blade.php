@@ -161,15 +161,7 @@ Updated: Added image management button for accessing event image gallery from th
                                         <!-- Edit Event Modal -->
                                         @if (auth()->user()->hasPermissionForModuleCode('event_management', 'edit', 'branch') && $event->canBeEdited())
                                             @php
-                                                $userRole = 'user'; // Default role
-                                                if (method_exists(auth()->user(), 'hasRole')) {
-                                                    if (auth()->user()->hasRole('super_admin')) {
-                                                        $userRole = 'super_admin';
-                                                    } elseif (auth()->user()->hasRole('admin')) {
-                                                        $userRole = 'admin';
-                                                    }
-                                                }
-                                                $availableStatuses = $event->getAvailableStatusOptions($userRole);
+                                                $availableStatuses = $event->getAvailableStatusOptions(auth()->user());
                                             @endphp
                                             <div class="modal fade" id="editEventModal{{ $event->id }}" tabindex="-1"
                                                 aria-labelledby="editEventModalLabel{{ $event->id }}" aria-hidden="true"
@@ -306,21 +298,11 @@ Updated: Added image management button for accessing event image gallery from th
                                                                             </select>
                                                                             @if (!empty($availableStatuses))
                                                                                 <div class="form-text">
-                                                                                    @if ($userRole === 'user')
-                                                                                        <small class="text-muted">
-                                                                                            <i
-                                                                                                class="ti ti-info-circle"></i>
-                                                                                            Bạn chỉ có thể chọn "Chờ Duyệt"
-                                                                                            hoặc "Hủy Sự Kiện"
-                                                                                        </small>
-                                                                                    @else
-                                                                                        <small class="text-muted">
-                                                                                            <i
-                                                                                                class="ti ti-shield-check"></i>
-                                                                                            Quyền quản trị viên: có thể
-                                                                                            duyệt sự kiện
-                                                                                        </small>
-                                                                                    @endif
+                                                                                    <small class="text-muted">
+                                                                                        <i class="ti ti-info-circle"></i>
+                                                                                        Bạn chỉ có thể chọn "Chờ Duyệt"
+                                                                                        hoặc "Hủy Sự Kiện"
+                                                                                    </small>
                                                                                 </div>
                                                                             @endif
                                                                         </div>
@@ -506,28 +488,8 @@ Updated: Added image management button for accessing event image gallery from th
     <!-- Add Event Modal -->
     @if (auth()->user()->hasPermissionForModuleCode('event_management', 'create', 'branch'))
         @php
-            $userRole = 'user'; // Default role
-            if (method_exists(auth()->user(), 'hasRole')) {
-                if (auth()->user()->hasRole('super_admin')) {
-                    $userRole = 'super_admin';
-                } elseif (auth()->user()->hasRole('admin')) {
-                    $userRole = 'admin';
-                }
-            }
-            // Get allowed statuses for creating events
-            $allowedStatuses = [];
-            if (in_array($userRole, ['admin', 'super_admin'])) {
-                $allowedStatuses = [
-                    'pending' => 'Chờ Duyệt',
-                    'active' => 'Duyệt Ngay',
-                    'cancelled' => 'Hủy Sự Kiện',
-                ];
-            } else {
-                $allowedStatuses = [
-                    'pending' => 'Chờ Duyệt',
-                    'cancelled' => 'Hủy Sự Kiện',
-                ];
-            }
+            $eventModel = new \App\Models\Event();
+            $allowedStatuses = $eventModel->getAvailableStatusOptions(auth()->user());
         @endphp
         <div class="modal fade" id="addEventModal" tabindex="-1" aria-labelledby="addEventModalLabel"
             aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
@@ -620,17 +582,10 @@ Updated: Added image management button for accessing event image gallery from th
                                             @endforeach
                                         </select>
                                         <div class="form-text">
-                                            @if ($userRole === 'user')
-                                                <small class="text-muted">
-                                                    <i class="ti ti-info-circle"></i>
-                                                    Mặc định sự kiện sẽ ở trạng thái "Chờ Duyệt"
-                                                </small>
-                                            @else
-                                                <small class="text-muted">
-                                                    <i class="ti ti-shield-check"></i>
-                                                    Với quyền quản trị viên, bạn có thể duyệt sự kiện ngay
-                                                </small>
-                                            @endif
+                                            <small class="text-muted">
+                                                <i class="ti ti-info-circle"></i>
+                                                Mặc định sự kiện sẽ ở trạng thái "Chờ Duyệt"
+                                            </small>
                                         </div>
                                     </div>
                                 </div>

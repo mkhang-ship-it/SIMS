@@ -35,7 +35,8 @@ class ModuleClubSeeder extends Seeder
                     ['name' => 'view', 'display_name' => 'Xem'],
                     ['name' => 'create', 'display_name' => 'Tạo mới'],
                     ['name' => 'edit', 'display_name' => 'Chỉnh sửa'],
-                    ['name' => 'delete', 'display_name' => 'Xóa']
+                    ['name' => 'delete', 'display_name' => 'Xóa'],
+                    ['name' => 'my_profile', 'display_name' => 'Hồ sơ cá nhân']
                 ]
             ],
             [
@@ -110,6 +111,16 @@ class ModuleClubSeeder extends Seeder
                     ['name' => 'my_expenses', 'display_name' => 'Chi phí của tôi'],
                     ['name' => 'my_edit', 'display_name' => 'Chỉnh sửa chi phí'],
                     ['name' => 'my_delete', 'display_name' => 'Xóa chi phí']
+                ]
+            ],
+            [
+                'module_code' => 'setting_management',
+                'name' => 'Quản Lý Cài Đặt',
+                'permissions' => [
+                    ['name' => 'view', 'display_name' => 'Xem'],
+                    ['name' => 'general', 'display_name' => 'Thông tin chung'],
+                    ['name' => 'word_template', 'display_name' => 'Mẫu word'],
+                    ['name' => 'payment', 'display_name' => 'Thanh toán']
                 ]
             ],
             [

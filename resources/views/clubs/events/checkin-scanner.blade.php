@@ -3,23 +3,8 @@
 @section('content')
     <div class="container-fluid">
 
-        <!-- Page Header -->
-        <div class="d-md-flex d-block align-items-center justify-content-between my-4 page-header-breadcrumb">
-            <h1 class="page-title fw-semibold fs-18 mb-0">Quét QR Tự Động Check-in</h1>
-            <div class="ms-md-1 ms-0">
-                <nav>
-                    <ol class="breadcrumb mb-0">
-                        <li class="breadcrumb-item"><a href="{{ route('backend.dashboard') }}">Trang chủ</a></li>
-                        <li class="breadcrumb-item"><a href="#">Sự kiện</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Quét QR Tự Động Check-in</li>
-                    </ol>
-                </nav>
-            </div>
-        </div>
-        <!-- Page Header Close -->
-
         <!-- Instructions Card -->
-        <div class="row mb-4" id="instructions-section">
+        <div class="row mb-4 mt-4" id="instructions-section">
             <div class="col-xl-12">
                 <div class="card custom-card">
                     <div class="card-header">

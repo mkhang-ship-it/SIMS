@@ -18,7 +18,10 @@ return new class extends Migration
             $table->string('phone');
             $table->string('address');
             $table->enum('status', ['active', 'inactive'])->default('active');
-            $table->string('image')->nullable();
+            $table->string('image_horizontal_light')->nullable();
+            $table->string('image_horizontal_dark')->nullable();
+            $table->string('image_square_light')->nullable();
+            $table->string('image_square_dark')->nullable();
             $table->timestamps();
         });
     }

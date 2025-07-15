@@ -1,7 +1,7 @@
 <?php
 // Updated ClassRoomSeeder - Seeds classroom data with room names P103, P201-P208, and Semiconductor Practice
 // All classrooms set to active status by default
-// Code field now uses random CR-XXX format for uniqueness
+// Code field now uses random CR-XXX format for uniqueness, and ensures no duplicate code is generated
 // Longitude and latitude stored as string values for flexible coordinate input
 
 namespace Database\Seeders;
@@ -81,8 +81,10 @@ class ClassRoomSeeder extends Seeder
         ];
 
         foreach ($classrooms as $classroom) {
-            // Generate random code for each classroom
-            $code = 'CR-' . str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT);
+            // Generate random code for each classroom, ensure uniqueness
+            do {
+                $code = 'CR-' . str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT);
+            } while (ClassRoom::where('code', $code)->exists());
 
             ClassRoom::create([
                 'name' => $classroom['name'],

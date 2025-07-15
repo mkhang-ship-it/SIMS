@@ -58,7 +58,7 @@
                                 <tbody>
                                     @foreach ($awards as $index => $award)
                                         <tr>
-                                            <td class="text-center">{{ $awards->firstItem() + $index }}</td>
+                                            <td class="text-center">{{ $loop->iteration }}</td>
                                             <td class="fw-semibold">{{ $award->award_code }}</td>
                                             <td>{{ $award->title }}</td>
                                             <td class="text-center">

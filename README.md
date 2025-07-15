@@ -1,61 +1,51 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+<!--
+README.md - ĐÃ VIẾT LẠI: Giới thiệu hệ thống quản lý câu lạc bộ, sự kiện, thành viên, tài chính và học thuật cho trường học hoặc tổ chức.
+Tính năng: Quản lý CLB, thành viên, sự kiện, kế hoạch, tài chính, học tập, chấm ngôn, phân quyền, check-in QR, xuất Excel, v.v.
+Đối tượng sử dụng: Quản trị viên, quản lý, thành viên CLB, sinh viên, cán bộ tổ chức.
+-->
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+# HỆ THỐNG QUẢN LÝ CÂU LẠC BỘ & SỰ KIỆN TRƯỜNG HỌC
 
-## About Laravel
+## Giới thiệu
+Hệ thống này là một nền tảng quản lý toàn diện dành cho các trường học, tổ chức giáo dục hoặc các đơn vị có nhiều câu lạc bộ, sự kiện và thành viên. Được xây dựng trên nền tảng Laravel, hệ thống hỗ trợ quản lý đa chiều các hoạt động học thuật, sự kiện, tài chính, nhân sự và phân quyền linh hoạt.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Đối tượng sử dụng
+- **Quản trị viên hệ thống**: Quản lý tổng thể, phân quyền, cấu hình hệ thống.
+- **Quản lý/Chủ nhiệm CLB**: Quản lý thành viên, sự kiện, tài chính, kế hoạch hoạt động của từng CLB.
+- **Thành viên CLB/Sinh viên**: Tham gia sự kiện, cập nhật hồ sơ cá nhân, theo dõi hoạt động, nhận giải thưởng.
+- **Cán bộ tổ chức**: Theo dõi, phê duyệt, hỗ trợ các hoạt động của CLB và sinh viên.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Tính năng chính
+- **Quản lý Câu lạc bộ**: Tạo, chỉnh sửa, xóa CLB; quản lý vai trò, thành viên, giải thưởng, hóa đơn, sự kiện.
+- **Quản lý Thành viên**: Hồ sơ cá nhân, thông tin học tập, vai trò, điểm danh sự kiện, nhận giải thưởng.
+- **Quản lý Sự kiện & Kế hoạch**: Tạo sự kiện, lập kế hoạch chi tiết (mục tiêu, hành động, ngân sách, vật dụng, timeline), xuất Excel, quản lý hình ảnh, check-in QR code.
+- **Quản lý Tài chính**: Hóa đơn, chi phí, giao dịch, phê duyệt, thống kê thu chi, quản lý trạng thái thanh toán.
+- **Quản lý Học tập**: Chuyên ngành, khóa học, lớp học, học kỳ, phân công thành viên.
+- **Quản lý Châm ngôn**: Thêm, sửa, xóa các câu châm ngôn truyền cảm hứng.
+- **Phân quyền & Bảo mật**: Hệ thống vai trò, quyền hạn chi tiết cho từng mô-đun, kiểm soát truy cập.
+- **Dashboard & Báo cáo**: Thống kê tổng quan, biểu đồ, xuất dữ liệu.
+- **Tích hợp**: Xuất Excel, check-in QR code, thông báo Flasher.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Công nghệ sử dụng
+- **Laravel Framework** (PHP)
+- **MySQL** (hoặc các hệ quản trị CSDL tương thích)
+- **HTML5, CSS3, JavaScript** (Giao diện hiện đại, responsive)
+- **Các thư viện hỗ trợ**: Maatwebsite Excel, Flasher, Simple QrCode, v.v.
 
-## Learning Laravel
+## Hướng dẫn cài đặt & sử dụng
+1. Clone source code về máy chủ.
+2. Cài đặt các package PHP bằng Composer.
+3. Tạo database và cấu hình `.env`.
+4. Chạy migrate và seed dữ liệu mẫu:
+   ```bash
+   php artisan migrate --seed
+   ```
+5. Khởi động server:
+   ```bash
+   php artisan serve
+   ```
+6. Đăng nhập bằng tài khoản mẫu (admin@gmail.com / 12345678) hoặc tạo mới.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
-
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-## Laravel Sponsors
-
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
-
-### Premium Partners
-
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Đóng góp & Giấy phép
+- Mọi đóng góp xin gửi pull request hoặc liên hệ quản trị viên hệ thống.
+- Hệ thống sử dụng giấy phép MIT.

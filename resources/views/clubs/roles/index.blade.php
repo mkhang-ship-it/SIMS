@@ -61,8 +61,7 @@
                                             <td class="text-center">{{ $index + 1 }}</td>
                                             <td class="fw-semibold">{{ $role->name }}</td>
                                             <td class="text-center">
-                                                <span
-                                                    class="badge bg-info">{{ $role->users_count ?? $role->users->count() }}</span>
+                                                <span class="badge bg-info">{{ $userCounts[$role->id] ?? 0 }}</span>
                                             </td>
                                             <td class="text-center">
                                                 <span

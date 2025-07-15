@@ -15,7 +15,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->string('name');
             $table->decimal('amount', 12, 2);
-            $table->foreignUuid('requested_by')->constrained('users');
+            $table->foreignUuid('requested_by')->nullable()->constrained('users');
             $table->foreignUuid('approved_by')->nullable()->constrained('users');
             $table->datetime('approved_at')->nullable();
             $table->datetime('requested_at')->nullable();

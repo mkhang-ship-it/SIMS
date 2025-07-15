@@ -11,15 +11,26 @@ use App\Models\Permission;
 use App\Models\Module;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use App\Models\UserClubRole;
 
 class RoleController extends Controller
 {
     public function index()
     {
-        $clubId = Auth::user()->club_id;
-        $roles = Role::with(['permissions.module', 'users'])->where('type', 'branch')->where('club_id', $clubId)->orderBy('created_at', 'desc')->get();
+        $clubId = session('club_id');
+        $roles = Role::with(['permissions.module'])
+            ->where('type', 'branch')
+            ->where('club_id', $clubId)
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-        return view('clubs.roles.index', compact('roles'));
+        // Lấy số lượng user cho từng role từ bảng user_club_roles
+        $userCounts = UserClubRole::where('club_id', $clubId)
+            ->selectRaw('role_id, COUNT(*) as user_count')
+            ->groupBy('role_id')
+            ->pluck('user_count', 'role_id');
+
+        return view('clubs.roles.index', compact('roles', 'userCounts'));
     }
 
     public function create()
@@ -32,7 +43,7 @@ class RoleController extends Controller
 
     public function store(Request $request)
     {
-        $clubId = Auth::user()->club_id;
+        $clubId = session('club_id');
 
         $request->validate([
             'name' => [
@@ -79,7 +90,7 @@ class RoleController extends Controller
 
     public function update(Request $request, Role $role)
     {
-        $clubId = Auth::user()->club_id;
+        $clubId = session('club_id');
 
         $request->validate([
             'name' => [

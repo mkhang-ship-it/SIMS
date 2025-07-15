@@ -1,4 +1,5 @@
-{{-- Invoice Index Page - Redesigned following index_example pattern --}}
+{{-- Invoice Index Page - Updated for UserClubRole member selection (multi-club)
+     Changed member selection in create modal to use UserClubRole (member_ids[]), display member name/email via $member->user --}}
 {{-- Updated: New layout with 3-9 column structure, statistics sidebar, and ApexCharts --}}
 {{-- Features: Modal-based CRUD operations, payment recording, bulk operations --}}
 {{-- Fixed: Mobile bulk delete button functionality, select all checkbox state management, individual checkbox display, and bulk delete button visibility --}}
@@ -279,6 +280,11 @@
                                                 </span>
                                             </td>
                                             <td class="text-center">
+                                                <a href="{{ route('backend.club.invoices.export.pdf', $invoice->id) }}"
+                                                    class="btn btn-primary-light btn-icon btn-sm" data-bs-toggle="tooltip"
+                                                    data-bs-placement="top" data-bs-title="Xuất PDF">
+                                                    <i class="ri-file-pdf-line"></i>
+                                                </a>
                                                 <a href="{{ route('backend.club.invoices.show', $invoice) }}"
                                                     class="btn btn-primary-light btn-icon btn-sm" data-bs-toggle="tooltip"
                                                     data-bs-placement="top" data-bs-title="Xem"><i
@@ -582,12 +588,12 @@
                                                     @foreach ($clubMembers as $member)
                                                         <div class="form-check">
                                                             <input class="form-check-input member-checkbox"
-                                                                type="checkbox" name="user_ids[]"
+                                                                type="checkbox" name="member_ids[]"
                                                                 value="{{ $member->id }}"
                                                                 id="member{{ $member->id }}">
                                                             <label class="form-check-label"
                                                                 for="member{{ $member->id }}">
-                                                                {{ $member->name }} - {{ $member->email }}
+                                                                {{ $member->user->name }} - {{ $member->user->email }}
                                                             </label>
                                                         </div>
                                                     @endforeach

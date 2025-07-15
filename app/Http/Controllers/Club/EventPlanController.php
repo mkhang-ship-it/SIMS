@@ -1,14 +1,4 @@
 <?php
-// EventPlanController - Event Plan Management System
-// Displays individual event plan in detailed format for specific events
-// Updated: Changed from index to show method to display single event plan with route parameter
-// Updated: Added update method and modal form for editing event plan details
-// Updated: Changed implementation_time field to date type with proper validation and display
-// Updated: Changed participants, responsible_organizer, advisor_coordinator to string input fields
-// Updated: Added Action Plans CRUD methods - storeActionPlan, updateActionPlan, destroyActionPlan with full validation and relationships
-// Updated: Added Budget Items CRUD methods - storeBudgetItem, updateBudgetItem, destroyBudgetItem with full validation for cost management
-// Updated: Added Equipment CRUD methods - storeEquipment, updateEquipment, destroyEquipment with full validation for equipment management
-// Updated: Added Timeline CRUD methods - storeTimeline, updateTimeline, destroyTimeline, updateTimelineOrder with drag/drop ordering support
 
 namespace App\Http\Controllers\Club;
 
@@ -27,6 +17,13 @@ use Illuminate\Support\Facades\Auth;
 use App\Exports\EventPlanExport;
 use Maatwebsite\Excel\Facades\Excel;
 
+// Refactored: EventPlanController - Updated for new DB structure (multi-club, UserClubRole, session('club_id'))
+// - All club scoping uses session('club_id')
+// - Fetches leaders and members via UserClubRole (eager loads user, role)
+// - No direct User::where('club_id', ...) queries
+// - All view data for leaders/members uses UserClubRole, not User
+// - Updated all relationships and fillable fields to match new models
+// - No business logic changed, only DB structure and relationship updates
 class EventPlanController extends Controller
 {
     /**
@@ -35,9 +32,10 @@ class EventPlanController extends Controller
     public function show(Event $event)
     {
         $user = Auth::user();
+        $clubId = session('club_id');
 
         // Check if event belongs to user's club
-        if ($event->club_id !== $user->club_id) {
+        if ($event->club_id !== $clubId) {
             return redirect()->route('backend.club.events.index')
                 ->with('error', 'Bạn không có quyền xem kế hoạch sự kiện này!');
         }
@@ -62,10 +60,8 @@ class EventPlanController extends Controller
         if (!$eventPlan) {
             $eventPlan = EventPlan::create([
                 'event_id' => $event->id,
-                'club_id' => $user->club_id,
+                'club_id' => $clubId,
             ]);
-
-            // Reload with relationships
             $eventPlan->load([
                 'event.slot',
                 'event.classRoom',
@@ -80,21 +76,23 @@ class EventPlanController extends Controller
             ]);
         }
 
-        // Get leaders from current club for prepared_by dropdown
-        $leaderRoleIds = Role::where('club_id', $user->club_id)
+        // Get leaders from current club for prepared_by dropdown (UserClubRole)
+        $leaderRoleIds = \App\Models\Role::where('club_id', $clubId)
             ->where('is_leader', 'leader')
             ->where('status', 'active')
             ->pluck('id');
-
-        $leaders = User::whereIn('role_id', $leaderRoleIds)
+        $leaders = \App\Models\UserClubRole::with(['user', 'role'])
+            ->where('club_id', $clubId)
             ->where('status', 'active')
-            ->orderBy('name')
+            ->whereIn('role_id', $leaderRoleIds)
+            ->orderByRaw('(SELECT name FROM users WHERE users.id = user_club_roles.user_id)')
             ->get();
 
-        // Get all active club members for action plan responsibilities
-        $clubMembers = User::where('club_id', $user->club_id)
+        // Get all active club members for action plan responsibilities (UserClubRole)
+        $clubMembers = \App\Models\UserClubRole::with(['user', 'role'])
+            ->where('club_id', $clubId)
             ->where('status', 'active')
-            ->orderBy('name')
+            ->orderByRaw('(SELECT name FROM users WHERE users.id = user_club_roles.user_id)')
             ->get();
 
         return view('clubs.event-plans.show', compact('eventPlan', 'leaders', 'clubMembers'));
@@ -106,9 +104,10 @@ class EventPlanController extends Controller
     public function update(Request $request, Event $event)
     {
         $user = Auth::user();
+        $clubId = session('club_id');
 
         // Check if event belongs to user's club
-        if ($event->club_id !== $user->club_id) {
+        if ($event->club_id !== $clubId) {
             return redirect()->route('backend.club.events.index')
                 ->with('error', 'Bạn không có quyền cập nhật kế hoạch sự kiện này!');
         }
@@ -120,7 +119,7 @@ class EventPlanController extends Controller
         if (!$eventPlan) {
             $eventPlan = EventPlan::create([
                 'event_id' => $event->id,
-                'club_id' => $user->club_id,
+                'club_id' => $clubId,
             ]);
         }
 
@@ -153,9 +152,10 @@ class EventPlanController extends Controller
     public function storeObjective(Request $request, Event $event)
     {
         $user = Auth::user();
+        $clubId = session('club_id');
 
         // Check if event belongs to user's club
-        if ($event->club_id !== $user->club_id) {
+        if ($event->club_id !== $clubId) {
             return redirect()->route('backend.club.events.index')
                 ->with('error', 'Bạn không có quyền thêm mục tiêu cho sự kiện này!');
         }
@@ -165,7 +165,7 @@ class EventPlanController extends Controller
         if (!$eventPlan) {
             $eventPlan = EventPlan::create([
                 'event_id' => $event->id,
-                'club_id' => $user->club_id,
+                'club_id' => $clubId,
             ]);
         }
 
@@ -198,9 +198,10 @@ class EventPlanController extends Controller
     public function updateObjective(Request $request, Event $event, EventPlanObjective $objective)
     {
         $user = Auth::user();
+        $clubId = session('club_id');
 
         // Check if event belongs to user's club
-        if ($event->club_id !== $user->club_id) {
+        if ($event->club_id !== $clubId) {
             return redirect()->route('backend.club.events.index')
                 ->with('error', 'Bạn không có quyền cập nhật mục tiêu này!');
         }
@@ -229,9 +230,10 @@ class EventPlanController extends Controller
     public function destroyObjective(Event $event, EventPlanObjective $objective)
     {
         $user = Auth::user();
+        $clubId = session('club_id');
 
         // Check if event belongs to user's club
-        if ($event->club_id !== $user->club_id) {
+        if ($event->club_id !== $clubId) {
             return redirect()->route('backend.club.events.index')
                 ->with('error', 'Bạn không có quyền xóa mục tiêu này!');
         }
@@ -253,9 +255,10 @@ class EventPlanController extends Controller
     public function storeActionPlan(Request $request, Event $event)
     {
         $user = Auth::user();
+        $clubId = session('club_id');
 
         // Check if event belongs to user's club
-        if ($event->club_id !== $user->club_id) {
+        if ($event->club_id !== $clubId) {
             return redirect()->route('backend.club.events.index')
                 ->with('error', 'Bạn không có quyền thêm kế hoạch hành động cho sự kiện này!');
         }
@@ -265,7 +268,7 @@ class EventPlanController extends Controller
         if (!$eventPlan) {
             $eventPlan = EventPlan::create([
                 'event_id' => $event->id,
-                'club_id' => $user->club_id,
+                'club_id' => $clubId,
             ]);
         }
 
@@ -309,9 +312,10 @@ class EventPlanController extends Controller
     public function updateActionPlan(Request $request, Event $event, EventActionPlan $actionPlan)
     {
         $user = Auth::user();
+        $clubId = session('club_id');
 
         // Check if event belongs to user's club
-        if ($event->club_id !== $user->club_id) {
+        if ($event->club_id !== $clubId) {
             return redirect()->route('backend.club.events.index')
                 ->with('error', 'Bạn không có quyền cập nhật kế hoạch hành động này!');
         }
@@ -355,9 +359,10 @@ class EventPlanController extends Controller
     public function destroyActionPlan(Event $event, EventActionPlan $actionPlan)
     {
         $user = Auth::user();
+        $clubId = session('club_id');
 
         // Check if event belongs to user's club
-        if ($event->club_id !== $user->club_id) {
+        if ($event->club_id !== $clubId) {
             return redirect()->route('backend.club.events.index')
                 ->with('error', 'Bạn không có quyền xóa kế hoạch hành động này!');
         }
@@ -379,9 +384,10 @@ class EventPlanController extends Controller
     public function storeBudgetItem(Request $request, Event $event)
     {
         $user = Auth::user();
+        $clubId = session('club_id');
 
         // Check if event belongs to user's club
-        if ($event->club_id !== $user->club_id) {
+        if ($event->club_id !== $clubId) {
             return redirect()->route('backend.club.events.index')
                 ->with('error', 'Bạn không có quyền thêm mục ngân sách cho sự kiện này!');
         }
@@ -391,7 +397,7 @@ class EventPlanController extends Controller
         if (!$eventPlan) {
             $eventPlan = EventPlan::create([
                 'event_id' => $event->id,
-                'club_id' => $user->club_id,
+                'club_id' => $clubId,
             ]);
         }
 
@@ -430,9 +436,10 @@ class EventPlanController extends Controller
     public function updateBudgetItem(Request $request, Event $event, EventPlanBudgetItem $budgetItem)
     {
         $user = Auth::user();
+        $clubId = session('club_id');
 
         // Check if event belongs to user's club
-        if ($event->club_id !== $user->club_id) {
+        if ($event->club_id !== $clubId) {
             return redirect()->route('backend.club.events.index')
                 ->with('error', 'Bạn không có quyền cập nhật mục ngân sách này!');
         }
@@ -464,9 +471,10 @@ class EventPlanController extends Controller
     public function destroyBudgetItem(Event $event, EventPlanBudgetItem $budgetItem)
     {
         $user = Auth::user();
+        $clubId = session('club_id');
 
         // Check if event belongs to user's club
-        if ($event->club_id !== $user->club_id) {
+        if ($event->club_id !== $clubId) {
             return redirect()->route('backend.club.events.index')
                 ->with('error', 'Bạn không có quyền xóa mục ngân sách này!');
         }
@@ -488,9 +496,10 @@ class EventPlanController extends Controller
     public function storeEquipment(Request $request, Event $event)
     {
         $user = Auth::user();
+        $clubId = session('club_id');
 
         // Check if event belongs to user's club
-        if ($event->club_id !== $user->club_id) {
+        if ($event->club_id !== $clubId) {
             return redirect()->route('backend.club.events.index')
                 ->with('error', 'Bạn không có quyền thêm vật dụng cho sự kiện này!');
         }
@@ -500,7 +509,7 @@ class EventPlanController extends Controller
         if (!$eventPlan) {
             $eventPlan = EventPlan::create([
                 'event_id' => $event->id,
-                'club_id' => $user->club_id,
+                'club_id' => $clubId,
             ]);
         }
 
@@ -535,9 +544,10 @@ class EventPlanController extends Controller
     public function updateEquipment(Request $request, Event $event, EventPlanEquipment $equipment)
     {
         $user = Auth::user();
+        $clubId = session('club_id');
 
         // Check if event belongs to user's club
-        if ($event->club_id !== $user->club_id) {
+        if ($event->club_id !== $clubId) {
             return redirect()->route('backend.club.events.index')
                 ->with('error', 'Bạn không có quyền cập nhật vật dụng này!');
         }
@@ -567,9 +577,10 @@ class EventPlanController extends Controller
     public function destroyEquipment(Event $event, EventPlanEquipment $equipment)
     {
         $user = Auth::user();
+        $clubId = session('club_id');
 
         // Check if event belongs to user's club
-        if ($event->club_id !== $user->club_id) {
+        if ($event->club_id !== $clubId) {
             return redirect()->route('backend.club.events.index')
                 ->with('error', 'Bạn không có quyền xóa vật dụng này!');
         }
@@ -591,9 +602,10 @@ class EventPlanController extends Controller
     public function storeTimeline(Request $request, Event $event)
     {
         $user = Auth::user();
+        $clubId = session('club_id');
 
         // Check if event belongs to user's club
-        if ($event->club_id !== $user->club_id) {
+        if ($event->club_id !== $clubId) {
             return redirect()->route('backend.club.events.index')
                 ->with('error', 'Bạn không có quyền thêm timeline cho sự kiện này!');
         }
@@ -603,7 +615,7 @@ class EventPlanController extends Controller
         if (!$eventPlan) {
             $eventPlan = EventPlan::create([
                 'event_id' => $event->id,
-                'club_id' => $user->club_id,
+                'club_id' => $clubId,
             ]);
         }
 
@@ -644,9 +656,10 @@ class EventPlanController extends Controller
     public function updateTimeline(Request $request, Event $event, EventPlanTimeline $timeline)
     {
         $user = Auth::user();
+        $clubId = session('club_id');
 
         // Check if event belongs to user's club
-        if ($event->club_id !== $user->club_id) {
+        if ($event->club_id !== $clubId) {
             return redirect()->route('backend.club.events.index')
                 ->with('error', 'Bạn không có quyền cập nhật timeline này!');
         }
@@ -677,9 +690,10 @@ class EventPlanController extends Controller
     public function destroyTimeline(Event $event, EventPlanTimeline $timeline)
     {
         $user = Auth::user();
+        $clubId = session('club_id');
 
         // Check if event belongs to user's club
-        if ($event->club_id !== $user->club_id) {
+        if ($event->club_id !== $clubId) {
             return redirect()->route('backend.club.events.index')
                 ->with('error', 'Bạn không có quyền xóa timeline này!');
         }
@@ -701,9 +715,10 @@ class EventPlanController extends Controller
     public function updateTimelineOrder(Request $request, Event $event)
     {
         $user = Auth::user();
+        $clubId = session('club_id');
 
         // Check if event belongs to user's club
-        if ($event->club_id !== $user->club_id) {
+        if ($event->club_id !== $clubId) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
@@ -733,9 +748,10 @@ class EventPlanController extends Controller
     public function exportExcel(Event $event)
     {
         $user = Auth::user();
+        $clubId = session('club_id');
 
         // Check if event belongs to user's club
-        if ($event->club_id !== $user->club_id) {
+        if ($event->club_id !== $clubId) {
             abort(403, 'Bạn không có quyền truy cập sự kiện này!');
         }
 

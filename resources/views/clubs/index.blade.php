@@ -50,7 +50,6 @@
                                 <thead>
                                     <tr>
                                         <th style="text-align: center !important;">STT</th>
-                                        <th style="text-align: center !important;">Logo</th>
                                         <th>Tên Câu Lạc Bộ</th>
                                         <th style="text-align: center !important;">Email</th>
                                         <th style="text-align: center !important;">Điện Thoại</th>
@@ -63,18 +62,7 @@
                                     @foreach ($clubs as $index => $club)
                                         <tr>
                                             <td class="text-center">{{ $index + 1 }}</td>
-                                            <td class="text-center">
-                                                @if ($club->image)
-                                                    <img src="{{ asset('storage/' . $club->image) }}"
-                                                        alt="{{ $club->name }}" class="rounded"
-                                                        style="width: 50px; height: 50px; object-fit: cover;">
-                                                @else
-                                                    <div class="bg-light d-flex align-items-center justify-content-center rounded"
-                                                        style="width: 50px; height: 50px;">
-                                                        <i class="ti ti-photo text-muted"></i>
-                                                    </div>
-                                                @endif
-                                            </td>
+
                                             <td class="fw-semibold">{{ $club->name }}</td>
                                             <td class="text-center">{{ $club->email }}</td>
                                             <td class="text-center">{{ $club->phone }}</td>
@@ -200,24 +188,7 @@
                                                                             </select>
                                                                         </div>
                                                                     </div>
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label for="edit_image{{ $club->id }}"
-                                                                                class="form-label">Logo</label>
-                                                                            <input type="file" class="form-control"
-                                                                                id="edit_image{{ $club->id }}"
-                                                                                name="image" accept="image/*">
-                                                                            @if ($club->image)
-                                                                                <small class="text-muted">Logo hiện
-                                                                                    tại:</small>
-                                                                                <br>
-                                                                                <img src="{{ asset('storage/' . $club->image) }}"
-                                                                                    alt="{{ $club->name }}"
-                                                                                    class="mt-2 rounded"
-                                                                                    style="width: 80px; height: 80px; object-fit: cover;">
-                                                                            @endif
-                                                                        </div>
-                                                                    </div>
+
                                                                 </div>
                                                             </div>
                                                             <div class="modal-footer">
@@ -356,16 +327,6 @@
                                             </option>
                                         </select>
                                         @error('status')
-                                            <div class="text-danger small">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="add_image" class="form-label">Logo</label>
-                                        <input type="file" class="form-control" id="add_image" name="image"
-                                            accept="image/*">
-                                        @error('image')
                                             <div class="text-danger small">{{ $message }}</div>
                                         @enderror
                                     </div>

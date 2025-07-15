@@ -1,6 +1,6 @@
 <?php
-// Award Model - Club award and certificate management system
-// Handles awards with multiple recipients, club relationships, and auto-generated award codes
+// Updated: Award Model - Now links recipients via user_club_role_id (UserClubRole) instead of user_id (User)
+// Handles awards with multiple recipients (user_club_roles), club relationships, and auto-generated award codes
 
 namespace App\Models;
 
@@ -72,11 +72,11 @@ class Award extends Model
     }
 
     /**
-     * Get all recipients of this award (many-to-many relationship with pivot data)
+     * Get all recipients of this award (many-to-many relationship with user_club_roles)
      */
     public function recipients(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'award_recipients', 'award_id', 'user_id')
+        return $this->belongsToMany(UserClubRole::class, 'award_recipients', 'award_id', 'user_club_role_id')
             ->withPivot('attachment')
             ->withTimestamps()
             ->using(AwardRecipient::class);
@@ -103,8 +103,6 @@ class Award extends Model
 
         return $statuses[$this->status] ?? $this->status;
     }
-
-
 
     /**
      * Get status color for UI

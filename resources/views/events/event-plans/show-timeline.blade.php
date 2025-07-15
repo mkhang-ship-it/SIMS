@@ -17,8 +17,7 @@ Updated: Hạn chế kéo thả chỉ trong cùng ngày - không cho phép kéo 
     <div class="mb-3">
         <small class="text-muted">
             <i class="ti ti-info-circle me-1"></i>
-            Kéo thả để thay đổi thứ tự timeline trong cùng ngày. Tổng cộng có {{ $eventPlan->timeline->count() }} mục
-            timeline.
+            Kéo thả để thay đổi thứ tự timeline trong cùng ngày. Sự kiện này có {{ $eventPlan->timeline->count() }} timeline.
         </small>
     </div>
 

@@ -57,30 +57,31 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    {{-- Updated: Hiển thị thành viên theo bảng UserClubRole, truy cập thông tin user qua $member->user, role qua $member->role, status qua $member->status --}}
                                     @foreach ($members as $index => $member)
                                         <tr>
-                                            <td class="text-center">{{ $members->firstItem() + $index }}</td>
+                                            <td class="text-center">{{ $index + 1 }}</td>
                                             <td class="text-center">
-                                                <img src="{{ !empty($member->avatar) ? asset('storage/' . $member->avatar) : asset('assets/images/avatar_example.png') }}"
-                                                    alt="{{ $member->name }}" class="avatar rounded-circle"
+                                                <img src="{{ !empty($member->user->avatar) ? asset('storage/' . $member->user->avatar) : asset('assets/images/avatar_example.png') }}"
+                                                    alt="{{ $member->user->name }}" class="avatar rounded-circle"
                                                     style="width: 40px; height: 40px; object-fit: cover;">
                                             </td>
-                                            <td class="fw-semibold">{{ $member->name }} <br>
-                                                <span class="text-muted small">{{ $member->student_code }}</span>
+                                            <td class="fw-semibold">{{ $member->user->name }} <br>
+                                                <span class="text-muted small">{{ $member->user->student_code }}</span>
                                             </td>
-                                            <td>{{ $member->email }} <br>
-                                                <span class="text-muted small">{{ $member->phone }}</span>
+                                            <td>{{ $member->user->email }} <br>
+                                                <span class="text-muted small">{{ $member->user->phone }}</span>
                                             </td>
                                             <td class="text-center">
-                                                @if ($member->major)
-                                                    <span class="badge bg-secondary">{{ $member->major->name }}</span>
+                                                @if ($member->user->major)
+                                                    <span class="badge bg-secondary">{{ $member->user->major->name }}</span>
                                                 @else
                                                     <span class="text-muted">-</span>
                                                 @endif
                                             </td>
                                             <td class="text-center">
-                                                @if ($member->course)
-                                                    <span class="badge bg-primary">{{ $member->course->name }}</span>
+                                                @if ($member->user->course)
+                                                    <span class="badge bg-primary">{{ $member->user->course->name }}</span>
                                                 @else
                                                     <span class="text-muted">-</span>
                                                 @endif
@@ -111,16 +112,16 @@
                                                     @if (auth()->user()->hasPermissionForModuleCode('member_management', 'edit', 'branch'))
                                                         <button class="btn btn-icon btn-sm btn-info-light"
                                                             data-bs-toggle="modal"
-                                                            data-bs-target="#editMemberModal{{ $member->id }}"
+                                                            data-bs-target="#editMemberModal{{ $member->user->id }}"
                                                             title="Chỉnh sửa">
                                                             <i class="ri-edit-line"></i>
                                                         </button>
                                                     @endif
-                                                    @if ($member->role->is_admin == false)
+                                                    @if ($member->role && $member->role->is_admin == false)
                                                         @if (auth()->user()->hasPermissionForModuleCode('member_management', 'delete', 'branch'))
                                                             <button class="btn btn-icon btn-sm btn-danger-light"
                                                                 data-bs-toggle="modal"
-                                                                data-bs-target="#deleteMemberModal{{ $member->id }}"
+                                                                data-bs-target="#deleteMemberModal{{ $member->user->id }}"
                                                                 title="Xóa">
                                                                 <i class="ri-delete-bin-line"></i>
                                                             </button>
@@ -129,18 +130,18 @@
                                                 </div>
                                             </td>
                                         </tr>
-
                                         <!-- Edit Member Modal -->
                                         @if (auth()->user()->hasPermissionForModuleCode('member_management', 'edit', 'branch'))
-                                            <div class="modal fade" id="editMemberModal{{ $member->id }}" tabindex="-1"
-                                                aria-labelledby="editMemberModalLabel{{ $member->id }}"
+                                            <div class="modal fade" id="editMemberModal{{ $member->user->id }}"
+                                                tabindex="-1"
+                                                aria-labelledby="editMemberModalLabel{{ $member->user->id }}"
                                                 aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
                                                 <div
                                                     class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
                                                     <div class="modal-content">
                                                         <div class="modal-header">
                                                             <h5 class="modal-title"
-                                                                id="editMemberModalLabel{{ $member->id }}">Chỉnh Sửa
+                                                                id="editMemberModalLabel{{ $member->user->id }}">Chỉnh Sửa
                                                                 Thành
                                                                 Viên
                                                             </h5>
@@ -148,8 +149,8 @@
                                                                 aria-label="Close"></button>
                                                         </div>
                                                         <form
-                                                            action="{{ route('backend.club.members.update', $member->id) }}"
-                                                            method="POST" id="editMemberForm{{ $member->id }}"
+                                                            action="{{ route('backend.club.members.update', $member->user->id) }}"
+                                                            method="POST" id="editMemberForm{{ $member->user->id }}"
                                                             enctype="multipart/form-data">
                                                             @csrf
                                                             @method('PUT')
@@ -157,24 +158,25 @@
                                                                 <div class="row">
                                                                     <div class="col-md-6">
                                                                         <div class="mb-3">
-                                                                            <label for="edit_name{{ $member->id }}"
+                                                                            <label for="edit_name{{ $member->user->id }}"
                                                                                 class="form-label">Tên Thành Viên <span
                                                                                     class="text-danger">*</span></label>
                                                                             <input type="text" class="form-control"
-                                                                                id="edit_name{{ $member->id }}"
-                                                                                name="name" value="{{ $member->name }}"
-                                                                                required>
+                                                                                id="edit_name{{ $member->user->id }}"
+                                                                                name="name"
+                                                                                value="{{ $member->user->name }}" required>
                                                                         </div>
                                                                     </div>
                                                                     <div class="col-md-6">
                                                                         <div class="mb-3">
-                                                                            <label for="edit_email{{ $member->id }}"
+                                                                            <label for="edit_email{{ $member->user->id }}"
                                                                                 class="form-label">Email <span
                                                                                     class="text-danger">*</span></label>
                                                                             <input type="email" class="form-control"
-                                                                                id="edit_email{{ $member->id }}"
+                                                                                id="edit_email{{ $member->user->id }}"
                                                                                 name="email"
-                                                                                value="{{ $member->email }}" required>
+                                                                                value="{{ $member->user->email }}"
+                                                                                required>
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -182,30 +184,32 @@
                                                                 <div class="row">
                                                                     <div class="col-md-6">
                                                                         <div class="mb-3">
-                                                                            <label for="edit_gender{{ $member->id }}"
+                                                                            <label
+                                                                                for="edit_gender{{ $member->user->id }}"
                                                                                 class="form-label">Giới Tính</label>
                                                                             <select class="form-select"
-                                                                                id="edit_gender{{ $member->id }}"
+                                                                                id="edit_gender{{ $member->user->id }}"
                                                                                 name="gender">
                                                                                 <option value="">Chọn giới tính
                                                                                 </option>
                                                                                 <option value="male"
-                                                                                    {{ $member->gender == 'male' ? 'selected' : '' }}>
+                                                                                    {{ $member->user->gender == 'male' ? 'selected' : '' }}>
                                                                                     Nam</option>
                                                                                 <option value="female"
-                                                                                    {{ $member->gender == 'female' ? 'selected' : '' }}>
+                                                                                    {{ $member->user->gender == 'female' ? 'selected' : '' }}>
                                                                                     Nữ</option>
                                                                             </select>
                                                                         </div>
                                                                     </div>
                                                                     <div class="col-md-6">
                                                                         <div class="mb-3">
-                                                                            <label for="edit_birthday{{ $member->id }}"
+                                                                            <label
+                                                                                for="edit_birthday{{ $member->user->id }}"
                                                                                 class="form-label">Ngày Sinh</label>
                                                                             <input type="date" class="form-control"
-                                                                                id="edit_birthday{{ $member->id }}"
+                                                                                id="edit_birthday{{ $member->user->id }}"
                                                                                 name="birthday"
-                                                                                value="{{ $member->birthday }}">
+                                                                                value="{{ $member->user->birthday }}">
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -213,22 +217,22 @@
                                                                     <div class="col-md-6">
                                                                         <div class="mb-3">
                                                                             <label
-                                                                                for="edit_identity_card_code{{ $member->id }}"
+                                                                                for="edit_identity_card_code{{ $member->user->id }}"
                                                                                 class="form-label">CCCD/CMND</label>
                                                                             <input type="text" class="form-control"
-                                                                                id="edit_identity_card_code{{ $member->id }}"
+                                                                                id="edit_identity_card_code{{ $member->user->id }}"
                                                                                 name="identity_card_code"
-                                                                                value="{{ $member->identity_card_code }}">
+                                                                                value="{{ $member->user->identity_card_code }}">
                                                                         </div>
                                                                     </div>
                                                                     <div class="col-md-6">
                                                                         <div class="mb-3">
-                                                                            <label for="edit_phone{{ $member->id }}"
+                                                                            <label for="edit_phone{{ $member->user->id }}"
                                                                                 class="form-label">Số Điện Thoại</label>
                                                                             <input type="text" class="form-control"
-                                                                                id="edit_phone{{ $member->id }}"
+                                                                                id="edit_phone{{ $member->user->id }}"
                                                                                 name="phone"
-                                                                                value="{{ $member->phone }}">
+                                                                                value="{{ $member->user->phone }}">
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -237,26 +241,27 @@
                                                                     <div class="col-md-6">
                                                                         <div class="mb-3">
                                                                             <label
-                                                                                for="edit_student_code{{ $member->id }}"
+                                                                                for="edit_student_code{{ $member->user->id }}"
                                                                                 class="form-label">Mã Sinh Viên</label>
                                                                             <input type="text" class="form-control"
-                                                                                id="edit_student_code{{ $member->id }}"
+                                                                                id="edit_student_code{{ $member->user->id }}"
                                                                                 name="student_code"
-                                                                                value="{{ $member->student_code }}">
+                                                                                value="{{ $member->user->student_code }}">
                                                                         </div>
                                                                     </div>
                                                                     <div class="col-md-6">
                                                                         <div class="mb-3">
-                                                                            <label for="edit_major_id{{ $member->id }}"
+                                                                            <label
+                                                                                for="edit_major_id{{ $member->user->id }}"
                                                                                 class="form-label">Chuyên Ngành</label>
                                                                             <select class="form-select"
-                                                                                id="edit_major_id{{ $member->id }}"
+                                                                                id="edit_major_id{{ $member->user->id }}"
                                                                                 name="major_id">
                                                                                 <option value="">Chọn chuyên ngành
                                                                                 </option>
                                                                                 @foreach ($majors as $major)
                                                                                     <option value="{{ $major->id }}"
-                                                                                        {{ $member->major_id == $major->id ? 'selected' : '' }}>
+                                                                                        {{ $member->user->major_id == $major->id ? 'selected' : '' }}>
                                                                                         {{ $major->name }}
                                                                                     </option>
                                                                                 @endforeach
@@ -267,16 +272,17 @@
                                                                 <div class="row">
                                                                     <div class="col-md-6">
                                                                         <div class="mb-3">
-                                                                            <label for="edit_course_id{{ $member->id }}"
+                                                                            <label
+                                                                                for="edit_course_id{{ $member->user->id }}"
                                                                                 class="form-label">Khóa Học</label>
                                                                             <select class="form-select"
-                                                                                id="edit_course_id{{ $member->id }}"
+                                                                                id="edit_course_id{{ $member->user->id }}"
                                                                                 name="course_id">
                                                                                 <option value="">Chọn khóa học
                                                                                 </option>
                                                                                 @foreach ($courses as $course)
                                                                                     <option value="{{ $course->id }}"
-                                                                                        {{ $member->course_id == $course->id ? 'selected' : '' }}>
+                                                                                        {{ $member->user->course_id == $course->id ? 'selected' : '' }}>
                                                                                         {{ $course->name }}
                                                                                     </option>
                                                                                 @endforeach
@@ -285,22 +291,23 @@
                                                                     </div>
                                                                     <div class="col-md-6">
                                                                         <div class="mb-3">
-                                                                            <label for="edit_avatar{{ $member->id }}"
+                                                                            <label
+                                                                                for="edit_avatar{{ $member->user->id }}"
                                                                                 class="form-label">Avatar <small
                                                                                     class="text-muted">Để trống nếu không
                                                                                     muốn thay đổi.</small></label>
 
                                                                             <input type="file" class="form-control"
-                                                                                id="edit_avatar{{ $member->id }}"
+                                                                                id="edit_avatar{{ $member->user->id }}"
                                                                                 name="avatar"
                                                                                 accept="image/jpeg,image/png,image/jpg,image/gif">
                                                                             <small class="text-muted">Tối đa 2MB. Định
                                                                                 dạng:
                                                                                 JPG, PNG, GIF</small>
 
-                                                                            @if ($member->avatar)
+                                                                            @if ($member->user->avatar)
                                                                                 <div class="mb-2">
-                                                                                    <img src="{{ asset('storage/' . $member->avatar) }}"
+                                                                                    <img src="{{ asset('storage/' . $member->user->avatar) }}"
                                                                                         alt="Current avatar"
                                                                                         class="img-thumbnail"
                                                                                         style="width: 80px; height: 80px; object-fit: cover;">
@@ -316,11 +323,12 @@
                                                                 <div class="row">
                                                                     <div class="col-md-6">
                                                                         <div class="mb-3">
-                                                                            <label for="edit_role_id{{ $member->id }}"
+                                                                            <label
+                                                                                for="edit_role_id{{ $member->user->id }}"
                                                                                 class="form-label">Vai Trò <span
                                                                                     class="text-danger">*</span></label>
                                                                             <select class="form-select"
-                                                                                id="edit_role_id{{ $member->id }}"
+                                                                                id="edit_role_id{{ $member->user->id }}"
                                                                                 name="role_id" required>
                                                                                 <option value="">Chọn vai trò
                                                                                 </option>
@@ -335,33 +343,34 @@
                                                                     </div>
                                                                     <div class="col-md-6">
                                                                         <div class="mb-3">
-                                                                            <label for="edit_status{{ $member->id }}"
+                                                                            <label
+                                                                                for="edit_status{{ $member->user->id }}"
                                                                                 class="form-label">Trạng Thái <span
                                                                                     class="text-danger">*</span></label>
                                                                             <select class="form-select"
-                                                                                id="edit_status{{ $member->id }}"
+                                                                                id="edit_status{{ $member->user->id }}"
                                                                                 name="status" required>
                                                                                 <option value="">Chọn trạng thái
                                                                                 </option>
                                                                                 <option value="active"
-                                                                                    {{ $member->status == 'active' ? 'selected' : '' }}>
+                                                                                    {{ $member->user->status == 'active' ? 'selected' : '' }}>
                                                                                     Hoạt Động</option>
                                                                                 <option value="inactive"
-                                                                                    {{ $member->status == 'inactive' ? 'selected' : '' }}>
+                                                                                    {{ $member->user->status == 'inactive' ? 'selected' : '' }}>
                                                                                     Tạm Ngưng</option>
                                                                             </select>
                                                                         </div>
                                                                     </div>
                                                                 </div>
                                                                 <div class="mb-3">
-                                                                    <label for="edit_password{{ $member->id }}"
+                                                                    <label for="edit_password{{ $member->user->id }}"
                                                                         class="form-label">Mật Khẩu Mới
                                                                         <small class="text-muted">Để trống nếu không muốn
                                                                             thay
                                                                             đổi. Tối thiểu 8 ký tự</small>
                                                                     </label>
                                                                     <input type="password" class="form-control"
-                                                                        id="edit_password{{ $member->id }}"
+                                                                        id="edit_password{{ $member->user->id }}"
                                                                         name="password">
 
                                                                 </div>
@@ -380,15 +389,15 @@
 
                                         <!-- Delete Member Modal -->
                                         @if (auth()->user()->hasPermissionForModuleCode('member_management', 'delete', 'branch'))
-                                            <div class="modal fade" id="deleteMemberModal{{ $member->id }}"
+                                            <div class="modal fade" id="deleteMemberModal{{ $member->user->id }}"
                                                 tabindex="-1"
-                                                aria-labelledby="deleteMemberModalLabel{{ $member->id }}"
+                                                aria-labelledby="deleteMemberModalLabel{{ $member->user->id }}"
                                                 aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
                                                 <div class="modal-dialog modal-dialog-centered">
                                                     <div class="modal-content">
                                                         <div class="modal-header">
                                                             <h5 class="modal-title text-danger"
-                                                                id="deleteMemberModalLabel{{ $member->id }}">
+                                                                id="deleteMemberModalLabel{{ $member->user->id }}">
                                                                 Xác Nhận Xóa</h5>
                                                             <button type="button" class="btn-close"
                                                                 data-bs-dismiss="modal" aria-label="Close"></button>
@@ -397,16 +406,17 @@
                                                             <div class="text-center">
                                                                 <p class="mb-2">Bạn có chắc chắn muốn xóa thành viên
                                                                     <span
-                                                                        class="fw-bold text-danger">{{ $member->name }}</span>
+                                                                        class="fw-bold text-danger">{{ $member->user->name }}</span>
                                                                     không?
                                                                 </p>
-                                                                <p class="text-muted small">Email: {{ $member->email }}
+                                                                <p class="text-muted small">Email:
+                                                                    {{ $member->user->email }}
                                                                 </p>
                                                             </div>
                                                         </div>
                                                         <form
-                                                            action="{{ route('backend.club.members.destroy', $member->id) }}"
-                                                            method="POST" id="deleteMemberForm{{ $member->id }}">
+                                                            action="{{ route('backend.club.members.destroy', $member->user->id) }}"
+                                                            method="POST" id="deleteMemberForm{{ $member->user->id }}">
                                                             @csrf
                                                             @method('DELETE')
                                                             <div class="modal-footer">

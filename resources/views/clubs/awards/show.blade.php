@@ -150,8 +150,8 @@
                                                 <!-- User Info Header -->
                                                 <div class="d-flex align-items-center mb-3">
                                                     <div class="position-relative me-3">
-                                                        <img src="{{ !empty($recipient->user->avatar) ? asset('storage/' . $recipient->user->avatar) : asset('assets/images/avatar_example.png') }}"
-                                                            alt="{{ $recipient->user->name }}"
+                                                        <img src="{{ !empty($recipient->userClubRole->user->avatar) ? asset('storage/' . $recipient->userClubRole->user->avatar) : asset('assets/images/avatar_example.png') }}"
+                                                            alt="{{ $recipient->userClubRole->user->name }}"
                                                             class="avatar avatar-lg rounded-circle border border-3 border-white shadow-sm"
                                                             style="object-fit: cover;">
                                                         <span
@@ -160,19 +160,20 @@
                                                         </span>
                                                     </div>
                                                     <div class="flex-grow-1">
-                                                        <h6 class="mb-1 fw-semibold">{{ $recipient->user->name }}</h6>
-                                                        @if ($recipient->user->role)
+                                                        <h6 class="mb-1 fw-semibold">
+                                                            {{ $recipient->userClubRole->user->name }}</h6>
+                                                        @if ($recipient->userClubRole->role)
                                                             <div class="d-flex align-items-center mb-1">
                                                                 <i class="ri-shield-user-line text-primary me-1 fs-12"></i>
                                                                 <span
-                                                                    class="text-muted small">{{ $recipient->user->role->name }}</span>
+                                                                    class="text-muted small">{{ $recipient->userClubRole->role->name }}</span>
                                                             </div>
                                                         @endif
-                                                        @if ($recipient->user->student_code)
+                                                        @if ($recipient->userClubRole->user->student_code)
                                                             <div class="d-flex align-items-center">
                                                                 <i class="ri-user-3-line text-info me-1 fs-12"></i>
                                                                 <span
-                                                                    class="text-muted small">{{ $recipient->user->student_code }}</span>
+                                                                    class="text-muted small">{{ $recipient->userClubRole->user->student_code }}</span>
                                                             </div>
                                                         @endif
                                                     </div>
@@ -259,7 +260,7 @@
                                                         <h6 class="modal-title"
                                                             id="pdfPreviewModalLabel{{ $recipient->id }}">
                                                             <i class="ri-file-pdf-line me-2"></i>
-                                                            {{ $recipient->user->name }} -
+                                                            {{ $recipient->userClubRole->user->name }} -
                                                             {{ basename($recipient->attachment) }}
                                                         </h6>
                                                         <div class="d-flex gap-2">
@@ -319,15 +320,16 @@
                                                                 Người nhận
                                                             </label>
                                                             <div class="d-flex align-items-center p-3 bg-light rounded">
-                                                                <img src="{{ !empty($recipient->user->avatar) ? asset('storage/' . $recipient->user->avatar) : asset('assets/images/avatar_example.png') }}"
-                                                                    alt="{{ $recipient->user->name }}"
+                                                                <img src="{{ !empty($recipient->userClubRole->user->avatar) ? asset('storage/' . $recipient->userClubRole->user->avatar) : asset('assets/images/avatar_example.png') }}"
+                                                                    alt="{{ $recipient->userClubRole->user->name }}"
                                                                     class="avatar rounded-circle me-3"
                                                                     style="width: 40px; height: 40px; object-fit: cover;">
                                                                 <div>
-                                                                    <h6 class="mb-0">{{ $recipient->user->name }}</h6>
-                                                                    @if ($recipient->user->student_code)
+                                                                    <h6 class="mb-0">
+                                                                        {{ $recipient->userClubRole->user->name }}</h6>
+                                                                    @if ($recipient->userClubRole->user->student_code)
                                                                         <small
-                                                                            class="text-muted">{{ $recipient->user->student_code }}</small>
+                                                                            class="text-muted">{{ $recipient->userClubRole->user->student_code }}</small>
                                                                     @endif
                                                                 </div>
                                                             </div>
@@ -429,7 +431,8 @@
                                                     </div>
                                                     <h6 class="mb-2">Bạn có chắc chắn muốn xóa?</h6>
                                                     <p class="text-muted mb-3">
-                                                        Người nhận <strong>{{ $recipient->user->name }}</strong>
+                                                        Người nhận
+                                                        <strong>{{ $recipient->userClubRole->user->name }}</strong>
                                                         sẽ bị xóa khỏi giải thưởng này
                                                     </p>
                                                     <div class="alert alert-danger-transparent">
@@ -498,16 +501,16 @@
                     <div class="modal-body">
                         <div class="mb-3">
                             <label class="form-label">Chọn người nhận <span class="text-danger">*</span></label>
-                            <select class="form-control" name="user_id" id="add_user_id" required>
-                                <option value="">-- Chọn người dùng --</option>
-                                @foreach ($availableUsers as $user)
-                                    <option value="{{ $user->id }}">
-                                        {{ $user->name }}
-                                        @if ($user->student_code)
-                                            ({{ $user->student_code }})
+                            <select class="form-control" name="user_club_role_id" id="add_user_club_role_id" required>
+                                <option value="">-- Chọn thành viên --</option>
+                                @foreach ($availableUserClubRoles as $ucr)
+                                    <option value="{{ $ucr->id }}">
+                                        {{ $ucr->user->name }}
+                                        @if ($ucr->user->student_code)
+                                            ({{ $ucr->user->student_code }})
                                         @endif
-                                        @if ($user->role)
-                                            - {{ $user->role->name }}
+                                        @if ($ucr->role)
+                                            - {{ $ucr->role->name }}
                                         @endif
                                     </option>
                                 @endforeach

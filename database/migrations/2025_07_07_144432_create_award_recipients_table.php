@@ -1,6 +1,6 @@
 <?php
-// Migration for award_recipients table - Pivot table for many-to-many relationship between awards and users
-// Allows multiple recipients per award
+// Updated: Migration for award_recipients table - Replace user_id with user_club_role_id (foreign key to user_club_roles)
+// Now links awards to user_club_roles for recipient management
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -16,12 +16,12 @@ return new class extends Migration
         Schema::create('award_recipients', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('award_id')->constrained('awards')->onDelete('cascade');
-            $table->foreignUuid('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignUuid('user_club_role_id')->constrained('user_club_roles')->onDelete('cascade');
             $table->string('attachment')->nullable();
             $table->timestamps();
 
-            // Ensure unique combination of award and user
-            $table->unique(['award_id', 'user_id']);
+            // Ensure unique combination of award and user_club_role
+            $table->unique(['award_id', 'user_club_role_id']);
         });
     }
 

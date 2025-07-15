@@ -50,7 +50,7 @@
                                         quản trị viên để được hỗ trợ.</p>
                                 </div>
                             </div>
-                            <a href="{{ Auth::user()->club_id ? route('backend.club.dashboard') : route('backend.dashboard') }}"
+                            <a href="{{ session('club_id') ? route('backend.club.dashboard') : route('backend.dashboard') }}"
                                 class="btn btn-primary">
                                 <i class="ri-arrow-left-line align-middle me-1 d-inline-block"></i>Quay lại Trang Chủ
                             </a>

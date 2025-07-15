@@ -40,16 +40,16 @@ return new class extends Migration
 
             // Liên hệ
             $table->string('phone')->nullable();
-            $table->foreignUuid('address_id')->nullable()->constrained('addresses');
 
             // Học tập
             $table->string('student_code')->nullable()->unique();
             $table->foreignUuid('major_id')->nullable()->constrained('majors');
             $table->foreignUuid('course_id')->nullable()->constrained('courses');
+            $table->foreignUuid('role_id')->nullable()->constrained('roles');
+            $table->enum('type', ['central', 'branch'])->default('central');
 
-            // Liên kết hệ thống
-            $table->foreignUuid('role_id')->constrained('roles');
-            $table->foreignUuid('club_id')->nullable()->constrained('clubs');
+            // --- Thêm trường default_club_id ---
+            $table->foreignUuid('default_club_id')->nullable()->constrained('clubs');
 
             // Trạng thái & token
             $table->enum('status', ['active', 'inactive'])->default('active');

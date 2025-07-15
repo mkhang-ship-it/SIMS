@@ -3,6 +3,9 @@
 // Fillable fields: personal info, contact details, academic info, system links
 // Added relationships: address, major, course, invoices for proper data associations
 // Added checkins relationship for event checkin management
+// Added address relationship for user address management
+// Updated: Thêm quan hệ userClubRoles (hasMany) và clubs (belongsToMany qua user_club_roles) cho multi-club, giữ role_id nullable cho role ngoài club
+// [AI CHANGE 2024-07-14] Thêm default_club_id vào fillable, thêm quan hệ defaultClub (belongsTo Club)
 
 namespace App\Models;
 
@@ -31,13 +34,13 @@ class User extends Authenticatable
         'birthday',
         'identity_card_code',
         'phone',
-        'address_id',
         'student_code',
         'major_id',
         'course_id',
         'role_id',
-        'club_id',
+        'type',
         'status',
+        'default_club_id', // <--- thêm dòng này
     ];
 
     /**
@@ -68,14 +71,30 @@ class User extends Authenticatable
         return $this->belongsTo(Role::class, 'role_id');
     }
 
-    public function club()
+    /**
+     * Quan hệ: user thuộc nhiều club với nhiều role (multi-club)
+     */
+    public function userClubRoles()
     {
-        return $this->belongsTo(Club::class, 'club_id');
+        return $this->hasMany(UserClubRole::class);
     }
 
-    public function address()
+    /**
+     * Quan hệ: user thuộc nhiều club (dùng belongsToMany qua user_club_roles)
+     */
+    public function clubs()
     {
-        return $this->belongsTo(Address::class, 'address_id');
+        return $this->belongsToMany(Club::class, 'user_club_roles', 'user_id', 'club_id')
+            ->withPivot(['role_id', 'joined_at', 'status', 'id'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Quan hệ: club mặc định của user
+     */
+    public function defaultClub()
+    {
+        return $this->belongsTo(Club::class, 'default_club_id');
     }
 
     public function major()
@@ -86,6 +105,14 @@ class User extends Authenticatable
     public function course()
     {
         return $this->belongsTo(Course::class, 'course_id');
+    }
+
+    /**
+     * Get the address for this user
+     */
+    public function address()
+    {
+        return $this->hasOne(Address::class);
     }
 
     /**
@@ -123,28 +150,60 @@ class User extends Authenticatable
         return $this->hasMany(EventCheckin::class);
     }
 
+    /**
+     * Get the bank account for this user
+     */
+    public function bankAccount()
+    {
+        return $this->hasOne(UserBankAccount::class);
+    }
+
+    // Updated: hasPermissionForModuleCode now checks admin via user role_id, club user via UserClubRole (by session club_id)
     public function hasPermissionForModuleCode($moduleCode, $action, $roleType = null)
     {
-        $query = $this->role()
-            ->with('permissions.module');
+        // Lấy club_id từ session nếu có (dùng cho user club)
+        $clubId = session('club_id');
 
-        // If role type is specified, filter by role type
-        if ($roleType !== null) {
-            $query->where('type', $roleType);
+        // Nếu là admin (role type central hoặc không có club_id), check theo role_id của User
+        if ($this->role && ($this->role->type === 'central' || !$clubId)) {
+            $role = $this->role()->with('permissions.module');
+            if ($roleType !== null) {
+                $role->where('type', $roleType);
+            }
+            $role = $role->first();
+            if (!$role) {
+                return false;
+            }
+            return $role->permissions()
+                ->whereHas('module', function ($q) use ($moduleCode) {
+                    $q->where('module_code', $moduleCode);
+                })
+                ->where('name', $action)
+                ->exists();
         }
 
-        $role = $query->first();
-
-        // If no role found (when filtering by type), return false
-        if (!$role) {
-            return false;
+        // Nếu là user club (role type branch), check theo UserClubRole của club hiện tại
+        if ($clubId) {
+            $userClubRole = $this->userClubRoles()
+                ->where('club_id', $clubId)
+                ->with('role.permissions.module')
+                ->first();
+            if (!$userClubRole || !$userClubRole->role) {
+                return false;
+            }
+            $role = $userClubRole->role;
+            if ($roleType !== null && $role->type !== $roleType) {
+                return false;
+            }
+            return $role->permissions()
+                ->whereHas('module', function ($q) use ($moduleCode) {
+                    $q->where('module_code', $moduleCode);
+                })
+                ->where('name', $action)
+                ->exists();
         }
 
-        return $role->permissions()
-            ->whereHas('module', function ($q) use ($moduleCode) {
-                $q->where('module_code', $moduleCode);
-            })
-            ->where('name', $action)
-            ->exists();
+        // Mặc định không có quyền
+        return false;
     }
 }

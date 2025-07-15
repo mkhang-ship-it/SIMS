@@ -49,12 +49,30 @@
                         $greeting = '🌙 Đêm yên bình nhé,';
                     }
 
-                    $displayName = !Auth::user()->club_id ? Auth::user()->name : Auth::user()->club->name;
+                    $displayName =  Auth::user()->name;
                 @endphp
 
                 <span class="fw-semibold">
                     {{ $greeting }} {{ $displayName }}!
                 </span>
+
+                @php
+                    $user = Auth::user();
+                    $clubs = $user->clubs ?? collect();
+                @endphp
+                @if ($clubs->count() > 1)
+                    <form id="club-switch-form" action="{{ route('switch.default.club') }}" method="POST"
+                        style="display:inline-block; margin-left: 16px;">
+                        @csrf
+                        <select name="default_club_id" class="form-select form-select-sm d-inline-block w-auto"
+                            onchange="document.getElementById('club-switch-form').submit()">
+                            @foreach ($clubs as $club)
+                                <option value="{{ $club->id }}" @if ($user->default_club_id == $club->id) selected @endif>
+                                    {{ $club->name }}</option>
+                            @endforeach
+                        </select>
+                    </form>
+                @endif
 
 
             </div>
@@ -112,8 +130,9 @@
                 <!-- End::header-link|dropdown-toggle -->
                 <ul class="main-header-dropdown dropdown-menu pt-0 overflow-hidden header-profile-dropdown dropdown-menu-end"
                     aria-labelledby="mainHeaderProfile">
-                    <li><a class="dropdown-item d-flex" href="profile.html"><i
-                                class="ti ti-user-circle fs-18 me-2 op-7"></i>Profile</a></li>
+                    <li><a class="dropdown-item d-flex"
+                            href="@if (session('club_id')) {{ route('backend.club.my-profile.index') }}@else{{ route('backend.my-profile.index') }} @endif"><i
+                                class="ti ti-user-circle fs-18 me-2 op-7"></i>Thông tin cá nhân</a></li>
                     <li><a class="dropdown-item d-flex text-danger"
                             onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
                             style="cursor: pointer;"><i class="ti ti-logout fs-18 me-2 op-7"></i>Đăng xuất</a></li>

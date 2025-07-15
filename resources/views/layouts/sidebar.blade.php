@@ -49,8 +49,7 @@
                 </li>
                 <!-- End::slide -->
 
-                @if (!Auth::user()->club_id)
-
+                @if (!session('club_id'))
                     @if (auth()->user()->hasPermissionForModuleCode('dashboard', 'view', 'central'))
                         <li class="slide {{ request()->routeIs('backend.dashboard') ? 'active' : '' }}">
                             <a href="{{ route('backend.dashboard') }}"
@@ -131,6 +130,16 @@
                         </li>
                     @endif
 
+                    @if (auth()->user()->hasPermissionForModuleCode('member_management', 'view', 'central'))
+                        <li class="slide {{ request()->routeIs('backend.members.index') ? 'active' : '' }}">
+                            <a href="{{ route('backend.members.index') }}"
+                                class="side-menu__item {{ request()->routeIs('backend.members.index') ? 'active' : '' }}">
+                                <i class="las la-users side-menu__icon"></i>
+                                <span class="side-menu__label">Quản Lý Thành Viên</span>
+                            </a>
+                        </li>
+                    @endif
+
                     @if (auth()->user()->hasPermissionForModuleCode('event_management', 'view', 'central'))
                         <li class="slide {{ request()->routeIs('backend.events.index') ? 'active' : '' }}">
                             <a href="{{ route('backend.events.index') }}"
@@ -163,7 +172,8 @@
                     @endif
 
                     @if (auth()->user()->hasPermissionForModuleCode('event_management', 'view_plan', 'central'))
-                        <li class="slide {{ request()->routeIs('backend.events.event-plans.index') ? 'active' : '' }}">
+                        <li
+                            class="slide {{ request()->routeIs('backend.events.event-plans.index') ? 'active' : '' }}">
                             <a href="{{ route('backend.events.event-plans.index') }}"
                                 class="side-menu__item {{ request()->routeIs('backend.events.event-plans.index') ? 'active' : '' }}">
                                 <i class="las la-calendar side-menu__icon"></i>
@@ -181,9 +191,8 @@
                             </a>
                         </li>
                     @endif
-                @endif
-
-                @if (Auth::user()->club_id)
+                @else
+                    {{-- CLUB USER (branch context) --}}
                     @if (auth()->user()->hasPermissionForModuleCode('dashboard', 'view', 'branch'))
                         <li class="slide {{ request()->routeIs('backend.club.dashboard') ? 'active' : '' }}">
                             <a href="{{ route('backend.club.dashboard') }}"
@@ -304,6 +313,18 @@
                                 class="side-menu__item {{ request()->routeIs('backend.club.expenses.my-expenses') ? 'active' : '' }}">
                                 <i class="las la-receipt side-menu__icon"></i>
                                 <span class="side-menu__label">Yêu Cầu Thanh Toán</span>
+                            </a>
+                        </li>
+                    @endif
+
+                    @if (auth()->user()->hasPermissionForModuleCode('setting_management', 'general', 'branch') ||
+                            auth()->user()->hasPermissionForModuleCode('setting_management', 'word_template', 'branch') ||
+                            auth()->user()->hasPermissionForModuleCode('setting_management', 'payment', 'branch'))
+                        <li class="slide {{ request()->routeIs('backend.club.settings.index') ? 'active' : '' }}">
+                            <a href="{{ route('backend.club.settings.index') }}"
+                                class="side-menu__item {{ request()->routeIs('backend.club.settings.index') ? 'active' : '' }}">
+                                <i class="las la-cog side-menu__icon"></i>
+                                <span class="side-menu__label">Quản Trị Hệ Thống</span>
                             </a>
                         </li>
                     @endif

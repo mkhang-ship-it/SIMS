@@ -59,8 +59,8 @@
                     </div>
                     <div class="col-6 mb-2">
                         <label class="form-label">Vai Trò *</label>
-                        <input type="text" class="form-control" value="{{ $user->role ? $user->role->name : '' }}"
-                            readonly>
+                        <input type="text" class="form-control"
+                            value="{{ $user->club_role ? $user->club_role->name : '' }}" readonly>
                     </div>
                     <div class="col-6 mb-2">
                         <label class="form-label">Trạng Thái *</label>

@@ -1,7 +1,7 @@
 {{-- My Invoice Page - Member view of their own invoices --}}
-{{-- Updated: New layout with 3-9 column structure, statistics sidebar, and ApexCharts --}}
+{{-- Updated: Fixed layout issues - improved responsive design, moved modals outside table, fixed table structure, added proper chart spacing --}}
 {{-- Features: Read-only view, statistics, payment history, filter functionality --}}
-{{-- Layout: Similar to index_example with responsive design --}}
+{{-- Layout: Responsive 3-9 column structure with statistics sidebar and ApexCharts --}}
 @extends('layouts.app')
 
 @section('content')
@@ -112,16 +112,18 @@
                                 </div>
                             </div>
                         </div>
-                        <div id="my-invoice-stats"></div>
+                        <div class="p-4">
+                            <div id="my-invoice-stats"></div>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="col-xl-9">
                 <div class="card custom-card">
-                    <!-- Header with filter form similar to index -->
+                    <!-- Header with filter form -->
                     <div class="card-header d-flex align-items-center justify-content-between flex-wrap">
                         <div class="card-title fw-semibold fs-18 mb-2 mb-md-0">
-                            Danh Sách Hóa Đơn Của Tôi
+                            Danh Sách Hóa Đơn
                         </div>
                         <div class="d-flex flex-wrap gap-2">
                             <form method="GET" action="{{ route('backend.club.invoices.my-invoices') }}"
@@ -164,7 +166,7 @@
                                     <button type="submit" class="btn btn-primary">
                                         <i class="ti ti-filter"></i> Lọc
                                     </button>
-                                    <a href="{{ route('backend.club.invoices.my-invoices') }}" class="btn btn-secondary">
+                                    <a href="{{ route('backend.club.invoices.index') }}" class="btn btn-secondary">
                                         <i class="ti ti-refresh"></i> Làm Mới
                                     </a>
                                 </div>
@@ -173,22 +175,22 @@
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
-                            <table id="my-invoice-table" class="table text-nowrap table-bordered">
+                            <table id="data-table" class="table text-nowrap table-bordered">
                                 <thead>
                                     <tr>
-                                        <th style="text-align: center !important;">STT</th>
-                                        <th>Mã Hóa Đơn</th>
-                                        <th scope="col">Tên Hóa Đơn</th>
-                                        <th scope="col">Học Kỳ</th>
-                                        <th style="text-align: center !important;">Số Tiền</th>
-                                        <th style="text-align: center !important;">Đã Thanh Toán</th>
-                                        <th style="text-align: center !important;">Ngày Tạo <br> Hạn Thanh Toán</th>
-                                        <th style="text-align: center !important;">Trạng Thái</th>
-                                        <th style="text-align: center !important;">Thao Tác</th>
+                                        <th class="text-center" style="width: 60px;">STT</th>
+                                        <th style="width: 120px;">Mã Hóa Đơn</th>
+                                        <th>Tên Hóa Đơn</th>
+                                        <th style="width: 100px;">Học Kỳ</th>
+                                        <th class="text-center" style="width: 120px;">Số Tiền</th>
+                                        <th class="text-center" style="width: 120px;">Đã Thanh Toán</th>
+                                        <th class="text-center" style="width: 140px;">Ngày Tạo<br>Hạn Thanh Toán</th>
+                                        <th class="text-center" style="width: 100px;">Trạng Thái</th>
+                                        <th class="text-center" style="width: 120px;">Thao Tác</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse ($invoices as $index => $invoice)
+                                    @foreach ($invoices as $index => $invoice)
                                         <tr class="invoice-list">
                                             <td class="text-center">{{ $index + 1 }}</td>
                                             <td>
@@ -226,88 +228,32 @@
                                                 </span>
                                             </td>
                                             <td class="text-center">
-                                                <a href="{{ route('backend.club.invoices.show', $invoice) }}"
-                                                    class="btn btn-primary-light btn-icon btn-sm" data-bs-toggle="tooltip"
-                                                    data-bs-placement="top" data-bs-title="Xem chi tiết">
-                                                    <i class="ri-eye-line"></i>
-                                                </a>
+                                                <div class="d-flex gap-1 justify-content-center">
+                                                    <a href="{{ route('backend.club.invoices.export.pdf', $invoice->id) }}"
+                                                        class="btn btn-primary-light btn-icon btn-sm"
+                                                        data-bs-toggle="tooltip" data-bs-placement="top"
+                                                        data-bs-title="Xuất PDF">
+                                                        <i class="ri-file-pdf-line"></i>
+                                                    </a>
+                                                    <a href="{{ route('backend.club.invoices.show', $invoice) }}"
+                                                        class="btn btn-primary-light btn-icon btn-sm"
+                                                        data-bs-toggle="tooltip" data-bs-placement="top"
+                                                        data-bs-title="Xem chi tiết">
+                                                        <i class="ri-eye-line"></i>
+                                                    </a>
 
-                                                @if ($invoice->transactions->count() > 0)
-                                                    <button class="btn btn-info-light btn-icon btn-sm ms-1"
-                                                        data-bs-toggle="modal"
-                                                        data-bs-target="#paymentHistoryModal{{ $invoice->id }}"
-                                                        data-bs-placement="top" data-bs-title="Lịch sử thanh toán">
-                                                        <i class="ri-history-line"></i>
-                                                    </button>
-                                                @endif
-                                            </td>
-                                        </tr>
-
-                                        <!-- Payment History Modal -->
-                                        @if ($invoice->transactions->count() > 0)
-                                            <div class="modal fade" id="paymentHistoryModal{{ $invoice->id }}"
-                                                tabindex="-1"
-                                                aria-labelledby="paymentHistoryModalLabel{{ $invoice->id }}"
-                                                aria-hidden="true">
-                                                <div class="modal-dialog modal-dialog-centered modal-lg">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title"
-                                                                id="paymentHistoryModalLabel{{ $invoice->id }}">
-                                                                Lịch Sử Thanh Toán - {{ $invoice->invoice_code }}
-                                                            </h5>
-                                                            <button type="button" class="btn-close"
-                                                                data-bs-dismiss="modal" aria-label="Close"></button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <div class="table-responsive">
-                                                                <table class="table table-bordered">
-                                                                    <thead>
-                                                                        <tr>
-                                                                            <th>Ngày Thanh Toán</th>
-                                                                            <th>Loại</th>
-                                                                            <th>Số Tiền</th>
-                                                                            <th>Phương Thức</th>
-                                                                            <th>Ghi Chú</th>
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody>
-                                                                        @foreach ($invoice->transactions as $transaction)
-                                                                            <tr>
-                                                                                <td>{{ $transaction->payment_date->format('d/m/Y H:i') }}
-                                                                                </td>
-                                                                                <td><span
-                                                                                        class="badge bg-{{ $transaction->type_color }}-transparent">{{ $transaction->type_label }}</span>
-                                                                                </td>
-                                                                                <td>{{ number_format($transaction->paid_amount, 0, ',', '.') }}
-                                                                                    VNĐ</td>
-                                                                                <td>{{ $transaction->payment_method_label }}
-                                                                                </td>
-                                                                                <td>{{ $transaction->note ?? '-' }}</td>
-                                                                            </tr>
-                                                                        @endforeach
-                                                                    </tbody>
-                                                                </table>
-                                                            </div>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary"
-                                                                data-bs-dismiss="modal">Đóng</button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endif
-                                    @empty
-                                        <tr>
-                                            <td colspan="9" class="text-center py-4">
-                                                <div class="text-muted">
-                                                    <i class="ti ti-inbox fs-48 mb-3"></i>
-                                                    <p class="mb-0">Không có hóa đơn nào</p>
+                                                    @if ($invoice->transactions->count() > 0)
+                                                        <button class="btn btn-info-light btn-icon btn-sm"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#paymentHistoryModal{{ $invoice->id }}"
+                                                            data-bs-placement="top" data-bs-title="Lịch sử thanh toán">
+                                                            <i class="ri-history-line"></i>
+                                                        </button>
+                                                    @endif
                                                 </div>
                                             </td>
                                         </tr>
-                                    @endforelse
+                                    @endforeach
                                 </tbody>
                             </table>
                         </div>
@@ -317,6 +263,60 @@
         </div>
         <!--End::row-1 -->
     </div>
+
+    <!-- Payment History Modals - Moved outside table for better layout -->
+    @foreach ($invoices as $invoice)
+        @if ($invoice->transactions->count() > 0)
+            <div class="modal fade" id="paymentHistoryModal{{ $invoice->id }}" tabindex="-1"
+                aria-labelledby="paymentHistoryModalLabel{{ $invoice->id }}" aria-hidden="true"
+                data-bs-backdrop="static" data-bs-keyboard="false">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="paymentHistoryModalLabel{{ $invoice->id }}">
+                                Lịch Sử Thanh Toán - {{ $invoice->invoice_code }}
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Ngày Thanh Toán</th>
+                                            <th>Loại</th>
+                                            <th>Số Tiền</th>
+                                            <th>Phương Thức</th>
+                                            <th>Ghi Chú</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($invoice->transactions as $transaction)
+                                            <tr>
+                                                <td>{{ $transaction->payment_date->format('d/m/Y H:i') }}</td>
+                                                <td>
+                                                    <span class="badge bg-{{ $transaction->type_color }}-transparent">
+                                                        {{ $transaction->type_label }}
+                                                    </span>
+                                                </td>
+                                                <td>{{ number_format($transaction->paid_amount, 0, ',', '.') }} VNĐ</td>
+                                                <td>{{ $transaction->payment_method_label }}</td>
+                                                <td>{{ $transaction->note ?? '-' }}</td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+    @endforeach
 @endsection
 
 @section('scripts')

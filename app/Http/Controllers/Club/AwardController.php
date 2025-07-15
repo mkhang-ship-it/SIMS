@@ -1,5 +1,5 @@
 <?php
-// Updated AwardController - Integrated recipient management into award details
+// Updated AwardController - Integrated recipient management using UserClubRole (user_club_role_id) instead of User (user_id)
 // Handles both award CRUD and recipient management in one controller
 
 namespace App\Http\Controllers\Club;
@@ -10,6 +10,7 @@ use App\Models\Award;
 use App\Models\User;
 use App\Models\Semester;
 use App\Models\AwardRecipient;
+use App\Models\UserClubRole;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -23,10 +24,12 @@ class AwardController extends Controller
     {
         $user = Auth::user();
 
-        $awards = Award::with(['semester', 'awardRecipients.user'])
-            ->where('club_id', $user->club_id)
+        $clubId = session('club_id');
+
+        $awards = Award::with(['semester', 'awardRecipients.userClubRole.user'])
+            ->where('club_id', $clubId)
             ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->paginate(10); // or any number per page
 
         // Get active semesters for modal form
         $semesters = Semester::where('status', 'active')
@@ -77,26 +80,27 @@ class AwardController extends Controller
     public function show(Award $award)
     {
         $user = Auth::user();
+        $clubId = session('club_id');
 
         // Check if award belongs to user's club
-        if ($award->club_id !== $user->club_id) {
+        if ($award->club_id !== $clubId) {
             return redirect()->route('backend.club.awards.index')
                 ->with('error', 'Bạn không có quyền xem giải thưởng này!');
         }
 
-        $award->load(['semester', 'awardRecipients.user.role']);
+        $award->load(['semester', 'awardRecipients.userClubRole.user', 'awardRecipients.userClubRole.role']);
 
-        // Get available users for adding as recipients (users in the same club who are not already recipients)
-        $existingRecipientIds = $award->awardRecipients->pluck('user_id')->toArray();
+        // Get available UserClubRoles for adding as recipients (active members in the same club who are not already recipients)
+        $existingRecipientIds = $award->awardRecipients->pluck('user_club_role_id')->toArray();
 
-        $availableUsers = User::with(['role'])
-            ->where('club_id', $user->club_id)
+        $availableUserClubRoles = UserClubRole::with(['user', 'role'])
+            ->where('club_id', $clubId)
             ->where('status', 'active')
             ->whereNotIn('id', $existingRecipientIds)
-            ->orderBy('name')
+            ->orderByRaw('(SELECT name FROM users WHERE users.id = user_club_roles.user_id)')
             ->get();
 
-        return view('clubs.awards.show', compact('award', 'availableUsers'));
+        return view('clubs.awards.show', compact('award', 'availableUserClubRoles'));
     }
 
     /**
@@ -105,9 +109,10 @@ class AwardController extends Controller
     public function update(Request $request, Award $award)
     {
         $user = Auth::user();
+        $clubId = session('club_id');
 
         // Check if award belongs to user's club
-        if ($award->club_id !== $user->club_id) {
+        if ($award->club_id !== $clubId) {
             return redirect()->route('backend.club.awards.index')
                 ->with('error', 'Bạn không có quyền chỉnh sửa giải thưởng này!');
         }
@@ -145,9 +150,10 @@ class AwardController extends Controller
     public function destroy(Award $award)
     {
         $user = Auth::user();
+        $clubId = session('club_id');
 
         // Check if award belongs to user's club
-        if ($award->club_id !== $user->club_id) {
+        if ($award->club_id !== $clubId) {
             return redirect()->route('backend.club.awards.index')
                 ->with('error', 'Bạn không có quyền xóa giải thưởng này!');
         }
@@ -183,38 +189,39 @@ class AwardController extends Controller
     public function storeRecipient(Request $request, Award $award)
     {
         $user = Auth::user();
+        $clubId = session('club_id');
 
         // Check if award belongs to user's club
-        if ($award->club_id !== $user->club_id) {
+        if ($award->club_id !== $clubId) {
             return redirect()->back()->with('error', 'Bạn không có quyền thêm người nhận cho giải thưởng này!');
         }
 
         $validatedData = $request->validate([
-            'user_id' => 'required|exists:users,id',
+            'user_club_role_id' => 'required|exists:user_club_roles,id',
             'attachment' => 'nullable|file|mimes:pdf|max:5120' // 5MB
         ]);
 
         try {
-            // Check if user is already a recipient
-            if ($award->awardRecipients()->where('user_id', $validatedData['user_id'])->exists()) {
+            // Check if user_club_role is already a recipient
+            if ($award->awardRecipients()->where('user_club_role_id', $validatedData['user_club_role_id'])->exists()) {
                 return redirect()->back()->with('error', 'Thành viên vừa chọn đã là người nhận của giải thưởng này!');
             }
 
-            // Check if user belongs to the same club
-            $selectedUser = User::find($validatedData['user_id']);
-            if ($selectedUser->club_id !== $user->club_id) {
+            // Check if user_club_role belongs to the same club
+            $selectedUCR = UserClubRole::find($validatedData['user_club_role_id']);
+            if ($selectedUCR->club_id !== $clubId) {
                 return redirect()->back()->with('error', 'Thành viên vừa chọn không thuộc câu lạc bộ của bạn!');
             }
 
             $recipientData = [
                 'award_id' => $award->id,
-                'user_id' => $validatedData['user_id']
+                'user_club_role_id' => $validatedData['user_club_role_id']
             ];
 
             // Handle file upload if provided
             if ($request->hasFile('attachment')) {
                 $file = $request->file('attachment');
-                $fileName = $award->award_code . '_' . $selectedUser->name . '_' . time() . '.' . $file->getClientOriginalExtension();
+                $fileName = $award->award_code . '_' . $selectedUCR->user->name . '_' . time() . '.' . $file->getClientOriginalExtension();
                 $filePath = $file->storeAs('award_certificates', $fileName, 'public');
                 $recipientData['attachment'] = $filePath;
             }
@@ -233,9 +240,10 @@ class AwardController extends Controller
     public function updateRecipient(Request $request, Award $award, AwardRecipient $recipient)
     {
         $user = Auth::user();
+        $clubId = session('club_id');
 
         // Check if award belongs to user's club
-        if ($award->club_id !== $user->club_id) {
+        if ($award->club_id !== $clubId) {
             return redirect()->back()->with('error', 'Bạn không có quyền cập nhật người nhận cho giải thưởng này!');
         }
 
@@ -257,8 +265,8 @@ class AwardController extends Controller
                 }
 
                 $file = $request->file('attachment');
-                $selectedUser = $recipient->user;
-                $fileName = $award->award_code . '_' . $selectedUser->name . '_' . time() . '.' . $file->getClientOriginalExtension();
+                $selectedUCR = $recipient->userClubRole;
+                $fileName = $award->award_code . '_' . $selectedUCR->user->name . '_' . time() . '.' . $file->getClientOriginalExtension();
                 $filePath = $file->storeAs('award_certificates', $fileName, 'public');
 
                 $recipient->update(['attachment' => $filePath]);
@@ -276,9 +284,10 @@ class AwardController extends Controller
     public function destroyRecipient(Award $award, AwardRecipient $recipient)
     {
         $user = Auth::user();
+        $clubId = session('club_id');
 
         // Check if award belongs to user's club
-        if ($award->club_id !== $user->club_id) {
+        if ($award->club_id !== $clubId) {
             return redirect()->back()->with('error', 'Bạn không có quyền xóa người nhận khỏi giải thưởng này!');
         }
 

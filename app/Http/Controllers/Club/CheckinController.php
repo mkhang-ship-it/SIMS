@@ -1,8 +1,8 @@
 <?php
-// Updated CheckinController - Enhanced myParticipatedEvents method with accurate statistics calculation
-// Fixed: Statistics are now calculated separately for accuracy instead of using paginated collection
-// Added: Semester filter support for statistics calculation
-// Improved: Better data preparation for the participated events view
+// Updated CheckinController - Refactored for new DB structure using UserClubRole and session('club_id')
+// Now checks club membership via UserClubRole, not $user->club_id
+// All queries and logic updated to match new multi-club membership model
+// View logic updated if necessary to match new structure
 
 namespace App\Http\Controllers\Club;
 
@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use App\Models\Event;
 use App\Models\EventCheckin;
 use App\Models\User;
+use App\Models\UserClubRole;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -43,9 +44,14 @@ class CheckinController extends Controller
         }
 
         $user = Auth::user();
+        $clubId = session('club_id');
 
-        // Check if user is member of the club organizing this event
-        if ($user->club_id !== $event->club_id) {
+        // Check if user is member of the club organizing this event via UserClubRole
+        $userClubRole = UserClubRole::where('user_id', $user->id)
+            ->where('club_id', $event->club_id)
+            ->where('status', 'active')
+            ->first();
+        if (!$userClubRole || $clubId != $event->club_id) {
             return response()->json([
                 'success' => false,
                 'message' => 'Bạn không phải thành viên của CLB tổ chức sự kiện này.'
@@ -110,9 +116,14 @@ class CheckinController extends Controller
         }
 
         $user = Auth::user();
+        $clubId = session('club_id');
 
-        // Check if user is member of the club organizing this event
-        if ($user->club_id !== $event->club_id) {
+        // Check if user is member of the club organizing this event via UserClubRole
+        $userClubRole = UserClubRole::where('user_id', $user->id)
+            ->where('club_id', $event->club_id)
+            ->where('status', 'active')
+            ->first();
+        if (!$userClubRole || $clubId != $event->club_id) {
             return response()->json([
                 'success' => false,
                 'message' => 'Bạn không phải thành viên của CLB tổ chức sự kiện này.'
@@ -174,11 +185,18 @@ class CheckinController extends Controller
     public function myParticipatedEvents(Request $request)
     {
         $user = Auth::user();
+        $clubId = session('club_id');
 
         // Get all active semesters for filter dropdown
         $semesters = Semester::where('status', 'active')
             ->orderBy('name', 'asc')
             ->get();
+
+        // Get all UserClubRole ids for this user in this club
+        $userClubRoleIds = UserClubRole::where('user_id', $user->id)
+            ->where('club_id', $clubId)
+            ->where('status', 'active')
+            ->pluck('id');
 
         // Base query for participated events
         $query = EventCheckin::with([
@@ -197,12 +215,20 @@ class CheckinController extends Controller
             });
         }
 
+        // Only show checkins for events in this club
+        $query->whereHas('event', function ($eventQuery) use ($clubId) {
+            $eventQuery->where('club_id', $clubId);
+        });
+
         $participatedEvents = $query->orderBy('checkin_time', 'desc')
             ->paginate(15)
             ->appends($request->query()); // Preserve query parameters in pagination
 
         // Calculate statistics separately for accuracy
-        $baseStatsQuery = EventCheckin::where('user_id', $user->id);
+        $baseStatsQuery = EventCheckin::where('user_id', $user->id)
+            ->whereHas('event', function ($eventQuery) use ($clubId) {
+                $eventQuery->where('club_id', $clubId);
+            });
 
         if ($semesterFilter) {
             $baseStatsQuery->whereHas('event', function ($eventQuery) use ($semesterFilter) {

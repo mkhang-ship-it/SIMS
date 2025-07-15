@@ -1,6 +1,7 @@
 <?php
 // Role Model - Updated to include relationship with Club
 // Added club() relationship to manage role-club associations
+// Updated: Thêm quan hệ userClubRoles (hasMany) cho multi-club
 
 namespace App\Models;
 
@@ -23,6 +24,14 @@ class Role extends Model
     public function users()
     {
         return $this->hasMany(User::class, 'role_id');
+    }
+
+    /**
+     * Quan hệ: role có nhiều userClubRoles (pivot)
+     */
+    public function userClubRoles()
+    {
+        return $this->hasMany(UserClubRole::class);
     }
 
     /**

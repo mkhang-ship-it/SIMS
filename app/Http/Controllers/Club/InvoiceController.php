@@ -1,12 +1,15 @@
 <?php
-// InvoiceController - Complete invoice management system for clubs
+// InvoiceController - Refactored for new member structure using UserClubRole (multi-club membership)
 // Features: CRUD operations, multi-member invoice creation, status management
-// Modal-based interface: create/edit/delete invoices with member selection
+// Modal-based interface: create/edit/delete invoices with member selection (UserClubRole)
 // Payment tracking: record transactions, auto-update status, overdue management
 // Permissions: only pending invoices can be edited/deleted
-// Updated: Fixed myInvoices method to include missing variables ($semesters, $selectedSemester, $selectedMonth, $selectedYear)
-// Added filtering functionality to myInvoices method
-// Added monthly_stats calculation to myInvoices method for chart display
+// Updated: All member queries now use UserClubRole for club membership validation and selection
+// Updated: clubMembers now contains UserClubRole objects (with eager loaded user)
+// Updated: All member-related validation and selection logic uses UserClubRole
+// Updated: View data and member selection in forms now use UserClubRole
+// Updated: All references to user->club_id replaced with session('club_id') or UserClubRole
+// Updated: All member selection in forms/views should use UserClubRole (with user relation)
 
 namespace App\Http\Controllers\Club;
 
@@ -15,10 +18,13 @@ use App\Models\Invoice;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Semester;
+use App\Models\Club;
+use App\Models\UserClubRole;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class InvoiceController extends Controller
 {
@@ -27,8 +33,8 @@ class InvoiceController extends Controller
      */
     public function index(Request $request)
     {
+        $clubId = session('club_id');
         $user = Auth::user();
-        $clubId = $user->club_id;
 
         // Get filter parameters
         $selectedSemester = $request->get('semester_id');
@@ -37,7 +43,7 @@ class InvoiceController extends Controller
 
         // Build query
         $query = Invoice::with(['user', 'semester', 'transactions'])
-            ->byClub($clubId);
+            ->where('club_id', $clubId);
 
         // Apply filters
         if ($selectedSemester) {
@@ -55,7 +61,7 @@ class InvoiceController extends Controller
         $monthlyStats = [];
         for ($month = 1; $month <= 12; $month++) {
             $monthInvoices = Invoice::with(['user', 'semester', 'transactions'])
-                ->byClub($clubId)
+                ->where('club_id', $clubId)
                 ->whereYear('created_at', date('Y'))
                 ->whereMonth('created_at', $month)
                 ->get();
@@ -81,10 +87,10 @@ class InvoiceController extends Controller
             'monthly_stats' => $monthlyStats,
         ];
 
-        // Get data for create form
-        $clubMembers = User::where('club_id', $clubId)
+        // Get data for create form: club members via UserClubRole
+        $clubMembers = UserClubRole::with(['user'])
+            ->where('club_id', $clubId)
             ->where('status', 'active')
-            ->orderBy('name')
             ->get();
 
         $semesters = Semester::where('status', 'active')
@@ -111,8 +117,8 @@ class InvoiceController extends Controller
             'name' => 'required|string|max:255',
             'total_amount' => 'required|numeric|min:0',
             'semester_id' => 'required|exists:semesters,id',
-            'user_ids' => 'required|array|min:1',
-            'user_ids.*' => 'exists:users,id',
+            'member_ids' => 'required|array|min:1', // now expects user_club_role ids
+            'member_ids.*' => 'exists:user_club_roles,id',
             'due_date' => 'nullable|date|after:today',
             'note' => 'nullable|string|max:1000',
         ]);
@@ -120,24 +126,25 @@ class InvoiceController extends Controller
         try {
             DB::beginTransaction();
 
-            $user = Auth::user();
-            $clubId = $user->club_id;
+            $clubId = session('club_id');
 
-            // Validate that all selected users belong to the same club
-            $selectedUsers = User::whereIn('id', $request->user_ids)
+            // Validate that all selected user_club_roles belong to this club
+            $selectedMembers = UserClubRole::with('user')
+                ->whereIn('id', $request->member_ids)
                 ->where('club_id', $clubId)
+                ->where('status', 'active')
                 ->get();
 
-            if ($selectedUsers->count() !== count($request->user_ids)) {
+            if ($selectedMembers->count() !== count($request->member_ids)) {
                 return redirect()->back()->withInput()->with('error', 'Một số thành viên không thuộc câu lạc bộ của bạn!');
             }
 
             $dueDate = $request->due_date ? Carbon::parse($request->due_date) : Carbon::now()->addDays(7);
 
-            // Create invoices for each selected member
-            foreach ($selectedUsers as $member) {
+            // Create invoices for each selected member (user)
+            foreach ($selectedMembers as $member) {
                 Invoice::create([
-                    'user_id' => $member->id,
+                    'user_id' => $member->user_id,
                     'name' => $request->name,
                     'total_amount' => $request->total_amount,
                     'due_date' => $dueDate,
@@ -151,7 +158,7 @@ class InvoiceController extends Controller
             DB::commit();
 
             return redirect()->route('backend.club.invoices.index')
-                ->with('success', "Đã tạo thành công {$selectedUsers->count()} hóa đơn cho các thành viên được chọn!");
+                ->with('success', "Đã tạo thành công {$selectedMembers->count()} hóa đơn cho các thành viên được chọn!");
         } catch (\Exception $e) {
             DB::rollback();
             return redirect()->back()->withInput()->with('error', 'Có lỗi xảy ra khi tạo hóa đơn: ' . $e->getMessage());
@@ -163,10 +170,11 @@ class InvoiceController extends Controller
      */
     public function show(Invoice $invoice)
     {
+        $clubId = session('club_id');
         $user = Auth::user();
 
         // Check if invoice belongs to user's club
-        if ($invoice->club_id !== $user->club_id) {
+        if ($invoice->club_id !== $clubId) {
             abort(403, 'Bạn không có quyền xem hóa đơn này.');
         }
 
@@ -180,10 +188,11 @@ class InvoiceController extends Controller
      */
     public function update(Request $request, Invoice $invoice)
     {
+        $clubId = session('club_id');
         $user = Auth::user();
 
         // Check if invoice belongs to user's club
-        if ($invoice->club_id !== $user->club_id) {
+        if ($invoice->club_id !== $clubId) {
             abort(403, 'Bạn không có quyền chỉnh sửa hóa đơn này.');
         }
 
@@ -219,10 +228,11 @@ class InvoiceController extends Controller
      */
     public function destroy(Invoice $invoice)
     {
+        $clubId = session('club_id');
         $user = Auth::user();
 
         // Check if invoice belongs to user's club
-        if ($invoice->club_id !== $user->club_id) {
+        if ($invoice->club_id !== $clubId) {
             abort(403, 'Bạn không có quyền xóa hóa đơn này.');
         }
 
@@ -252,8 +262,8 @@ class InvoiceController extends Controller
         ]);
 
         try {
+            $clubId = session('club_id');
             $user = Auth::user();
-            $clubId = $user->club_id;
 
             $invoices = Invoice::whereIn('id', $request->invoice_ids)
                 ->where('club_id', $clubId)
@@ -291,16 +301,17 @@ class InvoiceController extends Controller
      */
     public function markAsPaid(Request $request, Invoice $invoice)
     {
+        $clubId = session('club_id');
         $user = Auth::user();
 
         // Check if invoice belongs to user's club
-        if ($invoice->club_id !== $user->club_id) {
+        if ($invoice->club_id !== $clubId) {
             abort(403, 'Bạn không có quyền ghi nhận thanh toán cho hóa đơn này.');
         }
 
         $request->validate([
             'paid_amount' => 'required|numeric|min:0.01|max:' . $invoice->remaining_amount,
-            'payment_date' => 'required|date|before_or_equal:today',
+            'payment_date' => 'required|date|after_or_equal:' . $invoice->created_at->format('Y-m-d'),
             'payment_method' => 'required|in:Sepay,PayOS,Cash',
             'note' => 'nullable|string|max:500',
         ]);
@@ -310,7 +321,7 @@ class InvoiceController extends Controller
 
             Transaction::create([
                 'invoice_id' => $invoice->id,
-                'type' => 'income', // Tất cả giao dịch thanh toán hóa đơn đều là thu
+                'type' => 'income',
                 'paid_amount' => $request->paid_amount,
                 'payment_date' => Carbon::parse($request->payment_date),
                 'payment_method' => $request->payment_method,
@@ -358,16 +369,17 @@ class InvoiceController extends Controller
     public function myInvoices(Request $request)
     {
         $user = Auth::user();
+        $clubId = session('club_id');
 
         // Get filter parameters
         $selectedSemester = $request->get('semester_id');
         $selectedMonth = $request->get('month', date('m'));
         $selectedYear = $request->get('year', date('Y'));
 
-        // Build query for current user's invoices
+        // Build query for current user's invoices in this club
         $query = Invoice::with(['semester', 'club', 'transactions'])
             ->where('user_id', $user->id)
-            ->where('club_id', $user->club_id);
+            ->where('club_id', $clubId);
 
         // Apply filters
         if ($selectedSemester) {
@@ -386,7 +398,7 @@ class InvoiceController extends Controller
         for ($month = 1; $month <= 12; $month++) {
             $monthInvoices = Invoice::with(['semester', 'club', 'transactions'])
                 ->where('user_id', $user->id)
-                ->where('club_id', $user->club_id)
+                ->where('club_id', $clubId)
                 ->whereYear('created_at', date('Y'))
                 ->whereMonth('created_at', $month)
                 ->get();
@@ -425,5 +437,42 @@ class InvoiceController extends Controller
             'selectedMonth',
             'selectedYear'
         ));
+    }
+
+    /**
+     * Export the specified invoice as PDF (theo mẫu pdf_receipt)
+     */
+    public function exportPdf(Invoice $invoice)
+    {
+        $clubId = session('club_id');
+        $user = Auth::user();
+        // Check if invoice belongs to user's club
+        if ($invoice->club_id !== $clubId) {
+            abort(403, 'Bạn không có quyền xuất hóa đơn này.');
+        }
+
+        $club = Club::find($invoice->club_id);
+
+        $invoice->load(['user', 'semester', 'club', 'transactions']);
+
+        // Configure PDF with Vietnamese support
+        $pdf = Pdf::loadView('clubs.invoices.pdf_receipt', compact('invoice', 'club'));
+
+        // Set PDF options for Vietnamese support
+        $pdf->setOptions([
+            'isHtml5ParserEnabled' => true,
+            'isRemoteEnabled' => true,
+            'defaultFont' => 'DejaVuSans',
+            'chroot' => public_path(),
+            'enable_font_subsetting' => true,
+            'default_paper_size' => 'a4',
+            'dpi' => 150,
+            'font_height_ratio' => 0.9,
+            'enable_php' => false,
+            'enable_javascript' => false,
+        ]);
+
+        $filename = 'HoaDon_' . ($invoice->invoice_code ?? 'INV-' . str_pad($invoice->id, 6, '0', STR_PAD_LEFT)) . '.pdf';
+        return $pdf->download($filename);
     }
 }

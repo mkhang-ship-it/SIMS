@@ -1,11 +1,4 @@
 <?php
-// Updated: Added complete user profile fields to support full member management
-// Fillable fields: personal info, contact details, academic info, system links
-// Added relationships: address, major, course, invoices for proper data associations
-// Added checkins relationship for event checkin management
-// Added address relationship for user address management
-// Updated: Thêm quan hệ userClubRoles (hasMany) và clubs (belongsToMany qua user_club_roles) cho multi-club, giữ role_id nullable cho role ngoài club
-// [AI CHANGE 2024-07-14] Thêm default_club_id vào fillable, thêm quan hệ defaultClub (belongsTo Club)
 
 namespace App\Models;
 
@@ -42,6 +35,26 @@ class User extends Authenticatable
         'status',
         'default_club_id', // <--- thêm dòng này
     ];
+
+    public function chats()
+    {
+        return $this->belongsToMany(Chat::class, 'chat_user', 'user_id', 'chat_id');
+    }
+
+    public function messages()
+    {
+        return $this->hasMany(Message::class, 'sender_id');
+    }
+
+    public function groupChats()
+    {
+        return $this->chats()->where('is_group', true);
+    }
+
+    public function privateChats()
+    {
+        return $this->chats()->where('is_group', false);
+    }
 
     /**
      * The attributes that should be hidden for serialization.

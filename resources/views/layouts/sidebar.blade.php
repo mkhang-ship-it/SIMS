@@ -49,6 +49,13 @@
                 </li>
                 <!-- End::slide -->
 
+                <li class="slide {{ request()->routeIs('chat.index') ? 'active' : '' }}">
+                    <a href="{{ route('chat.index') }}" class="side-menu__item {{ request()->routeIs('chat.index') ? 'active' : '' }}">
+                        <i class="las la-envelope side-menu__icon"></i>
+                        <span class="side-menu__label">Nhắn Tin</span>
+                    </a>
+                </li>
+
                 @if (!session('club_id'))
                     @if (auth()->user()->hasPermissionForModuleCode('dashboard', 'view', 'central'))
                         <li class="slide {{ request()->routeIs('backend.dashboard') ? 'active' : '' }}">

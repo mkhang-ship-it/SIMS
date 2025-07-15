@@ -42,7 +42,8 @@ use App\Http\Controllers\MyProfileController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\Club\MyProfileController as ClubMyProfileController;
 use App\Http\Controllers\Club\SettingController as ClubSettingController;
-use App\Models\User;
+use App\Http\Controllers\ChatController;
+use App\Http\Controllers\SwitchClubController;
 
 Route::get('/', function () {
     if (!Auth::check()) {
@@ -312,5 +313,15 @@ Route::middleware(['auth'])->prefix('club')->group(function () {
     });
 });
 
-// [AI CHANGE 2024-07-14] Route đổi club mặc định cho user
-Route::post('/switch-default-club', [App\Http\Controllers\SwitchClubController::class, 'switch'])->name('switch.default.club')->middleware('auth');
+Route::middleware(['auth'])->group(function () {
+    Route::post('/switch-default-club', [SwitchClubController::class, 'switch'])->name('switch.default.club')->middleware('auth');
+
+    // Chat routes (Realtime)
+    Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
+    Route::get('/chat/{chat}/messages', [ChatController::class, 'fetchMessages'])->name('chat.messages.fetch');
+    Route::post('/chat/send', [ChatController::class, 'sendMessage'])->name('chat.messages.send');
+    Route::post('/chat/group', [ChatController::class, 'createGroup'])->name('chat.group.create');
+    Route::post('/chat/private', [ChatController::class, 'startPrivateChat'])->name('chat.private.start');
+    Route::delete('/chat/message', [ChatController::class, 'deleteMessage'])->name('chat.message.delete');
+    Route::get('/chat/search', [ChatController::class, 'searchMessages'])->name('chat.messages.search');
+});

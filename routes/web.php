@@ -15,6 +15,7 @@
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Broadcast;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\CourseController;
@@ -324,4 +325,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/chat/private', [ChatController::class, 'startPrivateChat'])->name('chat.private.start');
     Route::delete('/chat/message', [ChatController::class, 'deleteMessage'])->name('chat.message.delete');
     Route::get('/chat/search', [ChatController::class, 'searchMessages'])->name('chat.messages.search');
+
+    Route::get('/api/users', [ChatController::class, 'getUsers'])->name('chat.users.get');
 });
+
+

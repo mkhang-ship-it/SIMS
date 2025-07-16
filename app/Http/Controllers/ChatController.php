@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Events\MessageSent;
 use Illuminate\Database\Eloquent\Builder;
+use App\Models\User;
+use Illuminate\Support\Facades\Broadcast;
 
 class ChatController extends Controller
 {
@@ -29,29 +31,40 @@ class ChatController extends Controller
     public function sendMessage(Request $request)
     {
         $request->validate([
-            'chat_id' => 'required|uuid|exists:chats,id',
-            'content' => 'nullable|string',
-            'type' => 'required|in:text,image,file',
-            'file' => 'nullable|file|max:10240',
+            'chat_id' => 'required|exists:chats,id',
+            'content' => 'required|string',
+            'type' => 'string|in:text,image,file'
         ]);
 
-        $filePath = null;
+        $chat = Chat::findOrFail($request->chat_id);
 
-        if ($request->hasFile('file')) {
-            $filePath = $request->file('file')->store('chat_files', 'public');
+        // Check if user is member of this chat
+        if (!$chat->users->contains(Auth::id())) {
+            return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        $message = Message::create([
+        $message = $chat->messages()->create([
             'sender_id' => Auth::id(),
-            'chat_id' => $request->chat_id,
             'content' => $request->content,
-            'type' => $request->type,
-            'file_path' => $filePath,
+            'type' => $request->type ?? 'text',
         ]);
 
-        broadcast(new MessageSent($message))->toOthers();
+        $message->load('sender');
 
-        return response()->json(['status' => 'Message sent', 'message' => $message]);
+        // Fire the event
+        event(new MessageSent($message));
+
+        return response()->json([
+            'message' => [
+                'id' => $message->id,
+                'content' => $message->content,
+                'type' => $message->type,
+                'sender_id' => $message->sender_id,
+                'sender_name' => $message->sender->name,
+                'created_at' => $message->created_at->format('H:i'),
+                'chat_id' => $message->chat_id,
+            ]
+        ]);
     }
 
     /**
@@ -136,5 +149,19 @@ class ChatController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
         return response()->json(['messages' => $messages]);
+    }
+
+    public function getUsers()
+    {
+        $users = User::select('id', 'name', 'email')->get();
+        return response()->json(['users' => $users]);
+    }
+
+    public function auth(Request $request)
+    {
+        if (!Auth::check()) {
+            return response()->json(['message' => 'Unauthenticated'], 403);
+        }
+        return \Illuminate\Support\Facades\Broadcast::auth($request);
     }
 }

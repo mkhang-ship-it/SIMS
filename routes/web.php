@@ -321,6 +321,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
     Route::get('/chat/{chat}/messages', [ChatController::class, 'fetchMessages'])->name('chat.messages.fetch');
     Route::post('/chat/send', [ChatController::class, 'sendMessage'])->name('chat.messages.send');
+    Route::get('/chat/{chatId}/messages', [ChatController::class, 'getMessages'])
+        ->name('chat.messages.get');
     Route::post('/chat/group', [ChatController::class, 'createGroup'])->name('chat.group.create');
     Route::post('/chat/private', [ChatController::class, 'startPrivateChat'])->name('chat.private.start');
     Route::delete('/chat/message', [ChatController::class, 'deleteMessage'])->name('chat.message.delete');

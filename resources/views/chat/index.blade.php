@@ -488,15 +488,18 @@
                 ele.classList.add(status)
             })
 
-            document.querySelector(".chatpersonstatus").innerText = status
+            document.querySelector(".chatpersonstatus").innerText = status === 'online' ? 'Online' : 'Offline';
 
             document.querySelector(".main-chart-wrapper").classList.add("responsive-chat-open")
         }
     </script>
     <script>
+        // Enhanced auto-scroll functionality for chat
         let currentChatId = null;
         let currentUserId = '{{ auth()->id() }}';
         let chats = @json($chats);
+        let isUserScrolling = false;
+        let scrollTimeout;
 
         // Laravel Echo + Pusher configuration
         window.Echo = new Echo({
@@ -511,24 +514,232 @@
                     'Accept': 'application/json',
                 },
             },
-            authEndpoint: '/broadcasting/auth', // This is the default Laravel endpoint
+            authEndpoint: '/broadcasting/auth',
         });
 
-        // Test connection
-        window.Echo.connector.pusher.connection.bind('connected', function() {
-            console.log('Pusher connected successfully');
-        });
+        // Improved scroll to bottom function
+        function scrollToBottom(smooth = true) {
+            const chatContent = document.querySelector('#main-chat-content');
+            if (!chatContent) return;
 
-        window.Echo.connector.pusher.connection.bind('error', function(err) {
-            console.error('Pusher connection error:', err);
-        });
+            // Hàm scroll thực tế
+            const doScroll = () => {
+                if (smooth) {
+                    chatContent.scrollTo({
+                        top: chatContent.scrollHeight,
+                        behavior: 'smooth'
+                    });
+                } else {
+                    chatContent.scrollTop = chatContent.scrollHeight;
+                }
+            };
 
-        // Gửi tin nhắn qua AJAX
+            // Scroll ngay lập tức
+            doScroll();
+
+            // Đảm bảo scroll sau khi DOM render xong
+            requestAnimationFrame(() => {
+                doScroll();
+
+                // Scroll một lần nữa sau khi tất cả animation hoàn thành
+                setTimeout(() => {
+                    doScroll();
+                }, 100);
+            });
+        }
+
+        // Check if user is at bottom of chat
+        function isAtBottom() {
+            const chatContent = document.querySelector('#main-chat-content');
+            if (!chatContent) return true;
+
+            const threshold = 50; // pixels from bottom
+            return chatContent.scrollHeight - chatContent.scrollTop - chatContent.clientHeight < threshold;
+        }
+
+        // Track user scrolling
+        function setupScrollTracking() {
+            const chatContent = document.querySelector('#main-chat-content');
+            if (!chatContent) return;
+
+            let scrollTimer;
+
+            chatContent.addEventListener('scroll', () => {
+                isUserScrolling = true;
+
+                // Clear existing timer
+                if (scrollTimer) {
+                    clearTimeout(scrollTimer);
+                }
+
+                // Set user scrolling to false after 1 second of no scrolling
+                scrollTimer = setTimeout(() => {
+                    isUserScrolling = false;
+                }, 1000);
+            });
+        }
+
+        // Enhanced message append function with auto-scroll
+        function appendMessage(message, isOwn = false) {
+            const ul = document.querySelector('#main-chat-content ul');
+            if (!ul) return;
+
+            // Kiểm tra xem tin nhắn đã tồn tại chưa (để tránh duplicate từ real-time event)
+            const existingMessages = ul.querySelectorAll('.chat-item-end, .chat-item-start');
+            const messageContent = message.content;
+            const messageTime = message.created_at;
+
+            // Kiểm tra tin nhắn duplicate trong 5 giây gần đây
+            const recentMessages = Array.from(existingMessages).slice(-5);
+            const isDuplicate = recentMessages.some(msg => {
+                const msgText = msg.querySelector('.main-chat-msg p')?.textContent;
+                const msgSender = msg.classList.contains('chat-item-end') ? currentUserId : 'other';
+                const currentSender = (isOwn || message.sender_id == currentUserId) ? currentUserId : 'other';
+
+                return msgText === messageContent && msgSender === currentSender;
+            });
+
+            if (isDuplicate) {
+                console.log('Duplicate message detected, skipping...');
+                return;
+            }
+
+            const wasAtBottom = isAtBottom();
+            const li = document.createElement('li');
+            li.className = isOwn || message.sender_id == currentUserId ? 'chat-item-end' : 'chat-item-start';
+
+            // Format time H:i d/m/Y
+            let createdAt = message.created_at;
+            if (createdAt && createdAt.length >= 19) {
+                const d = new Date(createdAt);
+                const pad = n => n < 10 ? '0' + n : n;
+                createdAt = pad(d.getHours()) + ':' + pad(d.getMinutes()) + ' ' +
+                    pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear();
+            }
+
+            let html = '';
+            if (li.className === 'chat-item-end') {
+                html = `<div class="chat-list-inner">
+            <div class="me-3">
+                <span class="chatting-user-info">
+                    <span class="msg-sent-time">
+                        <span class="chat-read-mark align-middle d-inline-flex">
+                            <i class="ri-check-double-line"></i>
+                        </span>
+                        ${createdAt}
+                    </span> You
+                </span>
+                <div class="main-chat-msg">
+                    <div>
+                        <p class="mb-0">${message.content}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="chat-user-profile">
+                <span class="avatar avatar-md online avatar-rounded">
+                    <img src="../assets/images/faces/15.jpg" alt="img">
+                </span>
+            </div>
+        </div>`;
+            } else {
+                html = `<div class="chat-list-inner">
+            <div class="chat-user-profile">
+                <span class="avatar avatar-md online avatar-rounded chatstatusperson">
+                    <img class="chatimageperson" src="../assets/images/faces/2.jpg" alt="img">
+                </span>
+            </div>
+            <div class="ms-3">
+                <span class="chatting-user-info">
+                    <span class="chatnameperson">${message.sender_name || ''}</span>
+                    <span class="msg-sent-time">${createdAt}</span>
+                </span>
+                <div class="main-chat-msg">
+                    <div>
+                        <p class="mb-0">${message.content}</p>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+            }
+
+            li.innerHTML = html;
+            ul.appendChild(li);
+
+            // Auto-scroll với cải thiện
+            if (isOwn || message.sender_id == currentUserId) {
+                // Luôn scroll cho tin nhắn của chính mình
+                setTimeout(() => {
+                    scrollToBottom(true);
+                }, 10);
+            } else if (wasAtBottom && !isUserScrolling) {
+                // Chỉ auto-scroll cho tin nhắn của người khác nếu đang ở cuối
+                setTimeout(() => {
+                    scrollToBottom(true);
+                }, 10);
+            } else if (!wasAtBottom) {
+                // Hiện thị thông báo tin nhắn mới nếu không ở cuối
+                showNewMessageIndicator();
+            }
+        }
+
+        // Show new message indicator
+        function showNewMessageIndicator() {
+            // Remove existing indicator
+            const existingIndicator = document.querySelector('.new-message-indicator');
+            if (existingIndicator) {
+                existingIndicator.remove();
+            }
+
+            // Create new message indicator
+            const indicator = document.createElement('div');
+            indicator.className = 'new-message-indicator';
+            indicator.innerHTML = `
+        <div class="alert alert-info d-flex align-items-center justify-content-between mb-0"
+             style="position: sticky; top: 0; z-index: 10; cursor: pointer;">
+            <span>New messages ↓</span>
+            <button class="btn btn-sm btn-info" onclick="scrollToBottomAndHideIndicator()">
+                <i class="ri-arrow-down-line"></i>
+            </button>
+        </div>
+    `;
+
+            const chatContent = document.querySelector('#main-chat-content');
+            chatContent.insertBefore(indicator, chatContent.firstChild);
+        }
+
+        // Scroll to bottom and hide indicator
+        function scrollToBottomAndHideIndicator() {
+            const indicator = document.querySelector('.new-message-indicator');
+            if (indicator) {
+                indicator.remove();
+            }
+            scrollToBottom(true);
+        }
+
+        // Send message function with auto-scroll
         document.querySelector('.btn-send').addEventListener('click', function() {
-            let input = document.querySelector('.chat-footer input');
-            let content = input.value.trim();
-            if (!content || !currentChatId) return;
+            const input = document.querySelector('.chat-footer input');
+            const content = input.value.trim();
+            if (!content || !currentChatId) {
+                return;
+            }
 
+            // Tạo tin nhắn tạm thời để hiển thị ngay lập tức
+            const tempMessage = {
+                content: content,
+                sender_id: currentUserId,
+                created_at: new Date().toISOString(),
+                type: 'text',
+                sender_name: 'You'
+            };
+
+            // Hiển thị tin nhắn ngay lập tức
+            appendMessage(tempMessage, true);
+
+            // Clear input ngay lập tức
+            input.value = '';
+
+            // Gửi tin nhắn đến server
             fetch("{{ route('chat.messages.send') }}", {
                     method: 'POST',
                     headers: {
@@ -544,13 +755,50 @@
                 })
                 .then(res => res.json())
                 .then(data => {
-                    input.value = '';
-                    // Don't append here - let the broadcast handle it
+                    if (data.success) {
+                        // Tin nhắn đã được gửi thành công
+                        // Có thể cập nhật trạng thái đã gửi ở đây nếu cần
+                        console.log('Message sent successfully');
+
+                        // Cập nhật message ID thực nếu cần
+                        if (data.message && data.message.id) {
+                            // Có thể cập nhật tin nhắn tạm thời với ID thực
+                            updateMessageStatus(data.message.id, 'sent');
+                        }
+                    }
                 })
                 .catch(err => {
                     console.error('Error sending message:', err);
+                    // Có thể hiển thị thông báo lỗi hoặc đánh dấu tin nhắn failed
+                    showMessageError(tempMessage);
                 });
         });
+
+        // Hàm cập nhật trạng thái tin nhắn
+        function updateMessageStatus(messageId, status) {
+            // Tìm tin nhắn và cập nhật trạng thái
+            const messages = document.querySelectorAll('.chat-item-end');
+            const lastMessage = messages[messages.length - 1];
+            if (lastMessage) {
+                const readMark = lastMessage.querySelector('.chat-read-mark i');
+                if (readMark) {
+                    readMark.className = status === 'sent' ? 'ri-check-double-line' : 'ri-check-line';
+                }
+            }
+        }
+
+        // Hàm hiển thị lỗi tin nhắn
+        function showMessageError(message) {
+            const messages = document.querySelectorAll('.chat-item-end');
+            const lastMessage = messages[messages.length - 1];
+            if (lastMessage) {
+                const readMark = lastMessage.querySelector('.chat-read-mark i');
+                if (readMark) {
+                    readMark.className = 'ri-error-warning-line';
+                    readMark.style.color = 'red';
+                }
+            }
+        }
 
         // Handle Enter key press
         document.querySelector('.chat-footer input').addEventListener('keypress', function(e) {
@@ -559,64 +807,13 @@
             }
         });
 
-        // Hàm append message vào chat-content
-        function appendMessage(message, isOwn = false) {
-            let ul = document.querySelector('#main-chat-content ul');
-            let li = document.createElement('li');
-            li.className = isOwn || message.sender_id == currentUserId ? 'chat-item-end' : 'chat-item-start';
+        // Store current channel reference
+        let currentChannel = null;
 
-            // Định dạng thời gian H:i d/m/Y
-            let createdAt = message.created_at;
-            if (createdAt && createdAt.length >= 19) {
-                // Nếu là ISO 8601 (2025-07-16T07:56:13.000000Z)
-                let d = new Date(createdAt);
-                let pad = n => n < 10 ? '0' + n : n;
-                createdAt = pad(d.getHours()) + ':' + pad(d.getMinutes()) + ' ' + pad(d.getDate()) + '/' + pad(d
-                    .getMonth() + 1) + '/' + d.getFullYear();
-            }
-
-            let html = '';
-            if (li.className === 'chat-item-end') {
-                html = `<div class="chat-list-inner">
-                <div class="me-3">
-                    <span class="chatting-user-info">
-                        <span class="msg-sent-time"><span class="chat-read-mark align-middle d-inline-flex"><i class="ri-check-double-line"></i></span>${createdAt}</span> You
-                    </span>
-                    <div class="main-chat-msg"><div><p class="mb-0">${message.content}</p></div></div>
-                </div>
-                <div class="chat-user-profile">
-                    <span class="avatar avatar-md online avatar-rounded">
-                        <img src="../assets/images/faces/15.jpg" alt="img">
-                    </span>
-                </div>
-            </div>`;
-            } else {
-                html = `<div class="chat-list-inner">
-                <div class="chat-user-profile">
-                    <span class="avatar avatar-md online avatar-rounded chatstatusperson">
-                        <img class="chatimageperson" src="../assets/images/faces/2.jpg" alt="img">
-                    </span>
-                </div>
-                <div class="ms-3">
-                    <span class="chatting-user-info">
-                        <span class="chatnameperson">${message.sender_name || ''}</span> <span class="msg-sent-time">${createdAt}</span>
-                    </span>
-                    <div class="main-chat-msg"><div><p class="mb-0">${message.content}</p></div></div>
-                </div>
-            </div>`;
-            }
-            li.innerHTML = html;
-            ul.appendChild(li);
-
-            // Scroll to bottom
-            let chatContent = document.querySelector('#main-chat-content');
-            chatContent.scrollTop = chatContent.scrollHeight;
-        }
-
-        // Khi chọn chat, load messages
+        // Enhanced chat selection with auto-scroll
         document.querySelectorAll('.chat-users-tab a, .chat-groups-tab a').forEach(function(a) {
             a.addEventListener('click', function() {
-                let chatId = this.getAttribute('data-chat-id');
+                const chatId = this.getAttribute('data-chat-id');
                 if (!chatId) return;
 
                 currentChatId = chatId;
@@ -625,76 +822,240 @@
                 document.querySelectorAll('.checkforactive').forEach(li => li.classList.remove('active'));
                 this.closest('.checkforactive').classList.add('active');
 
+                // Clear any existing new message indicator
+                const indicator = document.querySelector('.new-message-indicator');
+                if (indicator) {
+                    indicator.remove();
+                }
+
                 // Load messages
                 fetch(`/chat/${chatId}/messages`)
                     .then(res => res.json())
                     .then(messages => {
-                        let ul = document.querySelector('#main-chat-content ul');
+                        const ul = document.querySelector('#main-chat-content ul');
                         ul.innerHTML = '<li class="chat-day-label"><span>Today</span></li>';
-                        messages.forEach(m => appendMessage(m, m.sender_id == currentUserId));
+
+                        messages.forEach(m => {
+                            const li = document.createElement('li');
+                            li.className = m.sender_id == currentUserId ? 'chat-item-end' :
+                                'chat-item-start';
+
+                            // Format time
+                            let createdAt = m.created_at;
+                            if (createdAt && createdAt.length >= 19) {
+                                const d = new Date(createdAt);
+                                const pad = n => n < 10 ? '0' + n : n;
+                                createdAt = pad(d.getHours()) + ':' + pad(d.getMinutes()) +
+                                    ' ' +
+                                    pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d
+                                    .getFullYear();
+                            }
+
+                            let html = '';
+                            if (li.className === 'chat-item-end') {
+                                html = `<div class="chat-list-inner">
+                            <div class="me-3">
+                                <span class="chatting-user-info">
+                                    <span class="msg-sent-time">
+                                        <span class="chat-read-mark align-middle d-inline-flex">
+                                            <i class="ri-check-double-line"></i>
+                                        </span>
+                                        ${createdAt}
+                                    </span> You
+                                </span>
+                                <div class="main-chat-msg">
+                                    <div><p class="mb-0">${m.content}</p></div>
+                                </div>
+                            </div>
+                            <div class="chat-user-profile">
+                                <span class="avatar avatar-md online avatar-rounded">
+                                    <img src="../assets/images/faces/15.jpg" alt="img">
+                                </span>
+                            </div>
+                        </div>`;
+                            } else {
+                                html = `<div class="chat-list-inner">
+                            <div class="chat-user-profile">
+                                <span class="avatar avatar-md online avatar-rounded chatstatusperson">
+                                    <img class="chatimageperson" src="../assets/images/faces/2.jpg" alt="img">
+                                </span>
+                            </div>
+                            <div class="ms-3">
+                                <span class="chatting-user-info">
+                                    <span class="chatnameperson">${m.sender_name || ''}</span>
+                                    <span class="msg-sent-time">${createdAt}</span>
+                                </span>
+                                <div class="main-chat-msg">
+                                    <div><p class="mb-0">${m.content}</p></div>
+                                </div>
+                            </div>
+                        </div>`;
+                            }
+
+                            li.innerHTML = html;
+                            ul.appendChild(li);
+                        });
+
+                        // Đảm bảo scroll xuống cuối sau khi load xong tất cả tin nhắn
+                        // Sử dụng MutationObserver để theo dõi khi DOM thay đổi
+                        const observer = new MutationObserver((mutations) => {
+                            observer.disconnect(); // Chỉ observe một lần
+
+                            // Scroll xuống cuối ngay lập tức
+                            scrollToBottom(false);
+
+                            // Đảm bảo scroll một lần nữa sau khi tất cả render xong
+                            setTimeout(() => {
+                                scrollToBottom(false);
+                            }, 50);
+
+                            // Scroll lần cuối sau khi SimpleBar khởi tạo xong
+                            setTimeout(() => {
+                                scrollToBottom(false);
+                            }, 200);
+                        });
+
+                        // Bắt đầu observe
+                        observer.observe(ul, {
+                            childList: true,
+                            subtree: true
+                        });
+
+                        // Fallback scroll nếu observer không hoạt động
+                        setTimeout(() => {
+                            scrollToBottom(false);
+                        }, 100);
                     })
                     .catch(err => {
                         console.error('Error loading messages:', err);
                     });
+
+                // Update chat header info
+                const chat = chats.find(c => c.id == chatId);
+                if (chat) {
+                    const isGroup = chat.is_group;
+                    const name = isGroup ? chat.name : (chat.users.find(u => u.id != currentUserId)?.name ||
+                        'No Name');
+                    const avatar = isGroup ? '18' : (chat.users.find(u => u.id != currentUserId)?.avatar ||
+                        '2');
+                    const status = isGroup ? 'online' : (chat.users.find(u => u.id != currentUserId)
+                        ?.is_online ? 'online' : 'offline');
+
+                    document.querySelectorAll('.chatnameperson').forEach(ele => {
+                        ele.innerText = name;
+                    });
+                    document.querySelectorAll('.chatimageperson').forEach(ele => {
+                        ele.src = `../assets/images/faces/${avatar}.jpg`;
+                    });
+                    document.querySelectorAll('.chatstatusperson').forEach(ele => {
+                        ele.classList.remove('online', 'offline');
+                        ele.classList.add(status);
+                    });
+                    document.querySelector('.chatpersonstatus').innerText = status === 'online' ? 'Online' :
+                        'Offline';
+                }
 
                 // Subscribe to this chat's channel
                 subscribeToChat(chatId);
             });
         });
 
-        // Function to subscribe to a chat channel
+        function ensureScrollToBottom() {
+            const chatContent = document.querySelector('#main-chat-content');
+            if (!chatContent) return;
+
+            // Kiểm tra nếu SimpleBar đã khởi tạo
+            if (chatContent.SimpleBar) {
+                chatContent.SimpleBar.getScrollElement().scrollTop = chatContent.SimpleBar.getScrollElement().scrollHeight;
+            } else {
+                chatContent.scrollTop = chatContent.scrollHeight;
+            }
+        }
+
+        // Enhanced subscription function
         function subscribeToChat(chatId) {
             // Leave previous channel if exists
-            if (window.currentChannel) {
-                window.Echo.leave(window.currentChannel);
+            if (currentChannel) {
+                window.Echo.leave(currentChannel);
             }
 
             // Join new channel
-            window.currentChannel = `chat.${chatId}`;
-            window.Echo.private(window.currentChannel)
+            currentChannel = `chat.${chatId}`;
+
+            window.Echo.private(currentChannel)
                 .listen('MessageSent', (e) => {
-                    console.log('Message received:', e);
-                    // Append mọi tin nhắn nhận được, nếu là của mình thì hiển thị bên phải
-                    appendMessage(e.message, e.message.sender_id == currentUserId);
+                    // Only append if in this chat and not from current user
+                    if (currentChatId == chatId && e.message.sender_id != currentUserId) {
+                        appendMessage(e.message, false);
+                    }
+                })
+                .subscribed(() => {
+                    console.log('Subscribed to chat:', chatId);
                 })
                 .error((error) => {
-                    console.error('Channel subscription error:', error);
+                    console.error('Echo error:', error);
                 });
         }
 
-        // Lấy danh sách user
+        // Initialize scroll tracking when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            setupScrollTracking();
+
+            // Add CSS for new message indicator
+            const style = document.createElement('style');
+            style.textContent = `
+        .new-message-indicator {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            margin-bottom: 10px;
+        }
+        .new-message-indicator .alert {
+            margin-bottom: 0;
+            border-radius: 0;
+            animation: slideDown 0.3s ease-out;
+        }
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    `;
+            document.head.appendChild(style);
+        });
+
+        // User management code (keeping existing functionality)
         let allUsers = [];
         fetch('{{ route('chat.users.get') }}')
             .then(res => res.json())
             .then(data => {
-                let users = data.users;
+                const users = data.users;
                 allUsers = users.filter(u => u.id != currentUserId);
 
-                // Đổ vào select nhắn tin riêng
-                let select = document.getElementById('privateUserSelect');
+                // Populate private chat select
+                const select = document.getElementById('privateUserSelect');
                 allUsers.forEach(u => {
-                    let opt = document.createElement('option');
+                    const opt = document.createElement('option');
                     opt.value = u.id;
                     opt.textContent = u.name + ' (' + u.email + ')';
                     select.appendChild(opt);
                 });
 
-                // Đổ vào danh sách tạo nhóm
-                let groupList = document.getElementById('groupUserList');
+                // Populate group creation list
+                const groupList = document.getElementById('groupUserList');
                 allUsers.forEach(u => {
-                    let div = document.createElement('div');
+                    const div = document.createElement('div');
                     div.innerHTML =
                         `<label><input type='checkbox' value='${u.id}'> ${u.name} (${u.email})</label>`;
                     groupList.appendChild(div);
                 });
             })
             .catch(err => {
-                console.error('Error loading users:', err);
+                console.error('Error fetching users:', err);
             });
 
-        // Nhắn tin riêng
+        // Private chat function
         document.getElementById('startPrivateChatBtn').onclick = function() {
-            let userId = document.getElementById('privateUserSelect').value;
+            const userId = document.getElementById('privateUserSelect').value;
             if (!userId) return alert('Chọn user!');
 
             fetch("{{ route('chat.private.start') }}", {
@@ -712,12 +1073,8 @@
                 .then(data => {
                     if (data.chat) {
                         currentChatId = data.chat.id;
-
-                        // Đóng modal
-                        var modal = bootstrap.Modal.getInstance(document.getElementById('chatAddModal'));
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('chatAddModal'));
                         modal.hide();
-
-                        // Reload page to refresh chat list
                         location.reload();
                     }
                 })
@@ -726,11 +1083,11 @@
                 });
         };
 
-        // Tạo nhóm
+        // Group creation function
         document.getElementById('createGroupBtn').onclick = function() {
-            let name = document.getElementById('groupNameInput').value.trim();
-            let userIds = Array.from(document.querySelectorAll('#groupUserList input[type=checkbox]:checked')).map(cb =>
-                cb.value);
+            const name = document.getElementById('groupNameInput').value.trim();
+            const userIds = Array.from(document.querySelectorAll('#groupUserList input[type=checkbox]:checked')).map(
+                cb => cb.value);
 
             if (!name) return alert('Nhập tên nhóm!');
             if (userIds.length < 2) return alert('Chọn ít nhất 2 thành viên!');
@@ -751,12 +1108,8 @@
                 .then(data => {
                     if (data.chat) {
                         currentChatId = data.chat.id;
-
-                        // Đóng modal
-                        var modal = bootstrap.Modal.getInstance(document.getElementById('chatAddModal'));
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('chatAddModal'));
                         modal.hide();
-
-                        // Reload page to refresh chat list
                         location.reload();
                     }
                 })
@@ -765,15 +1118,59 @@
                 });
         };
 
-        // Debug function
-        function debugEcho() {
-            console.log('Echo instance:', window.Echo);
-            console.log('Current chat ID:', currentChatId);
-            console.log('Current user ID:', currentUserId);
-            console.log('Pusher connection state:', window.Echo.connector.pusher.connection.state);
+        let sendMessageTimeout;
+
+        function debouncedSendMessage() {
+            clearTimeout(sendMessageTimeout);
+            sendMessageTimeout = setTimeout(() => {
+                document.querySelector('.btn-send').click();
+            }, 100);
         }
 
-        // Make debug function globally available
-        window.debugEcho = debugEcho;
+        // Handle Enter key press với debounce
+        document.querySelector('.chat-footer input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.querySelector('.btn-send').click();
+            }
+        });
+
+        // Thêm loading state cho button send
+        function setLoadingState(isLoading) {
+            const sendBtn = document.querySelector('.btn-send');
+            const sendIcon = sendBtn.querySelector('i');
+
+            if (isLoading) {
+                sendBtn.disabled = true;
+                sendIcon.className = 'ri-loader-4-line';
+                sendIcon.style.animation = 'spin 1s linear infinite';
+            } else {
+                sendBtn.disabled = false;
+                sendIcon.className = 'ri-send-plane-2-line';
+                sendIcon.style.animation = 'none';
+            }
+        }
+
+        // CSS cho loading animation
+        const style = document.createElement('style');
+        style.textContent = `
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .message-error {
+        color: #dc3545 !important;
+    }
+
+    .message-sending {
+        opacity: 0.7;
+    }
+
+    .message-sent {
+        opacity: 1;
+    }
+`;
+        document.head.appendChild(style);
     </script>
 @endsection

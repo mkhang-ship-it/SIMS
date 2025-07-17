@@ -10,6 +10,7 @@ use App\Events\MessageSent;
 use Illuminate\Database\Eloquent\Builder;
 use App\Models\User;
 use Illuminate\Support\Facades\Broadcast;
+use Illuminate\Support\Facades\Log;
 
 class ChatController extends Controller
 {
@@ -32,39 +33,73 @@ class ChatController extends Controller
     {
         $request->validate([
             'chat_id' => 'required|exists:chats,id',
-            'content' => 'required|string',
-            'type' => 'string|in:text,image,file'
+            'content' => 'required|string|max:1000',
+            'type' => 'required|in:text,image,file'
         ]);
 
         $chat = Chat::findOrFail($request->chat_id);
 
-        // Check if user is member of this chat
+        // Kiểm tra quyền truy cập
         if (!$chat->users->contains(Auth::id())) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        $message = $chat->messages()->create([
-            'sender_id' => Auth::id(),
-            'content' => $request->content,
-            'type' => $request->type ?? 'text',
-        ]);
+        try {
+            // Tạo tin nhắn
+            $message = Message::create([
+                'chat_id' => $request->chat_id,
+                'sender_id' => Auth::id(),
+                'content' => $request->content,
+                'type' => $request->type,
+            ]);
 
-        $message->load('sender');
+            // Load thông tin sender
+            $message->load('sender');
 
-        // Fire the event
-        event(new MessageSent($message));
+            // Thêm sender_name để frontend dễ xử lý
+            $message->sender_name = $message->sender->name;
 
-        return response()->json([
-            'message' => [
-                'id' => $message->id,
-                'content' => $message->content,
-                'type' => $message->type,
-                'sender_id' => $message->sender_id,
-                'sender_name' => $message->sender->name,
-                'created_at' => $message->created_at->format('H:i'),
-                'chat_id' => $message->chat_id,
-            ]
-        ]);
+            // Gửi response ngay lập tức
+            $response = [
+                'success' => true,
+                'message' => $message,
+                'chat_id' => $request->chat_id
+            ];
+
+            // Broadcast event bất đồng bộ (không chặn response)
+            try {
+                broadcast(new MessageSent($message))->toOthers();
+            } catch (\Exception $e) {
+                // Log lỗi broadcast nhưng không ảnh hưởng đến response
+                Log::error('Broadcast error: ' . $e->getMessage());
+            }
+
+            return response()->json($response);
+        } catch (\Exception $e) {
+            Log::error('Send message error: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to send message'], 500);
+        }
+    }
+
+    public function getMessages($chatId)
+    {
+        $chat = Chat::findOrFail($chatId);
+
+        // Kiểm tra quyền truy cập
+        if (!$chat->users->contains(Auth::id())) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $messages = Message::where('chat_id', $chatId)
+            ->with('sender')
+            ->orderBy('created_at', 'asc')
+            ->get()
+            ->map(function ($message) {
+                $message->sender_name = $message->sender->name;
+                return $message;
+            });
+
+        return response()->json($messages);
     }
 
     /**

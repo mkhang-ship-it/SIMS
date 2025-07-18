@@ -316,30 +316,4 @@ Route::middleware(['auth'])->prefix('club')->group(function () {
 
 Route::middleware(['auth'])->group(function () {
     Route::post('/switch-default-club', [SwitchClubController::class, 'switch'])->name('switch.default.club')->middleware('auth');
-
-    // Chat routes (Realtime)
-    Route::prefix('chat')->name('chat.')->group(function () {
-        Route::get('/', [ChatController::class, 'index'])->name('index');
-
-        // Messages
-        Route::get('/{chat}/messages', [ChatController::class, 'getMessages'])->name('messages.get');
-        Route::post('/send', [ChatController::class, 'sendMessage'])->name('messages.send');
-        Route::put('/messages/edit', [ChatController::class, 'editMessage'])->name('messages.edit');
-        Route::delete('/message', [ChatController::class, 'deleteMessage'])->name('message.delete');
-        Route::post('/messages/react', [ChatController::class, 'reactToMessage'])->name('messages.react');
-        Route::post('/messages/mark-read', [ChatController::class, 'markAsRead'])->name('messages.mark-read');
-        Route::get('/search', [ChatController::class, 'searchMessages'])->name('messages.search');
-
-        // Chat management
-        Route::post('/group', [ChatController::class, 'createGroup'])->name('group.create');
-        Route::post('/private', [ChatController::class, 'startPrivateChat'])->name('private.start');
-        Route::put('/{chat}/settings', [ChatController::class, 'updateChatSettings'])->name('settings.update');
-        Route::post('/{chat}/leave', [ChatController::class, 'leaveChat'])->name('leave');
-        Route::post('/{chat}/add-members', [ChatController::class, 'addMembersToGroup'])->name('add-members');
-
-        // Broadcasting auth
-        Route::post('/auth', [ChatController::class, 'auth'])->name('auth');
-    });
-
-    Route::get('/api/users', [ChatController::class, 'getUsers'])->name('chat.users.get');
 });

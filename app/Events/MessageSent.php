@@ -17,12 +17,21 @@ class MessageSent implements ShouldBroadcast
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $message;
-    public $queue = 'high'; // Ưu tiên cao cho real-time
+    public $queue = 'high'; // High priority for real-time
 
     public function __construct(Message $message)
     {
         $this->message = $message;
-        $this->message->load('sender');
+
+        // Load relationships
+        $this->message->load([
+            'sender:id,name,avatar',
+            'replyTo.sender:id,name',
+            'reactions.user:id,name',
+            'chat:id,is_group,name'
+        ]);
+
+        // Add computed properties
         $this->message->sender_name = $this->message->sender->name;
     }
 
@@ -34,16 +43,25 @@ class MessageSent implements ShouldBroadcast
     public function broadcastWith()
     {
         return [
-            'message' => $this->message
+            'message' => $this->message->toArray()
         ];
     }
 
-    // Tự động retry nếu broadcast fail
+    public function broadcastAs()
+    {
+        return 'MessageSent';
+    }
+
+    // Handle broadcast failures
     public function failed(\Exception $exception)
     {
-        Log::error('MessageSent broadcast failed: ' . $exception->getMessage());
+        Log::error('MessageSent broadcast failed: ' . $exception->getMessage(), [
+            'message_id' => $this->message->id,
+            'chat_id' => $this->message->chat_id,
+            'exception' => $exception->getTraceAsString()
+        ]);
 
-        // Có thể thêm logic retry hoặc fallback mechanism
-        // Ví dụ: lưu vào queue để retry sau
+        // Could implement retry logic or fallback mechanism here
+        // For example, save to a failed_broadcasts table for later retry
     }
 }

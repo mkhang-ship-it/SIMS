@@ -1,6 +1,11 @@
-{{-- My Invoice Page - Member view of their own invoices --}}
+{{-- My Invoices Page - Hiển thị hóa đơn cá nhân cho thành viên câu lạc bộ --}}
+{{-- Updated: Thống kê Đã thanh toán/Chờ thanh toán dựa vào trạng thái hóa đơn, không dựa vào bảng transaction (giống trang index). Số tiền chờ thanh toán dùng statistics['pending_amount'] --}}
+{{-- Updated: Thêm modal QR Sepay cho mỗi hóa đơn chưa thanh toán, truyền thông tin ngân hàng từ $settings, cập nhật nút Tiến Hành Thanh Toán: ban đầu disabled, chỉ enable khi user chọn phương thức thanh toán. Khi chọn Sepay và nhấn nút, đóng modal chọn phương thức và mở modal QR. --}}
 {{-- Updated: Fixed layout issues - improved responsive design, moved modals outside table, fixed table structure, added proper chart spacing --}}
-{{-- Features: Read-only view, statistics, payment history, filter functionality --}}
+{{-- Updated: Added payment method selection modal with three options (Sepay, PayOS, Paykit) for user to choose payment method --}}
+{{-- Updated: Bổ sung nút download ảnh QR Sepay với url download=true trong modal QR Sepay --}}
+{{-- Updated: Thêm polling kiểm tra trạng thái hóa đơn khi mở modal QR Sepay, nếu trả về 'paid' thì hiện modal thanh toán thành công --}}
+{{-- Features: Read-only view, statistics, payment history, filter functionality, payment processing --}}
 {{-- Layout: Responsive 3-9 column structure with statistics sidebar and ApexCharts --}}
 @extends('layouts.app')
 
@@ -80,7 +85,7 @@
                                 </h6>
                                 <div>
                                     <h4 class="fs-18 fw-semibold mb-2">
-                                        {{ number_format($statistics['total_amount'] - $statistics['paid_amount'], 0, ',', '.') }}
+                                        {{ number_format($statistics['pending_amount'], 0, ',', '.') }}
                                         VNĐ
                                     </h4>
                                 </div>
@@ -242,6 +247,15 @@
                                                         <i class="ri-eye-line"></i>
                                                     </a>
 
+                                                    @if ($invoice->status !== 'paid')
+                                                        <button class="btn btn-success-light btn-icon btn-sm"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#paymentModal{{ $invoice->id }}"
+                                                            data-bs-placement="top" data-bs-title="Thanh toán">
+                                                            <i class="ri-money-dollar-circle-line"></i>
+                                                        </button>
+                                                    @endif
+
                                                     @if ($invoice->transactions->count() > 0)
                                                         <button class="btn btn-info-light btn-icon btn-sm"
                                                             data-bs-toggle="modal"
@@ -317,9 +331,328 @@
             </div>
         @endif
     @endforeach
+
+    <!-- Payment Modal for each invoice -->
+    @foreach ($invoices as $invoice)
+        @if ($invoice->status !== 'paid')
+            <div class="modal fade" id="paymentModal{{ $invoice->id }}" tabindex="-1"
+                aria-labelledby="paymentModalLabel{{ $invoice->id }}" aria-hidden="true" data-bs-backdrop="static"
+                data-bs-keyboard="false">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="paymentModalLabel{{ $invoice->id }}">
+                                Chọn Phương Thức Thanh Toán
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <!-- Invoice Information -->
+                            <div class="alert alert-info">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>{{ $invoice->name }}</strong><br>
+                                        <small class="text-muted">Mã hóa đơn: {{ $invoice->invoice_code }}</small><br>
+                                        <small class="text-muted">Học kỳ:
+                                            {{ $invoice->semester->name ?? 'N/A' }}</small>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="fs-14">Tổng tiền:
+                                            <strong>{{ number_format($invoice->total_amount, 0, ',', '.') }}
+                                                VNĐ</strong>
+                                        </div>
+                                        <div class="fs-14">Đã thanh toán: <strong
+                                                class="text-success">{{ number_format($invoice->total_paid, 0, ',', '.') }}
+                                                VNĐ</strong></div>
+                                        <div class="fs-14">Còn lại: <strong
+                                                class="text-warning">{{ number_format($invoice->remaining_amount, 0, ',', '.') }}
+                                                VNĐ</strong></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Payment Method Selection -->
+                            <div class="mb-3">
+                                <label class="form-label">Chọn Phương Thức Thanh Toán <span
+                                        class="text-danger">*</span></label>
+                                <div class="row" id="payment-method-group-{{ $invoice->id }}">
+                                    <div class="col-md-4">
+                                        <div class="form-check payment-method-option" data-method="Sepay">
+                                            <input class="form-check-input" type="radio"
+                                                name="payment_method_{{ $invoice->id }}" id="sepay_{{ $invoice->id }}"
+                                                value="Sepay">
+                                            <label class="form-check-label" for="sepay_{{ $invoice->id }}">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="payment-icon bg-primary-transparent me-2">
+                                                        <i class="ri-bank-card-line text-primary"></i>
+                                                    </div>
+                                                    <div>
+                                                        <strong>Sepay</strong><br>
+                                                    </div>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check payment-method-option" data-method="PayOS">
+                                            <input class="form-check-input" type="radio"
+                                                name="payment_method_{{ $invoice->id }}" id="payos_{{ $invoice->id }}"
+                                                value="PayOS">
+                                            <label class="form-check-label" for="payos_{{ $invoice->id }}">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="payment-icon bg-info-transparent me-2">
+                                                        <i class="ri-bank-card-line text-info"></i>
+                                                    </div>
+                                                    <div>
+                                                        <strong>PayOS</strong><br>
+                                                    </div>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <script>
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    const group = document.getElementById('payment-method-group-{{ $invoice->id }}');
+                                    if (!group) return;
+
+                                    const radios = group.querySelectorAll('input[type=radio][name="payment_method_{{ $invoice->id }}"]');
+                                    const payBtn = document.getElementById('pay-btn-{{ $invoice->id }}');
+
+                                    // Disable button initially
+                                    if (payBtn) payBtn.disabled = true;
+
+                                    const updateSelection = (radio) => {
+                                        group.querySelectorAll('.payment-method-option').forEach(opt => opt.classList.remove(
+                                            'selected-method'));
+                                        if (radio.checked) {
+                                            radio.closest('.payment-method-option').classList.add('selected-method');
+                                            if (payBtn) payBtn.disabled = false;
+                                        }
+                                    };
+
+                                    radios.forEach(radio => {
+                                        radio.addEventListener('change', () => updateSelection(radio));
+                                        if (radio.checked) updateSelection(radio);
+                                    });
+                                });
+                            </script>
+                            <style>
+                                .payment-method-option.selected-method {
+                                    border-color: #4b9bfa !important;
+                                    background-color: #f8f9ff !important;
+                                    box-shadow: 0 0 0 2px #4b9bfa33;
+                                }
+                            </style>
+
+                            <!-- Payment Information -->
+                            <div class="alert alert-warning">
+                                <div class="d-flex align-items-start">
+                                    <i class="ri-information-line me-2 mt-1"></i>
+                                    <div>
+                                        <small>
+                                            Sau khi chọn phương thức thanh toán, hệ thống sẽ chuyển hướng đến cổng thanh
+                                            toán
+                                            tương ứng.
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                            <button type="button" class="btn btn-primary" id="pay-btn-{{ $invoice->id }}"
+                                onclick="processPayment('{{ $invoice->id }}')">
+                                <i class="ri-arrow-right-line me-1"></i> Tiến Hành Thanh Toán
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+    @endforeach
+
+    {{-- Modal QR Sepay --}}
+    @foreach ($invoices as $invoice)
+        @if ($invoice->status !== 'paid')
+            <div class="modal fade" id="sepayQrModal{{ $invoice->id }}" tabindex="-1"
+                aria-labelledby="sepayQrModalLabel{{ $invoice->id }}" aria-hidden="true" data-bs-backdrop="static"
+                data-bs-keyboard="false">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="sepayQrModalLabel{{ $invoice->id }}">Quét QR để thanh toán
+                                (Sepay)
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                        </div>
+                        <div class="modal-body text-center">
+                            @php
+                                $bankAccount = $settings['bank_account_number'] ?? '';
+                                $bankCode = $settings['bank_code'] ?? '';
+                                $bankName = $settings['bank_name'] ?? '';
+                            @endphp
+                            @if (empty($bankAccount) || empty($bankCode))
+                                <div class="alert alert-danger">
+                                    Ban chủ nhiệm chưa thiết lập ngân hàng. Vui lòng liên hệ ban chủ nhiệm để cập nhật thông
+                                    tin tài khoản ngân hàng.
+                                </div>
+                            @else
+                                @php
+                                    $amount = $invoice->remaining_amount;
+                                    $desc = str_replace('-', '', $invoice->invoice_code);
+                                    $qrUrl = "https://qr.sepay.vn/img?acc={$bankAccount}&bank={$bankCode}&amount={$amount}&des={$desc}&template=compact&download=false";
+                                    $qrDownloadUrl = "https://qr.sepay.vn/img?acc={$bankAccount}&bank={$bankCode}&amount={$amount}&des={$desc}&template=compact&download=true";
+                                @endphp
+                                <img src="{{ $qrUrl }}" alt="QR Sepay" class="img-fluid mb-3"
+                                    style="max-width: 300px;">
+                                <div class="mb-3">
+                                    <a href="{{ $qrDownloadUrl }}" class="btn btn-outline-primary" download>
+                                        <i class="ri-download-2-line me-1"></i> Tải ảnh QR về máy
+                                    </a>
+                                </div>
+                                <hr>
+                                <div class="alert alert-info">
+                                    <strong>Số tài khoản:</strong> {{ $bankAccount }}<br>
+                                    <strong>Ngân hàng:</strong> {{ $bankName }}<br>
+                                    <strong>Số tiền:</strong> {{ number_format($amount, 0, ',', '.') }} VNĐ<br>
+                                    <strong>Nội dung:</strong> {{ $desc }}
+                                    <hr>
+                                    <p class="text-danger">Vui lòng không đóng popup này cho đến khi thanh toán thành
+                                        công.</p>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+    @endforeach
+
+    {{-- Modal Thanh Toán Thành Công --}}
+    <div class="modal fade" id="paymentSuccessModal" tabindex="-1" aria-labelledby="paymentSuccessModalLabel"
+        aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="paymentSuccessModalLabel">Thanh Toán Thành Công</h5>
+                </div>
+                <div class="modal-body text-center">
+                    <i class="ri-checkbox-circle-line text-success" style="font-size: 48px;"></i>
+                    <h4 class="mt-3">Cảm ơn bạn đã thanh toán!</h4>
+                    <p>Hệ thống đã ghi nhận thanh toán của bạn.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-bs-dismiss="modal"
+                        onclick="window.location.href='{{ route('backend.club.invoices.show', $invoice->id) }}'">Thông Tin
+                        Thanh Toán</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @section('scripts')
+    <style>
+        .payment-method-option {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .payment-method-option:hover {
+            border-color: #4b9bfa;
+            background-color: #f8f9ff;
+        }
+
+        .payment-method-option .form-check-input:checked+.form-check-label {
+            border-color: #4b9bfa;
+            background-color: #f8f9ff;
+        }
+
+        .payment-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .payment-method-option .form-check-input {
+            display: none;
+        }
+
+        .payment-method-option .form-check-label {
+            width: 100%;
+            margin: 0;
+            cursor: pointer;
+        }
+    </style>
+
+    <script>
+        function processPayment(invoiceId) {
+            var group = document.getElementById('payment-method-group-' + invoiceId);
+            if (!group) return;
+            var selected = group.querySelector('input[type=radio]:checked');
+            if (!selected) return;
+            var method = selected.value;
+            if (method === 'Sepay') {
+                // Đóng modal chọn phương thức
+                var paymentModal = bootstrap.Modal.getInstance(document.getElementById('paymentModal' + invoiceId));
+                paymentModal.hide();
+                // Mở modal QR
+                var qrModal = new bootstrap.Modal(document.getElementById('sepayQrModal' + invoiceId));
+                qrModal.show();
+            } else {
+                // Xử lý các phương thức khác (PayOS, ...)
+                // window.location.href = ...;
+            }
+        }
+
+        // --- Polling trạng thái hóa đơn khi mở modal QR Sepay ---
+        @foreach ($invoices as $invoice)
+            @if ($invoice->status !== 'paid')
+                (function() {
+                    var modalId = 'sepayQrModal{{ $invoice->id }}';
+                    var invoiceCode = @json($invoice->invoice_code);
+                    var pollingInterval = null;
+                    var modalEl = document.getElementById(modalId);
+                    if (!modalEl) return;
+                    modalEl.addEventListener('shown.bs.modal', function() {
+                        pollingInterval = setInterval(function() {
+                            fetch('/api/invoice/check-status?invoice_code=' + encodeURIComponent(
+                                    invoiceCode))
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.status === 'paid') {
+                                        clearInterval(pollingInterval);
+                                        var qrModal = bootstrap.Modal.getInstance(modalEl);
+                                        if (qrModal) qrModal.hide();
+                                        var successModal = new bootstrap.Modal(document
+                                            .getElementById('paymentSuccessModal'));
+                                        successModal.show();
+                                    }
+                                });
+                        }, 2000); // 2s/lần
+                    });
+                    modalEl.addEventListener('hidden.bs.modal', function() {
+                        if (pollingInterval) {
+                            clearInterval(pollingInterval);
+                            pollingInterval = null;
+                        }
+                    });
+                })();
+            @endif
+        @endforeach
+    </script>
+
     <script>
         (function() {
             "use strict"

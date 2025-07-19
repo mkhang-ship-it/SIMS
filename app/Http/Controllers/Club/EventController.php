@@ -1,15 +1,4 @@
 <?php
-// Updated: EventController - Refactored for new DB structure (uuid, event_code, new relationships)
-// - Uses session('club_id') for club scoping (like MemberController)
-// - Eager loads relationships (semester, slot, classRoom, club)
-// - Uses new event_code, uuid, and status workflow
-// - Validation and file upload now follow MemberController's style
-// - All CRUD methods updated for new DB
-// - Removed legacy logic not compatible with new DB
-// - All field names and relationships now match the new DB
-// - All redirects and view data updated for new structure
-// - Removed getAllowedStatusesForUser and getUserRole private functions, inlined user role logic in store() and update()
-// Updated: Use Event::getAvailableStatusOptions($user) (pass User object), remove inline userRole logic for status
 
 namespace App\Http\Controllers\Club;
 
@@ -18,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Event;
 use App\Models\EventPlan;
 use App\Models\Semester;
+use Illuminate\Support\Facades\Log;
 use App\Models\Slot;
 use App\Models\ClassRoom;
 use Illuminate\Support\Facades\Auth;
@@ -50,17 +40,14 @@ class EventController extends Controller
 
     public function store(Request $request)
     {
+
         $clubId = session('club_id');
-        $user = Auth::user();
-        $event = new Event(); // For status options logic
-        $allowedStatuses = array_keys($event->getAvailableStatusOptions($user));
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'semester_id' => 'required|exists:semesters,id',
             'slot_id' => 'required|exists:slots,id',
             'class_room_id' => 'required|exists:class_rooms,id',
-            'status' => 'required|in:' . implode(',', $allowedStatuses),
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'event_date' => 'required|date',
         ]);
@@ -75,7 +62,7 @@ class EventController extends Controller
                 'semester_id' => $validatedData['semester_id'],
                 'slot_id' => $validatedData['slot_id'],
                 'class_room_id' => $validatedData['class_room_id'],
-                'status' => $validatedData['status'],
+                'status' => 'pending', // Default status
                 'event_date' => $validatedData['event_date'],
             ];
 
@@ -146,6 +133,7 @@ class EventController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'event_date' => 'required|date',
         ]);
+
         try {
             DB::beginTransaction();
             $updateData = [

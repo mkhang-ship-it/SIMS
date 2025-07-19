@@ -5,6 +5,7 @@
 // Auto-sets: due_date = created_at + 7 days if not provided
 // Status workflow: pending (default) -> paid/overdue
 // Updated: Fixed remaining_amount calculation to prevent negative values
+// Updated: getTotalPaidAttribute now returns total_amount if status is 'paid', otherwise 0 (statistics fix)
 
 namespace App\Models;
 
@@ -153,11 +154,11 @@ class Invoice extends Model
     }
 
     /**
-     * Get total paid amount from transactions
+     * Get total paid amount based on status: only return total_amount if status is 'paid', else 0
      */
     public function getTotalPaidAttribute()
     {
-        return $this->transactions->sum('paid_amount');
+        return $this->status === 'paid' ? $this->total_amount : 0;
     }
 
     /**

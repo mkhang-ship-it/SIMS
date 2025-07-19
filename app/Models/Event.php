@@ -153,63 +153,57 @@ class Event extends Model
     public function getStatusColorAttribute()
     {
         $colors = [
-            'pending' => 'warning',
+            'pending' => 'info',
             'active' => 'success',
             'cancelled' => 'danger',
-            'completed' => 'info'
+            'completed' => 'secondary'
         ];
 
         return $colors[$this->status] ?? 'secondary';
     }
 
     /**
-     * Get available status options for user based on current status and user role type (central only)
+     * Get available status options for user based on current status and user role type
      * @param \App\Models\User $user
      * @return array
      */
-    public function getAvailableStatusOptions($user)
+    public function getAvailableStatusOptions($user, $forEditing = false)
     {
         // If completed, no status changes allowed
         if ($this->status === 'completed') {
             return [];
         }
 
-        // Only allow if user role type is 'central'
-        if ($user && $user->role && $user->role->type === 'central') {
-            $options = [];
-            if ($this->status === 'pending') {
-                $options['active'] = 'Duyệt Sự Kiện';
-                $options['cancelled'] = 'Hủy Sự Kiện';
-            } elseif ($this->status === 'active') {
-                $options['active'] = 'Đã Duyệt';
-                $options['cancelled'] = 'Hủy Sự Kiện';
-            } elseif ($this->status === 'cancelled') {
-                $options['pending'] = 'Chờ Duyệt';
-                $options['cancelled'] = 'Đã Hủy';
-            }
-            return $options;
+        $options = [];
+
+        // Always include current status as an option when editing
+        if ($forEditing) {
+            $options[$this->status] = $this->status_label;
         }
 
-        // For all other users, only allow limited status changes
-        switch ($this->status) {
-            case 'pending':
-                return [
-                    'pending' => 'Chờ Duyệt',
-                    'cancelled' => 'Hủy Sự Kiện'
-                ];
-            case 'active':
-                return [
-                    'active' => 'Đã Duyệt',
-                    'cancelled' => 'Hủy Sự Kiện'
-                ];
-            case 'cancelled':
-                return [
-                    'pending' => 'Chờ Duyệt',
-                    'cancelled' => 'Đã Hủy'
-                ];
-            default:
-                return [];
+        // Check if user is admin (has role_id not null)
+        $isAdmin = $user && $user->role_id !== null;
+
+        if ($isAdmin) {
+            // Admin users can manage all status transitions
+            if ($this->status === 'pending') {
+                $options['active'] = 'Duyệt Sự Kiện';
+                $options['cancelled'] = 'Từ Chối';
+            } elseif ($this->status === 'active') {
+                $options['cancelled'] = 'Hủy Sự Kiện';
+            } elseif ($this->status === 'cancelled') {
+                $options['active'] = 'Kích Hoạt Lại';
+            }
+        } else {
+            // Regular users (club members) cannot change status from pending
+            // They can only cancel active events
+            if ($this->status === 'active') {
+                $options['cancelled'] = 'Hủy Sự Kiện';
+            }
+            // No options for pending or cancelled status for regular users
         }
+
+        return $options;
     }
 
     /**
@@ -233,7 +227,11 @@ class Event extends Model
      */
     public function canBeDeleted()
     {
-        return in_array($this->status, ['pending', 'cancelled']);
+        // Only cancelled events can be deleted
+        // Pending events cannot be deleted (must be approved or rejected first)
+        // Active events cannot be deleted (must be cancelled first)
+        // Completed events cannot be deleted
+        return $this->status === 'cancelled';
     }
 
     /**

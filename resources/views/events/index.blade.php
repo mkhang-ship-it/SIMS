@@ -1,7 +1,3 @@
-{{-- Admin events index view - Shows all events from all clubs system-wide
-Features: View all events, approve pending events only
-Admin can only approve events, no other actions allowed --}}
-
 @extends('layouts.app')
 
 @section('content')
@@ -56,7 +52,6 @@ Admin can only approve events, no other actions allowed --}}
                                         <th style="text-align: center !important;">Ngày Diễn Ra</th>
                                         <th style="text-align: center !important;">Thời Gian</th>
                                         <th style="text-align: center !important;">Địa Điểm</th>
-                                        <th style="text-align: center !important;">Trạng Thái</th>
                                         <th style="text-align: center !important;">Thao Tác</th>
                                     </tr>
                                 </thead>
@@ -91,107 +86,30 @@ Admin can only approve events, no other actions allowed --}}
                                             </td>
                                             <td class="text-center">{{ $event->classRoom->name ?? '-' }}</td>
                                             <td class="text-center">
-                                                <span class="badge bg-{{ $event->status_color }}">
-                                                    {{ $event->status_label }}
-                                                </span>
-                                            </td>
-                                            <td class="text-center">
-                                                <div class="gap-2 fs-15">
-                                                    @if (auth()->user()->hasPermissionForModuleCode('event_management', 'approve', 'central') &&
-                                                            $event->status === 'pending')
-                                                        <button type="button" class="btn btn-icon btn-sm btn-success-light"
+                                                <div class="d-flex gap-2 justify-content-center">
+                                                    @if (
+                                                        $event->status === 'pending' &&
+                                                            auth()->user()->hasPermissionForModuleCode('event_management', 'approve', 'central'))
+                                                        <!-- Approve Button -->
+                                                        <button type="button" class="btn btn-icon btn-sm btn-info-light"
                                                             data-bs-toggle="modal"
-                                                            data-bs-target="#approveEventModal{{ $event->id }}"
-                                                            title="Phê duyệt sự kiện">
+                                                            data-bs-target="#approveModal{{ $event->id }}"
+                                                            title="Duyệt Sự Kiện">
                                                             <i class="ri-check-line"></i>
                                                         </button>
-                                                    @else
-                                                        <span class="text-muted">
-                                                            @if ($event->status === 'active')
-                                                                <i class="ri-check-fill text-success"
-                                                                    title="Đã phê duyệt"></i>
-                                                            @elseif($event->status === 'cancelled')
-                                                                <i class="ri-close-fill text-danger" title="Đã hủy"></i>
-                                                            @elseif($event->status === 'completed')
-                                                                <i class="ri-flag-fill text-info" title="Đã hoàn thành"></i>
-                                                            @endif
-                                                        </span>
+                                                    @elseif ($event->status === 'active')
+                                                        <span class="badge bg-success">Đã Duyệt</span>
                                                     @endif
+
+                                                    
+
                                                 </div>
                                             </td>
                                         </tr>
-
-                                        <!-- Approve Event Modal -->
-                                        @if (auth()->user()->hasPermissionForModuleCode('event_management', 'approve', 'central') &&
-                                                $event->status === 'pending')
-                                            <div class="modal fade" id="approveEventModal{{ $event->id }}"
-                                                tabindex="-1" aria-labelledby="approveEventModalLabel{{ $event->id }}"
-                                                aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-                                                <div class="modal-dialog modal-dialog-centered">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title"
-                                                                id="approveEventModalLabel{{ $event->id }}">
-                                                                Phê Duyệt Sự Kiện
-                                                            </h5>
-                                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                                aria-label="Close"></button>
-                                                        </div>
-                                                        <form
-                                                            action="{{ route('backend.events.approve', $event->id) }}"
-                                                            method="POST">
-                                                            @csrf
-                                                            @method('PUT')
-                                                            <div class="modal-body">
-                                                                <div class="text-center mb-3">
-                                                                    <i class="ri-question-mark-fill fs-50 text-warning"></i>
-                                                                </div>
-                                                                <p class="text-center">
-                                                                    Bạn có chắc chắn muốn phê duyệt sự kiện
-                                                                    <strong>"{{ $event->name }}"</strong>
-                                                                    của câu lạc bộ
-                                                                    <strong>"{{ $event->club->name }}"</strong> không?
-                                                                </p>
-                                                                <div class="alert alert-info">
-                                                                    <strong>Thông tin sự kiện:</strong><br>
-                                                                    <div class="row">
-                                                                        <div class="col-6">
-                                                                            <small>
-                                                                                <strong>Ngày:</strong>
-                                                                                {{ $event->formatted_event_date }}<br>
-                                                                                <strong>Thời gian:</strong>
-                                                                                {{ $event->time_range }}<br>
-                                                                            </small>
-                                                                        </div>
-                                                                        <div class="col-6">
-                                                                            <small>
-                                                                                <strong>Địa điểm:</strong>
-                                                                                {{ $event->classRoom->name ?? '-' }}<br>
-                                                                                <strong>Học kỳ:</strong>
-                                                                                {{ $event->semester->name ?? '-' }}
-                                                                            </small>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary"
-                                                                    data-bs-dismiss="modal">Hủy</button>
-                                                                <button type="submit" class="btn btn-success">
-                                                                    <i class="ri-check-line"></i> Phê Duyệt
-                                                                </button>
-                                                            </div>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endif
                                     @endforeach
                                 </tbody>
                             </table>
                         </div>
-
-
                     </div>
                 </div>
             </div>
@@ -199,4 +117,40 @@ Admin can only approve events, no other actions allowed --}}
         <!-- End::row-1 -->
 
     </div>
+
+    <!-- Modals for Event Actions -->
+    @foreach ($events as $event)
+        <!-- Approve Modal -->
+        @if (
+            $event->status === 'pending' &&
+                auth()->user()->hasPermissionForModuleCode('event_management', 'approve', 'central'))
+            <div class="modal fade" id="approveModal{{ $event->id }}" tabindex="-1"
+                aria-labelledby="approveModalLabel{{ $event->id }}" aria-hidden="true" data-bs-backdrop="static"
+                data-bs-keyboard="false">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="approveModalLabel{{ $event->id }}">Phê Duyệt Sự Kiện
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Bạn có chắc chắn muốn phê duyệt sự kiện <strong>{{ $event->name }}</strong> không?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                            <form action="{{ route('backend.events.approve', $event->id) }}" method="POST"
+                                style="display: inline;">
+                                @csrf
+                                @method('PUT')
+                                <button type="submit" class="btn btn-success">
+                                    <i class="ri-check-line"></i> Phê Duyệt
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+    @endforeach
 @endsection

@@ -91,10 +91,11 @@ class EventController extends Controller
         return view('events.timetable', compact('timetable', 'dateHeaders', 'slots', 'semesters', 'clubs', 'selectedWeek', 'selectedYear', 'weekOptions'));
     }
 
+
     /**
      * Approve an event
      */
-    public function approve(Request $request, Event $event)
+    public function approve(Event $event)
     {
         // Check if event is in pending status
         if ($event->status !== 'pending') {

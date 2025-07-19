@@ -49,31 +49,12 @@
                         $greeting = '🌙 Đêm yên bình nhé,';
                     }
 
-                    $displayName =  Auth::user()->name;
+                    $displayName = Auth::user()->name;
                 @endphp
 
-                <span class="fw-semibold">
+                <span class="fw-semibold d-none d-md-inline">
                     {{ $greeting }} {{ $displayName }}!
                 </span>
-
-                @php
-                    $user = Auth::user();
-                    $clubs = $user->clubs ?? collect();
-                @endphp
-                @if ($clubs->count() > 1)
-                    <form id="club-switch-form" action="{{ route('switch.default.club') }}" method="POST"
-                        style="display:inline-block; margin-left: 16px;">
-                        @csrf
-                        <select name="default_club_id" class="form-select form-select-sm d-inline-block w-auto"
-                            onchange="document.getElementById('club-switch-form').submit()">
-                            @foreach ($clubs as $club)
-                                <option value="{{ $club->id }}" @if ($user->default_club_id == $club->id) selected @endif>
-                                    {{ $club->name }}</option>
-                            @endforeach
-                        </select>
-                    </form>
-                @endif
-
 
             </div>
             <!-- End::header-element -->
@@ -85,27 +66,57 @@
         <!-- Start::header-content-right -->
         <div class="header-content-right">
 
+            @php
+                $user = Auth::user();
+                $clubs = $user->clubs ?? collect();
+            @endphp
 
-            <!-- Start::header-element -->
-            <div class="header-element country-selector">
-                <!-- Start::header-link|dropdown-toggle -->
-                <a href="javascript:void(0);" class="header-link dropdown-toggle" data-bs-auto-close="outside"
-                    data-bs-toggle="dropdown">
-                    <img src="../assets/images/flags/us_flag.jpg" alt="img" class="rounded-circle">
-                </a>
-                <!-- End::header-link|dropdown-toggle -->
-                <ul class="main-header-dropdown dropdown-menu dropdown-menu-end" data-popper-placement="none">
-                    <li>
-                        <a class="dropdown-item d-flex align-items-center" href="javascript:void(0);">
-                            <span class="avatar avatar-xs lh-1 me-2">
-                                <img src="../assets/images/flags/us_flag.jpg" alt="img">
-                            </span>
-                            English
-                        </a>
-                    </li>
-                </ul>
-            </div>
-            <!-- End::header-element -->
+            @if ($clubs->count() > 1)
+                <!-- Start::header-element -->
+                <div class="header-element club-selector">
+                    <!-- Start::header-link|dropdown-toggle -->
+                    @php
+                        $defaultClub = $clubs->firstWhere('id', $user->default_club_id) ?? $clubs->first();
+                        $defaultClubImage =
+                            $defaultClub->settings['image_square_light'] ?? asset('assets/images/avatar_example.png');
+                    @endphp
+                    <a href="javascript:void(0);" class="header-link dropdown-toggle" data-bs-auto-close="outside"
+                        data-bs-toggle="dropdown">
+                        <img src="{{ $defaultClubImage }}" alt="img" class="rounded-circle"
+                            style="width: 24px; height: 24px;">
+                    </a>
+                    <!-- End::header-link|dropdown-toggle -->
+
+                    <ul class="main-header-dropdown dropdown-menu dropdown-menu-end" data-popper-placement="none">
+                        <li class="dropdown-header text-muted fs-12 px-3 pt-2 pb-1">
+                            Chuyển đổi Club
+                        </li>
+                        @foreach ($clubs as $club)
+                            @php
+                                $isActive = $user->default_club_id == $club->id;
+                                $itemClass = $isActive ? 'bg-primary text-white' : '';
+                            @endphp
+                            <li>
+                                <form action="{{ route('switch.default.club') }}" method="POST"
+                                    id="club-switch-form-{{ $club->id }}">
+                                    @csrf
+                                    <input type="hidden" name="default_club_id" value="{{ $club->id }}">
+                                    <a class="dropdown-item d-flex align-items-center {{ $itemClass }}"
+                                        href="javascript:void(0);"
+                                        onclick="document.getElementById('club-switch-form-{{ $club->id }}').submit();">
+                                        <span class="avatar avatar-xs lh-1 me-2">
+                                            <img src="{{ $club->settings['image_square_light'] ?? asset('assets/images/avatar_example.png') }}"
+                                                alt="img" class="rounded-circle">
+                                        </span>
+                                        {{ $club->name }}
+                                    </a>
+                                </form>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+                <!-- End::header-element -->
+            @endif
 
             <!-- Start::header-element -->
             <div class="header-element">

@@ -124,6 +124,7 @@ class Transaction extends Model
         $colors = [
             'Sepay' => 'primary',
             'PayOS' => 'info',
+            'Paykit' => 'warning',
             'Cash' => 'success'
         ];
 

@@ -7,11 +7,12 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use App\Models\EventCheckin;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasUuids;
+    use HasFactory, Notifiable, HasUuids, HasApiTokens;
 
     /**
      * The attributes that are mass assignable.
@@ -33,28 +34,9 @@ class User extends Authenticatable
         'role_id',
         'type',
         'status',
-        'default_club_id', // <--- thêm dòng này
+        'default_club_id',
     ];
 
-    public function chats()
-    {
-        return $this->belongsToMany(Chat::class, 'chat_user', 'user_id', 'chat_id');
-    }
-
-    public function messages()
-    {
-        return $this->hasMany(Message::class, 'sender_id');
-    }
-
-    public function groupChats()
-    {
-        return $this->chats()->where('is_group', true);
-    }
-
-    public function privateChats()
-    {
-        return $this->chats()->where('is_group', false);
-    }
 
     /**
      * The attributes that should be hidden for serialization.
@@ -170,14 +152,11 @@ class User extends Authenticatable
     {
         return $this->hasOne(UserBankAccount::class);
     }
-
-    // Updated: hasPermissionForModuleCode now checks admin via user role_id, club user via UserClubRole (by session club_id)
+    
     public function hasPermissionForModuleCode($moduleCode, $action, $roleType = null)
     {
-        // Lấy club_id từ session nếu có (dùng cho user club)
         $clubId = session('club_id');
 
-        // Nếu là admin (role type central hoặc không có club_id), check theo role_id của User
         if ($this->role && ($this->role->type === 'central' || !$clubId)) {
             $role = $this->role()->with('permissions.module');
             if ($roleType !== null) {
@@ -195,7 +174,6 @@ class User extends Authenticatable
                 ->exists();
         }
 
-        // Nếu là user club (role type branch), check theo UserClubRole của club hiện tại
         if ($clubId) {
             $userClubRole = $this->userClubRoles()
                 ->where('club_id', $clubId)
@@ -216,7 +194,6 @@ class User extends Authenticatable
                 ->exists();
         }
 
-        // Mặc định không có quyền
         return false;
     }
 }

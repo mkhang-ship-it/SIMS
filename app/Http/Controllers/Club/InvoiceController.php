@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\Setting;
 
 class InvoiceController extends Controller
 {
@@ -68,22 +69,24 @@ class InvoiceController extends Controller
 
             $monthlyStats[$month] = [
                 'total' => $monthInvoices->count(),
-                'pending' => $monthInvoices->where('status', 'pending')->count(),
+                'pending' => $monthInvoices->whereIn('status', ['pending', 'overdue'])->count(),
                 'paid' => $monthInvoices->where('status', 'paid')->count(),
                 'overdue' => $monthInvoices->where('status', 'overdue')->count(),
                 'total_amount' => $monthInvoices->sum('total_amount'),
                 'paid_amount' => $monthInvoices->sum('total_paid'),
+                'pending_amount' => $monthInvoices->whereIn('status', ['pending', 'overdue'])->sum('total_amount'),
             ];
         }
 
         // Get statistics
         $statistics = [
             'total' => $invoices->count(),
-            'pending' => $invoices->where('status', 'pending')->count(),
+            'pending' => $invoices->whereIn('status', ['pending', 'overdue'])->count(),
             'paid' => $invoices->where('status', 'paid')->count(),
             'overdue' => $invoices->where('status', 'overdue')->count(),
             'total_amount' => $invoices->sum('total_amount'),
             'paid_amount' => $invoices->sum('total_paid'),
+            'pending_amount' => $invoices->whereIn('status', ['pending', 'overdue'])->sum('total_amount'),
             'monthly_stats' => $monthlyStats,
         ];
 
@@ -312,7 +315,7 @@ class InvoiceController extends Controller
         $request->validate([
             'paid_amount' => 'required|numeric|min:0.01|max:' . $invoice->remaining_amount,
             'payment_date' => 'required|date|after_or_equal:' . $invoice->created_at->format('Y-m-d'),
-            'payment_method' => 'required|in:Sepay,PayOS,Cash',
+            'payment_method' => 'required|in:Sepay,PayOS,Paykit,Cash',
             'note' => 'nullable|string|max:500',
         ]);
 
@@ -405,29 +408,32 @@ class InvoiceController extends Controller
 
             $monthlyStats[$month] = [
                 'total' => $monthInvoices->count(),
-                'pending' => $monthInvoices->where('status', 'pending')->count(),
+                'pending' => $monthInvoices->whereIn('status', ['pending', 'overdue'])->count(),
                 'paid' => $monthInvoices->where('status', 'paid')->count(),
                 'overdue' => $monthInvoices->where('status', 'overdue')->count(),
                 'total_amount' => $monthInvoices->sum('total_amount'),
                 'paid_amount' => $monthInvoices->sum('total_paid'),
+                'pending_amount' => $monthInvoices->whereIn('status', ['pending', 'overdue'])->sum('total_amount'),
             ];
         }
 
         // Calculate statistics for current user's invoices
         $statistics = [
             'total' => $invoices->count(),
-            'pending' => $invoices->where('status', 'pending')->count(),
+            'pending' => $invoices->whereIn('status', ['pending', 'overdue'])->count(),
             'paid' => $invoices->where('status', 'paid')->count(),
             'overdue' => $invoices->where('status', 'overdue')->count(),
             'total_amount' => $invoices->sum('total_amount'),
             'paid_amount' => $invoices->sum('total_paid'),
+            'pending_amount' => $invoices->whereIn('status', ['pending', 'overdue'])->sum('total_amount'),
             'monthly_stats' => $monthlyStats,
         ];
 
-        // Get semesters for filter dropdown
         $semesters = Semester::where('status', 'active')
             ->orderBy('created_at', 'desc')
             ->get();
+
+        $settings = Setting::where('club_id', $clubId)->get()->pluck('value', 'key')->toArray();
 
         return view('clubs.invoices.my_invoices', compact(
             'invoices',
@@ -435,7 +441,8 @@ class InvoiceController extends Controller
             'semesters',
             'selectedSemester',
             'selectedMonth',
-            'selectedYear'
+            'selectedYear',
+            'settings'
         ));
     }
 

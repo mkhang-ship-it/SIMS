@@ -1,8 +1,10 @@
 {{-- Invoice Index Page - Updated for UserClubRole member selection (multi-club)
      Changed member selection in create modal to use UserClubRole (member_ids[]), display member name/email via $member->user --}}
+{{-- Updated: Month/year filter now only shows months/years within the selected semester (dynamic JS filtering) --}}
 {{-- Updated: New layout with 3-9 column structure, statistics sidebar, and ApexCharts --}}
 {{-- Features: Modal-based CRUD operations, payment recording, bulk operations --}}
 {{-- Fixed: Mobile bulk delete button functionality, select all checkbox state management, individual checkbox display, and bulk delete button visibility --}}
+{{-- Fixed: Statistics bug for Đã thanh toán and Chờ thanh toán (now uses invoice status, not transaction table, for calculation; pending amount uses statistics['pending_amount']) --}}
 @extends('layouts.app')
 
 @section('content')
@@ -121,7 +123,7 @@
                                 </h6>
                                 <div>
                                     <h4 class="fs-18 fw-semibold mb-2">
-                                        {{ number_format($statistics['total_amount'] - $statistics['paid_amount'], 0, ',', '.') }}
+                                        {{ number_format($statistics['pending_amount'], 0, ',', '.') }}
                                         VNĐ
                                     </h4>
                                 </div>
@@ -650,7 +652,10 @@
     </div>
 @endsection
 
+
+
 @section('scripts')
+   
     <script>
         (function() {
             "use strict"

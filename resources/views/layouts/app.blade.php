@@ -1,7 +1,7 @@
 {{--
-    Updated: Added Flasher notification system integration
-    - Added @include('flasher::message') directive to render notifications
-    - Fixed z-index issue to display notifications above header
+Updated: Added Flasher notification system integration
+- Added @include('flasher::message') directive to render notifications
+- Fixed z-index issue to display notifications above header
 --}}
 <!DOCTYPE html>
 <html lang="en" dir="ltr" data-nav-layout="vertical" data-theme-mode="light" data-header-styles="light"
@@ -58,6 +58,9 @@
         <span class="arrow"><i class="ri-arrow-up-s-fill fs-20"></i></span>
     </div>
     <div id="responsive-overlay"></div>
+
+    <!-- Chatbot Widget -->
+    @include('partials.chatbot')
 
     @include('layouts.js')
     @yield('scripts')

@@ -1,8 +1,8 @@
 {{--
-    Updated: Added Flasher CSS integration with z-index fix
-    - Added flasher.min.css for notification styling
-    - Added custom CSS to override z-index (1050) to display above header
-    - Fixed: Removed JavaScript files from CSS include (moved to JS include)
+Updated: Added Flasher CSS integration with z-index fix
+- Added flasher.min.css for notification styling
+- Added custom CSS to override z-index (1050) to display above header
+- Fixed: Removed JavaScript files from CSS include (moved to JS include)
 --}}
 
 <!-- Bootstrap Css -->

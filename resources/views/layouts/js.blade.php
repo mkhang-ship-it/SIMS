@@ -1,7 +1,7 @@
 {{--
-    Updated: Added Flasher JS integration
-    - Added flasher.min.js for notification functionality
-    - Fixed: Moved JavaScript files from CSS include and proper loading order
+Updated: Added Flasher JS integration
+- Added flasher.min.js for notification functionality
+- Fixed: Moved JavaScript files from CSS include and proper loading order
 --}}
 
 <!-- Popper JS -->

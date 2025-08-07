@@ -27,22 +27,24 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Seed modules and permissions first
-        $this->call([
-            ModuleSeeder::class,
-            ClassRoomSeeder::class,
-            SlotSeeder::class,
-            MajorSeeder::class,
-            SemesterSeeder::class,
-            CourseSeeder::class,
-            QuoteSeeder::class,
-            ProvinceSeeder::class,
-            CommuneSeeder::class,
-            ClubSeeder::class,
-            AwardSeeder::class, // Gọi seeder giải thưởng cho user trong club
-            EventSeeder::class, // Gọi seeder sự kiện cho các club
-            NotificationSeeder::class, // Gọi seeder thông báo cho testing
-        ]);
+        if (env('APP_ENV') !== 'production') {
+            // Seed modules and permissions first
+            $this->call([
+                ModuleSeeder::class,
+                ClassRoomSeeder::class,
+                SlotSeeder::class,
+                MajorSeeder::class,
+                SemesterSeeder::class,
+                CourseSeeder::class,
+                QuoteSeeder::class,
+                ProvinceSeeder::class,
+                CommuneSeeder::class,
+                ClubSeeder::class,
+                AwardSeeder::class, // Gọi seeder giải thưởng cho user trong club
+                EventSeeder::class, // Gọi seeder sự kiện cho các club
+                NotificationSeeder::class, // Gọi seeder thông báo cho testing
+            ]);
+        }
 
         // Create roles first
         $adminRole = Role::create([

@@ -39,13 +39,19 @@ class DatabaseSeeder extends Seeder
                 ProvinceSeeder::class,
                 CommuneSeeder::class,
                 ClubSeeder::class,
-                AwardSeeder::class, // Gọi seeder giải thưởng cho user trong club
-                EventSeeder::class, // Gọi seeder sự kiện cho các club
-                NotificationSeeder::class, // Gọi seeder thông báo cho testing
+                AwardSeeder::class,
+                EventSeeder::class,
+                NotificationSeeder::class,
             ]);
         }
         $this->call([
             ModuleSeeder::class,
+            ClassRoomSeeder::class,
+            SlotSeeder::class,
+            MajorSeeder::class,
+            QuoteSeeder::class,
+            ProvinceSeeder::class,
+            CommuneSeeder::class,
         ]);
 
         // Create roles first

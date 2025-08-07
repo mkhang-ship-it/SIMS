@@ -1,7 +1,7 @@
 <?php
-// ClubSeeder.php - Updated to create clubs with 2 default roles and 2 members per club
-// Changes: Modified to create 2 roles per club, 2 members with corresponding roles, and run ModuleClubSeeder
-// NEW: Each user is now also assigned to 1-2 random other clubs as "Phó chủ nhiệm" if possible
+// Updated: Removed address field from club data since it's now handled through Address model relationship
+// Updated: Removed address field from club creation since it's now handled through Address model relationship
+// Updated: Removed address field from club update since it's now handled through Address model relationship
 
 namespace Database\Seeders;
 
@@ -32,7 +32,6 @@ class ClubSeeder extends Seeder
                 'name' => 'CLB Âm nhạc Harmony',
                 'email' => 'harmony@example.com',
                 'phone' => '0123456789',
-                'address' => 'Tầng 3, Tòa nhà A, Trường Đại học',
                 'status' => 'active',
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -42,7 +41,6 @@ class ClubSeeder extends Seeder
                 'name' => 'CLB Thể thao Champions',
                 'email' => 'champions@example.com',
                 'phone' => '0123456790',
-                'address' => 'Sân vận động trường, Khu thể thao',
                 'status' => 'active',
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -52,7 +50,6 @@ class ClubSeeder extends Seeder
                 'name' => 'CLB Nhiếp ảnh Lens',
                 'email' => 'lens@example.com',
                 'phone' => '0123456791',
-                'address' => 'Phòng 201, Tòa nhà B, Khu học tập',
                 'status' => 'active',
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -62,7 +59,6 @@ class ClubSeeder extends Seeder
                 'name' => 'CLB Lập trình CodeCraft',
                 'email' => 'codecraft@example.com',
                 'phone' => '0123456792',
-                'address' => 'Phòng Lab 301, Khoa Công nghệ thông tin',
                 'status' => 'active',
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -72,7 +68,6 @@ class ClubSeeder extends Seeder
                 'name' => 'CLB Văn học Poetry',
                 'email' => 'poetry@example.com',
                 'phone' => '0123456793',
-                'address' => 'Thư viện trường, Tầng 2',
                 'status' => 'active',
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -82,7 +77,6 @@ class ClubSeeder extends Seeder
                 'name' => 'CLB Khiêu vũ DanceFlow',
                 'email' => 'danceflow@example.com',
                 'phone' => '0123456794',
-                'address' => 'Phòng múa, Trung tâm văn hóa',
                 'status' => 'active',
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -92,7 +86,6 @@ class ClubSeeder extends Seeder
                 'name' => 'CLB Môi trường GreenEarth',
                 'email' => 'greenearth@example.com',
                 'phone' => '0123456795',
-                'address' => 'Vườn thực nghiệm, Khuôn viên trường',
                 'status' => 'active',
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -102,7 +95,6 @@ class ClubSeeder extends Seeder
                 'name' => 'CLB Kinh doanh Startup',
                 'email' => 'startup@example.com',
                 'phone' => '0123456796',
-                'address' => 'Văn phòng 401, Tòa nhà C, Khu nghiên cứu',
                 'status' => 'active',
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -112,7 +104,6 @@ class ClubSeeder extends Seeder
                 'name' => 'CLB Ngoại ngữ LanguageBridge',
                 'email' => 'languagebridge@example.com',
                 'phone' => '0123456797',
-                'address' => 'Phòng 501, Khoa Ngoại ngữ',
                 'status' => 'active',
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -122,7 +113,6 @@ class ClubSeeder extends Seeder
                 'name' => 'CLB Tình nguyện HeartShare',
                 'email' => 'heartshare@example.com',
                 'phone' => '0123456798',
-                'address' => 'Văn phòng Đoàn Thanh niên, Tầng 1',
                 'status' => 'active',
                 'created_at' => now(),
                 'updated_at' => now(),

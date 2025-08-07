@@ -1,4 +1,3 @@
-{{-- Modern Chatbot Widget --}}
 <div class="chatbot-widget" id="chatbotWidget">
     <!-- Chatbot Button -->
     <div class="chatbot-button" id="chatbotButton">
@@ -67,6 +66,228 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const chatbotButton = document.getElementById('chatbotButton');
+        const chatbotWindow = document.getElementById('chatbotWindow');
+        const chatbotClose = document.getElementById('chatbotClose');
+        const chatbotInput = document.getElementById('chatbotInput');
+        const chatbotSend = document.getElementById('chatbotSend');
+        const chatbotMessages = document.getElementById('chatbotMessages');
+        const quickActionBtn = document.getElementById('quickActionBtn');
+        const quickActionsMenu = document.getElementById('quickActionsMenu');
+
+        let isOpen = false;
+        let isMenuOpen = false;
+
+        // Toggle chatbot window
+        chatbotButton.addEventListener('click', function() {
+            if (isOpen) {
+                closeChatbot();
+            } else {
+                openChatbot();
+            }
+        });
+
+        // Close chatbot
+        chatbotClose.addEventListener('click', function() {
+            closeChatbot();
+        });
+
+        // Send message on Enter
+        chatbotInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Send message on button click
+        chatbotSend.addEventListener('click', function() {
+            sendMessage();
+        });
+
+        // Toggle quick actions menu
+        quickActionBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (isMenuOpen) {
+                closeQuickActionsMenu();
+            } else {
+                openQuickActionsMenu();
+            }
+        });
+
+        // Handle quick action clicks
+        document.querySelectorAll('.quick-action-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const action = this.dataset.action;
+                handleQuickAction(action);
+                closeQuickActionsMenu();
+            });
+        });
+
+        function openChatbot() {
+            chatbotWindow.classList.add('active');
+            isOpen = true;
+            // Focus on input
+            setTimeout(() => {
+                chatbotInput.focus();
+            }, 300);
+        }
+
+        function closeChatbot() {
+            chatbotWindow.classList.remove('active');
+            isOpen = false;
+            closeQuickActionsMenu();
+        }
+
+        function openQuickActionsMenu() {
+            quickActionsMenu.classList.add('active');
+            quickActionBtn.classList.add('active');
+            isMenuOpen = true;
+        }
+
+        function closeQuickActionsMenu() {
+            quickActionsMenu.classList.remove('active');
+            quickActionBtn.classList.remove('active');
+            isMenuOpen = false;
+        }
+
+        function sendMessage() {
+            const message = chatbotInput.value.trim();
+            if (message === '') return;
+
+            // Close quick actions menu if open
+            if (isMenuOpen) {
+                closeQuickActionsMenu();
+            }
+
+            // Add user message
+            addMessage(message, 'user');
+            chatbotInput.value = '';
+
+            // Show typing indicator
+            showTypingIndicator();
+
+            // Simulate bot response (replace with actual API call)
+            setTimeout(() => {
+                hideTypingIndicator();
+                const responses = [
+                    "Hiện tại bạn không có quyền truy cập chức năng này.",
+                ];
+                const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                addMessage(randomResponse, 'bot');
+            }, 1500);
+        }
+
+        function handleQuickAction(action) {
+            let message = '';
+            switch (action) {
+                case 'help':
+                    message = 'Trợ giúp';
+                    break;
+                case 'contact':
+                    message = 'Thông tin';
+                    break;
+                case 'info':
+                    message = 'Thông tin về câu lạc bộ';
+                    break;
+                case 'settings':
+                    message = 'Cài đặt';
+                    break;
+                default:
+                    return;
+            }
+
+            chatbotInput.value = message;
+            sendMessage();
+        }
+
+        function addMessage(message, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chatbot-message ${sender}-message`;
+
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('vi-VN', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            if (sender === 'user') {
+                messageDiv.innerHTML = `
+                <div class="message-content">
+                    <p>${escapeHtml(message)}</p>
+                    <span class="message-time">${timeString}</span>
+                </div>
+            `;
+            } else {
+                messageDiv.innerHTML = `
+                <img src="{{ asset('assets/images/assistant.png') }}" alt="Assistant" class="message-avatar">
+                <div class="message-content">
+                    <p>${escapeHtml(message)}</p>
+                    <span class="message-time">${timeString}</span>
+                </div>
+            `;
+            }
+
+            chatbotMessages.appendChild(messageDiv);
+            chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'chatbot-message bot-message';
+            typingDiv.id = 'typingIndicator';
+            typingDiv.innerHTML = `
+            <img src="{{ asset('assets/images/assistant.png') }}" alt="Assistant" class="message-avatar">
+            <div class="message-content">
+                <div class="typing-indicator">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            </div>
+        `;
+
+            chatbotMessages.appendChild(typingDiv);
+            chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            const typingIndicator = document.getElementById('typingIndicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, function(m) {
+                return map[m];
+            });
+        }
+
+        // Close chatbot when clicking outside
+        document.addEventListener('click', function(event) {
+            if (isOpen && !chatbotButton.contains(event.target) && !chatbotWindow.contains(event
+                    .target)) {
+                closeChatbot();
+            }
+
+            // Close quick actions menu when clicking outside
+            if (isMenuOpen && !quickActionBtn.contains(event.target) && !quickActionsMenu.contains(event
+                    .target)) {
+                closeQuickActionsMenu();
+            }
+        });
+    });
+</script>
 
 <style>
     .chatbot-widget {
@@ -545,225 +766,3 @@
         }
     }
 </style>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-    const chatbotButton = document.getElementById('chatbotButton');
-    const chatbotWindow = document.getElementById('chatbotWindow');
-    const chatbotClose = document.getElementById('chatbotClose');
-    const chatbotInput = document.getElementById('chatbotInput');
-    const chatbotSend = document.getElementById('chatbotSend');
-    const chatbotMessages = document.getElementById('chatbotMessages');
-    const quickActionBtn = document.getElementById('quickActionBtn');
-    const quickActionsMenu = document.getElementById('quickActionsMenu');
-
-    let isOpen = false;
-    let isMenuOpen = false;
-
-    // Toggle chatbot window
-    chatbotButton.addEventListener('click', function() {
-        if (isOpen) {
-            closeChatbot();
-        } else {
-            openChatbot();
-        }
-    });
-
-    // Close chatbot
-    chatbotClose.addEventListener('click', function() {
-        closeChatbot();
-    });
-
-    // Send message on Enter
-    chatbotInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            sendMessage();
-        }
-    });
-
-    // Send message on button click
-    chatbotSend.addEventListener('click', function() {
-        sendMessage();
-    });
-
-    // Toggle quick actions menu
-    quickActionBtn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        if (isMenuOpen) {
-            closeQuickActionsMenu();
-        } else {
-            openQuickActionsMenu();
-        }
-    });
-
-    // Handle quick action clicks
-    document.querySelectorAll('.quick-action-item').forEach(item => {
-        item.addEventListener('click', function() {
-            const action = this.dataset.action;
-            handleQuickAction(action);
-            closeQuickActionsMenu();
-        });
-    });
-
-    function openChatbot() {
-        chatbotWindow.classList.add('active');
-        isOpen = true;
-        // Focus on input
-        setTimeout(() => {
-            chatbotInput.focus();
-        }, 300);
-    }
-
-    function closeChatbot() {
-        chatbotWindow.classList.remove('active');
-        isOpen = false;
-        closeQuickActionsMenu();
-    }
-
-    function openQuickActionsMenu() {
-        quickActionsMenu.classList.add('active');
-        quickActionBtn.classList.add('active');
-        isMenuOpen = true;
-    }
-
-    function closeQuickActionsMenu() {
-        quickActionsMenu.classList.remove('active');
-        quickActionBtn.classList.remove('active');
-        isMenuOpen = false;
-    }
-
-    function sendMessage() {
-        const message = chatbotInput.value.trim();
-        if (message === '') return;
-
-        // Close quick actions menu if open
-        if (isMenuOpen) {
-            closeQuickActionsMenu();
-        }
-
-        // Add user message
-        addMessage(message, 'user');
-        chatbotInput.value = '';
-
-        // Show typing indicator
-        showTypingIndicator();
-
-        // Simulate bot response (replace with actual API call)
-        setTimeout(() => {
-            hideTypingIndicator();
-            const responses = [
-                "Cảm ơn bạn đã liên hệ! Tôi đang xử lý yêu cầu của bạn.",
-                "Đây là một câu trả lời mẫu từ chatbot. Tôi có thể giúp bạn với nhiều vấn đề khác nhau.",
-                "Tôi hiểu rồi. Bạn có thể cho tôi biết thêm chi tiết không?",
-                "Đó là một câu hỏi hay! Để tôi tìm hiểu và trả lời bạn.",
-                "Tôi sẵn sàng hỗ trợ bạn. Bạn cần giúp đỡ gì khác không?"
-            ];
-            const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-            addMessage(randomResponse, 'bot');
-        }, 1500);
-    }
-
-    function handleQuickAction(action) {
-        let message = '';
-        switch(action) {
-            case 'help':
-                message = 'Tôi cần trợ giúp';
-                break;
-            case 'contact':
-                message = 'Thông tin liên hệ';
-                break;
-            case 'info':
-                message = 'Thông tin về dịch vụ';
-                break;
-            case 'settings':
-                message = 'Cài đặt chatbot';
-                break;
-            default:
-                return;
-        }
-        
-        chatbotInput.value = message;
-        sendMessage();
-    }
-
-    function addMessage(message, sender) {
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `chatbot-message ${sender}-message`;
-        
-        const now = new Date();
-        const timeString = now.toLocaleTimeString('vi-VN', { 
-            hour: '2-digit', 
-            minute: '2-digit' 
-        });
-
-        if (sender === 'user') {
-            messageDiv.innerHTML = `
-                <div class="message-content">
-                    <p>${escapeHtml(message)}</p>
-                    <span class="message-time">${timeString}</span>
-                </div>
-            `;
-        } else {
-            messageDiv.innerHTML = `
-                <img src="{{ asset('assets/images/assistant.png') }}" alt="Assistant" class="message-avatar">
-                <div class="message-content">
-                    <p>${escapeHtml(message)}</p>
-                    <span class="message-time">${timeString}</span>
-                </div>
-            `;
-        }
-
-        chatbotMessages.appendChild(messageDiv);
-        chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
-    }
-
-    function showTypingIndicator() {
-        const typingDiv = document.createElement('div');
-        typingDiv.className = 'chatbot-message bot-message';
-        typingDiv.id = 'typingIndicator';
-        typingDiv.innerHTML = `
-            <img src="{{ asset('assets/images/assistant.png') }}" alt="Assistant" class="message-avatar">
-            <div class="message-content">
-                <div class="typing-indicator">
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
-                </div>
-            </div>
-        `;
-        
-        chatbotMessages.appendChild(typingDiv);
-        chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
-    }
-
-    function hideTypingIndicator() {
-        const typingIndicator = document.getElementById('typingIndicator');
-        if (typingIndicator) {
-            typingIndicator.remove();
-        }
-    }
-
-    function escapeHtml(text) {
-        const map = {
-            '&': '&amp;',
-            '<': '&lt;',
-            '>': '&gt;',
-            '"': '&quot;',
-            "'": '&#039;'
-        };
-        return text.replace(/[&<>"']/g, function(m) { return map[m]; });
-    }
-
-    // Close chatbot when clicking outside
-    document.addEventListener('click', function(event) {
-        if (isOpen && !chatbotButton.contains(event.target) && !chatbotWindow.contains(event.target)) {
-            closeChatbot();
-        }
-        
-        // Close quick actions menu when clicking outside
-        if (isMenuOpen && !quickActionBtn.contains(event.target) && !quickActionsMenu.contains(event.target)) {
-            closeQuickActionsMenu();
-        }
-    });
-});
-</script>

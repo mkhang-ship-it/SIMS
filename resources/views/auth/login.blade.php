@@ -1,5 +1,9 @@
-{{-- login.blade.php - Updated to support login with email only --}}
-{{-- Changed field name from 'login' to 'email', removed username support and remember password checkbox --}}
+<?php
+
+use App\Models\Setting;
+
+$generalSettings = Setting::getMany(null, ['image_horizontal_light', 'image_horizontal_dark', 'image_square_light', 'image_square_dark', 'site_name']);
+?>
 <!DOCTYPE html>
 <html lang="en" dir="ltr" data-nav-layout="vertical" data-vertical-style="overlay" data-theme-mode="light"
     data-header-styles="light" data-menu-styles="light" data-toggled="close">
@@ -10,14 +14,13 @@
     <meta charset="UTF-8">
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title> YNEX - Bootstrap 5 Premium Admin & Dashboard Template </title>
-    <meta name="Description" content="Bootstrap Responsive Admin Web Dashboard HTML5 Template">
-    <meta name="Author" content="Spruko Technologies Private Limited">
-    <meta name="keywords"
-        content="admin,admin dashboard,admin panel,admin template,bootstrap,clean,dashboard,flat,jquery,modern,responsive,premium admin templates,responsive admin,ui,ui kit.">
+    <title>Đăng Nhập - {{ $generalSettings['site_name'] ?? '-' }}</title>
+    <meta name="Description" content="Đăng Nhập - {{ $generalSettings['site_name'] ?? '-' }}">
+    <meta name="Author" content="YNEX">
+    <meta name="keywords" content="Đăng Nhập, {{ $generalSettings['site_name'] ?? '-' }}">
 
     <!-- Favicon -->
-    <link rel="icon" href="{{ asset('assets/images/brand-logos/favicon.ico') }}" type="image/x-icon">
+    <link rel="icon" href="{{ Storage::url($generalSettings['image_square_light'] ?? '') }}" type="image/x-icon">
 
     <!-- Main Theme Js -->
     <script src="{{ asset('assets/js/authentication-main.js') }}"></script>
@@ -41,17 +44,16 @@
             <div class="col-xxl-4 col-xl-5 col-lg-5 col-md-6 col-sm-8 col-12">
                 <div class="my-5 d-flex justify-content-center">
                     <a href="{{ url('/') }}">
-                        <img src="{{ asset('assets/images/brand-logos/desktop-logo.png') }}" alt="logo"
+                        <img src="{{ Storage::url($generalSettings['image_horizontal_light'] ?? '') }}" alt="logo"
                             class="desktop-logo">
-                        <img src="{{ asset('assets/images/brand-logos/desktop-dark.png') }}" alt="logo"
+                        <img src="{{ Storage::url($generalSettings['image_horizontal_dark'] ?? '') }}" alt="logo"
                             class="desktop-dark">
                     </a>
                 </div>
                 <div class="card custom-card">
                     <div class="card-body p-5">
                         <p class="h5 fw-semibold mb-2 text-center">Đăng Nhập</p>
-                        <p class="mb-4 text-muted op-7 fw-normal text-center">Vui lòng đăng nhập vào tài khoản của bạn
-                            để tiếp tục.</p>
+                        <p class="mb-4 text-muted op-7 fw-normal text-center">Hệ Thống Quản Lý Câu Lạc Bộ</p>
 
                         <form method="POST" action="{{ route('login') }}">
                             @csrf
@@ -111,9 +113,6 @@
         </div>
     </div>
 
-
-    <!-- Custom-Switcher JS -->
-    <script src="{{ asset('assets/js/custom-switcher.min.js') }}"></script>
 
     <!-- Bootstrap JS -->
     <script src="{{ asset('assets/libs/bootstrap/js/bootstrap.bundle.min.js') }}"></script>

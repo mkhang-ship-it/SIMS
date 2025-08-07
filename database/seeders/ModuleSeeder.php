@@ -134,6 +134,25 @@ class ModuleSeeder extends Seeder
                     ['name' => 'edit', 'display_name' => 'Chỉnh sửa'],
                     ['name' => 'delete', 'display_name' => 'Xóa']
                 ]
+            ],
+            [
+                'module_code' => 'setting_management',
+                'name' => 'Quản Lý Cài Đặt',
+                'permissions' => [
+                    ['name' => 'view', 'display_name' => 'Xem'],
+                    ['name' => 'mail', 'display_name' => 'Cấu hình Email'],
+                    ['name' => 'general', 'display_name' => 'Cấu hình Chung']
+                ]
+            ],
+            [
+                'module_code' => 'notification_management',
+                'name' => 'Quản Lý Thông Báo',
+                'permissions' => [
+                    ['name' => 'view', 'display_name' => 'Xem'],
+                    ['name' => 'create', 'display_name' => 'Tạo mới'],
+                    ['name' => 'edit', 'display_name' => 'Chỉnh sửa'],
+                    ['name' => 'delete', 'display_name' => 'Xóa']
+                ]
             ]
 
         ];

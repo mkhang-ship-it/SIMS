@@ -3,6 +3,7 @@
 // Fields: event_code (unique), name, description, image, qr_hash, relationships to slots, class_rooms, semesters
 // Uses single slot_id for event timing (simplified from dual start/end slots)
 // Updated: Changed status enum from 4 states to 2 states (active, inactive)
+// Updated: Changed requires_approval from boolean to enum (yes, no)
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -31,6 +32,7 @@ return new class extends Migration
             $table->foreignUuid('class_room_id')->constrained('class_rooms')->onDelete('cascade'); // Địa điểm
 
             $table->enum('status', ['pending', 'active', 'cancelled', 'completed'])->default('pending');
+            $table->enum('requires_approval', ['yes', 'no'])->default('yes');
             $table->timestamps();
         });
     }

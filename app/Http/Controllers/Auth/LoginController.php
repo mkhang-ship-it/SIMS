@@ -1,8 +1,9 @@
 <?php
 
-// LoginController.php - Updated to provide specific error messages
+// LoginController.php - Updated to provide specific error messages and account status checking
 // Methods: showLoginForm(), login(), logout() for handling user authentication
 // Added specific error messages for email not found vs wrong password, removed remember functionality
+// Added account status validation to prevent inactive users from logging in
 
 namespace App\Http\Controllers\Auth;
 
@@ -49,6 +50,13 @@ class LoginController extends Controller
             // Wrong password
             throw ValidationException::withMessages([
                 'password' => ['Mật khẩu đã nhập không chính xác.'],
+            ]);
+        }
+
+        // Check if account is active
+        if ($user->status !== 'active') {
+            throw ValidationException::withMessages([
+                'email' => ['Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ ban chủ nhiệm câu lạc bộ hoặc Phòng Công tác Sinh viên để được hỗ trợ.'],
             ]);
         }
 

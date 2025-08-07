@@ -3,6 +3,7 @@
 // Handles CRUD operations for members with modal-based interface
 // Supports assigning existing users to clubs, updating member information, and removing members from clubs
 // When removing a member from a club, all related data (awards, invoices, checkins) for that club are also deleted
+// [2024-12-19] Updated: Admin destroy method completely deletes user from system (all clubs and related data)
 
 namespace App\Http\Controllers;
 
@@ -178,7 +179,7 @@ class MemberController extends Controller
         try {
             DB::beginTransaction();
 
-            // Delete all user club roles and related data
+            // Completely delete user from system - removes from all clubs and deletes all related data
             $userClubRoles = $member->userClubRoles;
             foreach ($userClubRoles as $userClubRole) {
                 $clubId = $userClubRole->club_id;
@@ -220,10 +221,10 @@ class MemberController extends Controller
 
             DB::commit();
 
-            return redirect()->route('backend.members.index')->with('success', 'Thành viên đã được xóa thành công!');
+            return redirect()->route('backend.members.index')->with('success', 'Thành viên đã được xóa hoàn toàn khỏi hệ thống!');
         } catch (\Exception $e) {
             DB::rollback();
-            return redirect()->back()->with('error', 'Có lỗi xảy ra khi xóa thành viên: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Có lỗi xảy ra khi xóa thành viên khỏi hệ thống: ' . $e->getMessage());
         }
     }
 

@@ -8,6 +8,10 @@
 // Updated destroy method to delete all related data including users, events, awards, invoices and their related data
 // [2024-12-19] Updated: Removed storeUser and checkUserEmail methods and related functionality
 // [2024-12-19] Updated: Fixed show method to use new UserClubRole pivot table structure instead of direct role_id relationship
+// [2024-12-19] Updated: Removed address field from Club model operations since address is now handled through Address model relationship
+// Fixed "Attempt to read property 'province_id' on string" error by ensuring address is always a relationship object
+
+// Added province and commune selection support with AJAX functionality for better address management
 
 namespace App\Http\Controllers;
 
@@ -30,8 +34,9 @@ class ClubController extends Controller
 {
     public function index()
     {
-        $clubs = Club::orderBy('created_at', 'desc')->get();
-        return view('clubs.index', compact('clubs'));
+        $clubs = Club::with('address.province', 'address.commune')->orderBy('created_at', 'desc')->get();
+        $provinces = \App\Models\Province::all();
+        return view('clubs.index', compact('clubs', 'provinces'));
     }
 
     public function show(Club $club)
@@ -74,6 +79,8 @@ class ClubController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:clubs,email',
             'phone' => 'required|string|max:20',
+            'province_id' => 'required|exists:provinces,id',
+            'commune_id' => 'required|exists:communes,id',
             'address' => 'required|string|max:500',
             'status' => 'required|string|in:active,inactive',
         ]);
@@ -85,11 +92,17 @@ class ClubController extends Controller
                 'name' => $request->name,
                 'email' => $request->email,
                 'phone' => $request->phone,
-                'address' => $request->address,
                 'status' => $request->status,
             ];
 
             $club = Club::create($clubData);
+
+            // Tạo địa chỉ cho club
+            $club->address()->create([
+                'province_id' => $request->province_id,
+                'commune_id' => $request->commune_id,
+                'address' => $request->address,
+            ]);
 
             // Run ModuleClubSeeder to ensure modules and permissions exist
             $seeder = new ModuleClubSeeder();
@@ -145,6 +158,8 @@ class ClubController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:clubs,email,' . $club->id,
             'phone' => 'required|string|max:20',
+            'province_id' => 'required|exists:provinces,id',
+            'commune_id' => 'required|exists:communes,id',
             'address' => 'required|string|max:500',
             'status' => 'required|string|in:active,inactive',
         ]);
@@ -153,13 +168,29 @@ class ClubController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'phone' => $request->phone,
-            'address' => $request->address,
             'status' => $request->status,
         ];
 
         $club->update($clubData);
 
+        // Cập nhật hoặc tạo mới địa chỉ cho club
+        $address = $club->address()->firstOrNew();
+        $address->fill([
+            'province_id' => $request->province_id,
+            'commune_id' => $request->commune_id,
+            'address' => $request->address,
+        ]);
+        $address->save();
+
         return redirect()->route('backend.clubs.index')->with('success', 'Câu lạc bộ đã được cập nhật thành công!');
+    }
+
+    // Lấy danh sách xã theo tỉnh (AJAX)
+    public function getCommunes(Request $request)
+    {
+        $provinceId = $request->province_id;
+        $communes = \App\Models\Commune::where('province_id', $provinceId)->get();
+        return response()->json($communes);
     }
 
     // Updated destroy() to handle foreign key constraint violation with sessions table when deleting users.

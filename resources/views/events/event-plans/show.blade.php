@@ -18,24 +18,27 @@ Updated: Added Excel export button in header to export comprehensive event infor
 @section('content')
     <div class="container-fluid">
 
-        <!-- Page Header -->
+        <!--
+            Page Header
+            Updated: Fixed desktop buttons showing on mobile by adding d-none d-md-flex to desktop button group,
+            and d-md-none to mobile dropdown.
+        -->
         <div class="d-flex align-items-center justify-content-between flex-wrap my-4 page-header-breadcrumb">
             <h1 class="page-title fw-semibold fs-18 mb-2 mb-md-0">Quản Lý Kế Hoạch Sự Kiện</h1>
 
-            <!-- Nút trên desktop -->
-            <div class="d-flex gap-2 align-items-center">
+            <!-- Nút trên desktop (ẩn trên mobile) -->
+            <div class="d-none d-md-flex gap-2 align-items-center">
                 <a href="{{ route('backend.events.index') }}" class="btn btn-primary">
                     <i class="ti ti-arrow-left me-1"></i>Quay Lại
                 </a>
                 @if (auth()->user()->hasPermissionForModuleCode('event_management', 'view_plan', 'central'))
-                    <a href="{{ route('backend.events.event-plans.export.excel', $eventPlan->event->id) }}"
-                        class="btn btn-primary-light">
+                    <a href="{{ route('backend.events.event-plans.export.excel', $eventPlan->event->id) }}" class="btn btn-primary-light">
                         <i class="ti ti-download me-1"></i>Xuất Excel
                     </a>
                 @endif
             </div>
 
-            <!-- Dropdown trên mobile -->
+            <!-- Dropdown trên mobile (ẩn trên desktop) -->
             <div class="dropdown d-md-none">
                 <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown"
                     aria-expanded="false">

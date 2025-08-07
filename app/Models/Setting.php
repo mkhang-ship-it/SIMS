@@ -9,18 +9,24 @@ class Setting extends Model
 {
     use HasUuids;
 
-    protected $fillable = ['club_id', 'key', 'value'];
+    protected $fillable = ['club_id', 'key', 'value', 'is_admin'];
 
     /**
      * Lấy value theo club_id và key.
      */
     public static function getValue($clubId, $key)
     {
-        return optional(
-            self::where('club_id', $clubId)
-                ->where('key', $key)
-                ->first()
-        )->value;
+        $query = self::where('key', $key);
+
+        if ($clubId === null) {
+            // Admin settings
+            $query->where('is_admin', 'central');
+        } else {
+            // Club settings
+            $query->where('club_id', $clubId)->where('is_admin', 'branch');
+        }
+
+        return optional($query->first())->value;
     }
 
     /**
@@ -28,10 +34,17 @@ class Setting extends Model
      */
     public static function getMany($clubId, array $keys)
     {
-        return self::where('club_id', $clubId)
-            ->whereIn('key', $keys)
-            ->pluck('value', 'key')
-            ->toArray();
+        $query = self::whereIn('key', $keys);
+
+        if ($clubId === null) {
+            // Admin settings
+            $query->where('is_admin', 'central');
+        } else {
+            // Club settings
+            $query->where('club_id', $clubId)->where('is_admin', 'branch');
+        }
+
+        return $query->pluck('value', 'key')->toArray();
     }
 
     /**

@@ -1,8 +1,9 @@
-{{--
-Updated: Added Flasher notification system integration
-- Added @include('flasher::message') directive to render notifications
-- Fixed z-index issue to display notifications above header
---}}
+<?php
+
+use App\Models\Setting;
+
+$generalSettings = Setting::getMany(null, ['site_name', 'image_square_light']);
+?>
 <!DOCTYPE html>
 <html lang="en" dir="ltr" data-nav-layout="vertical" data-theme-mode="light" data-header-styles="light"
     data-menu-styles="dark" data-toggled="close">
@@ -13,17 +14,18 @@ Updated: Added Flasher notification system integration
     <meta charset="UTF-8">
     <meta name='viewport' content='width=device-width, initial-scale=1.0, user-scalable=no'>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title> YNEX - Bootstrap 5 Premium Admin & Dashboard Template </title>
-    <meta name="Description" content="Bootstrap Responsive Admin Web Dashboard HTML5 Template">
-    <meta name="Author" content="Spruko Technologies Private Limited">
-    <meta name="keywords"
-        content="admin,admin dashboard,admin panel,admin template,bootstrap,clean,dashboard,flat,jquery,modern,responsive,premium admin templates,responsive admin,ui,ui kit.">
+    <title> {{ $generalSettings['site_name'] ?? '-' }} </title>
+    <meta name="Description" content="{{ $generalSettings['site_name'] ?? '-' }}">
+    <meta name="Author" content="YNEX">
+    <meta name="keywords" content="{{ $generalSettings['site_name'] ?? '-' }}">
 
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <!-- Favicon -->
-    <link rel="icon" href="{{ asset('assets/images/brand-logos/favicon.ico') }}" type="image/x-icon">
+    <link rel="icon"
+        href="{{ !empty($generalSettings['image_square_light']) ? Storage::url($generalSettings['image_square_light']) : asset('favicon.ico') }}"
+        type="image/x-icon">
 
     @include('layouts.css')
 

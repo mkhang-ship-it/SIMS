@@ -62,6 +62,7 @@
                                                 {{ ($events->currentPage() - 1) * $events->perPage() + $index + 1 }}</td>
                                             <td>
                                                 {{ $event->event_code }}
+
                                             </td>
                                             <td>
                                                 {{ $event->name }}
@@ -101,7 +102,7 @@
                                                         <span class="badge bg-success">Đã Duyệt</span>
                                                     @endif
 
-                                                    
+
 
                                                 </div>
                                             </td>

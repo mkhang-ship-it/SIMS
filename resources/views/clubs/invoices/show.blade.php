@@ -102,7 +102,7 @@
                                             {{ $invoice->club->name ?? 'N/A' }}
                                         </p>
                                         <p class="mb-1 text-muted">
-                                            {{ $invoice->club->address ?? 'Chưa có địa chỉ' }}
+                                            {{ $invoice->club->address ? $invoice->club->address->address : 'Chưa có địa chỉ' }}
                                         </p>
                                         <p class="mb-1 text-muted">
                                             {{ $invoice->club->email ?? 'Chưa có email' }}

@@ -1,5 +1,6 @@
 <?php
-// Đã cập nhật: Lấy và cập nhật đầy đủ các trường thông tin cá nhân (avatar, name, email, gender, birthday, identity_card_code, phone, student_code, major_id, course_id, role_id). Truyền thêm majors (chỉ chuyên ngành con), courses, roles cho view. Thêm chức năng quản lý thông tin ngân hàng của user. Thêm chức năng quản lý địa chỉ user với chọn tỉnh và xã.
+// Đã cập nhật: Lấy và cập nhật đầy đủ các trường thông tin cá nhân (avatar, name, email, gender, birthday, identity_card_code, phone, student_code, major_id, course_id, role_id). Truyền thêm majors (chỉ chuyên ngành con), courses, roles cho view. Thêm chức năng quản lý thông tin ngân hàng của user. Thêm chức năng quản lý địa chỉ user với chọn tỉnh và xã. Truyền userClubRoles để hiển thị đúng role theo club.
+// Sửa: Truyền userClubRoles cho view để hiển thị role theo club.
 
 namespace App\Http\Controllers\Club;
 
@@ -26,8 +27,9 @@ class MyProfileController extends Controller
         $provinces = Province::all();
         $bankAccount = $user->bankAccount;
         $address = $user->address;
-        $clubs = $user->clubs; // <--- thêm dòng này
-        return view('clubs.members.my_profile', compact('user', 'majors', 'courses', 'roles', 'provinces', 'bankAccount', 'address', 'clubs'));
+        $clubs = $user->clubs;
+        $userClubRoles = $user->userClubRoles()->with('role')->get();
+        return view('clubs.members.my_profile', compact('user', 'majors', 'courses', 'roles', 'provinces', 'bankAccount', 'address', 'clubs', 'userClubRoles'));
     }
 
     // Cập nhật thông tin cá nhân

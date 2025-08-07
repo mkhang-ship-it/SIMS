@@ -1,15 +1,6 @@
 <?php
-// InvoiceController - Refactored for new member structure using UserClubRole (multi-club membership)
-// Features: CRUD operations, multi-member invoice creation, status management
-// Modal-based interface: create/edit/delete invoices with member selection (UserClubRole)
-// Payment tracking: record transactions, auto-update status, overdue management
-// Permissions: only pending invoices can be edited/deleted
-// Updated: All member queries now use UserClubRole for club membership validation and selection
-// Updated: clubMembers now contains UserClubRole objects (with eager loaded user)
-// Updated: All member-related validation and selection logic uses UserClubRole
-// Updated: View data and member selection in forms now use UserClubRole
-// Updated: All references to user->club_id replaced with session('club_id') or UserClubRole
-// Updated: All member selection in forms/views should use UserClubRole (with user relation)
+// [AI EDIT 2024-07-20]: Thêm log trước/sau khi gửi mail, bọc đoạn gửi mail vào try-catch để log lỗi nếu có, thêm import Log để fix lỗi linter.
+// [2024-12-19] Updated: Fixed club address access to use Address model relationship instead of direct field access
 
 namespace App\Http\Controllers\Club;
 
@@ -26,6 +17,11 @@ use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Setting;
+use App\Models\EmailTemplate;
+use App\Models\ClubEmailTemplate;
+use App\Services\MailService;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class InvoiceController extends Controller
 {
@@ -146,7 +142,7 @@ class InvoiceController extends Controller
 
             // Create invoices for each selected member (user)
             foreach ($selectedMembers as $member) {
-                Invoice::create([
+                $invoice = Invoice::create([
                     'user_id' => $member->user_id,
                     'name' => $request->name,
                     'total_amount' => $request->total_amount,

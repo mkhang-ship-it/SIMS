@@ -25,7 +25,8 @@ class Event extends Model
         'slot_id',
         'event_date',
         'class_room_id',
-        'status'
+        'status',
+        'requires_approval'
     ];
 
     protected $casts = [
@@ -47,6 +48,11 @@ class Event extends Model
             }
             if (empty($event->qr_hash)) {
                 $event->qr_hash = self::generateQrHash();
+            }
+
+            // Auto-approve events that don't require approval
+            if (!$event->requires_approval) {
+                $event->status = 'active';
             }
         });
     }

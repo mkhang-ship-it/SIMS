@@ -1,9 +1,6 @@
 <?php
-// Refactored: Sử dụng session('club_id'), đồng bộ style với MemberController, loại bỏ hoàn toàn trường bank_swift_code khỏi validate và xử lý bank info
-// Refactored: Cập nhật thông tin chung trực tiếp trên model Club (không dùng Setting cho general info)
-// Refactored: Giữ word_commitment_template trong Setting (theo key)
-// Refactored: Giữ thông tin ngân hàng trong Setting (theo key), vì chưa có bảng club_bank_accounts
-// Refactored: Chuẩn hóa validate, upload, và trả về view theo chuẩn mới
+// Updated: Added support for club address management with province/commune selection
+// Added provinces data to view, address update functionality, and getCommunes AJAX method
 
 namespace App\Http\Controllers\Club;
 
@@ -11,6 +8,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Club;
 use App\Models\Setting;
+use App\Models\Province;
+use App\Models\Commune;
+use App\Models\Address;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -20,10 +20,25 @@ class SettingController extends Controller
     public function index()
     {
         $clubId = session('club_id');
-        $club = Club::findOrFail($clubId);
+        $club = Club::with('address.province', 'address.commune')->findOrFail($clubId);
+        $provinces = Province::all();
         $wordCommitmentTemplate = Setting::getValue($clubId, 'word_commitment_template');
         $bankSettings = Setting::getBankInfo($clubId);
-        return view('clubs.settings.index', compact('club', 'wordCommitmentTemplate', 'bankSettings'));
+        $mailSettings = Setting::getMany($clubId, [
+            'mail_mailer',
+            'mail_host',
+            'mail_port',
+            'mail_username',
+            'mail_password',
+            'mail_encryption',
+            'mail_from_address',
+            'mail_from_name',
+            'mail_outlook_client_id',
+            'mail_outlook_secret_id',
+            'mail_outlook_tenant_id',
+        ]);
+
+        return view('clubs.settings.index', compact('club', 'provinces', 'wordCommitmentTemplate', 'bankSettings', 'mailSettings'));
     }
 
     public function updateGeneralSettings(Request $request)
@@ -35,6 +50,8 @@ class SettingController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
             'phone' => 'required|string|max:20',
+            'province_id' => 'required|exists:provinces,id',
+            'commune_id' => 'required|exists:communes,id',
             'address' => 'required|string|max:500',
             'image_horizontal_light' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'image_horizontal_dark' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
@@ -46,7 +63,6 @@ class SettingController extends Controller
             'name' => $validated['name'],
             'email' => $validated['email'],
             'phone' => $validated['phone'],
-            'address' => $validated['address'],
         ];
 
         // Xử lý upload cho từng loại logo
@@ -70,7 +86,26 @@ class SettingController extends Controller
 
         $club->update($data);
 
+        // Cập nhật hoặc tạo mới địa chỉ
+        $address = $club->address()->firstOrNew();
+        $address->fill([
+            'province_id' => $validated['province_id'],
+            'commune_id' => $validated['commune_id'],
+            'address' => $validated['address'],
+            'type' => 'central',
+        ]);
+        $address->club_id = $clubId;
+        $address->save();
+
         return redirect()->back()->with('success', 'Thông tin câu lạc bộ đã được cập nhật thành công.');
+    }
+
+    // Lấy danh sách xã theo tỉnh (AJAX)
+    public function getCommunes(Request $request)
+    {
+        $provinceId = $request->province_id;
+        $communes = Commune::where('province_id', $provinceId)->get();
+        return response()->json($communes);
     }
 
     public function updateWordCommitmentTemplate(Request $request)
@@ -173,5 +208,87 @@ class SettingController extends Controller
             );
         }
         return redirect()->back()->with('success', 'Thông tin ngân hàng đã được cập nhật thành công.');
+    }
+
+    /**
+     * Update mail settings (SMTP/Outlook) for club
+     */
+    public function updateMailSettings(Request $request)
+    {
+        $request->validate([
+            'mail_mailer' => 'required|string|max:50',
+            'mail_from_address' => 'required|email|max:255',
+            'mail_from_name' => 'required|string|max:255',
+        ]);
+        $clubId = session('club_id');
+        $mailSettings = [
+            'mail_mailer' => $request->mail_mailer,
+            'mail_from_address' => $request->mail_from_address,
+            'mail_from_name' => $request->mail_from_name,
+        ];
+        if ($request->mail_mailer === 'smtp') {
+            $request->validate([
+                'mail_host' => 'required|string|max:255',
+                'mail_port' => 'required|numeric',
+                'mail_username' => 'required|string|max:255',
+                'mail_password' => 'required|string|max:255',
+                'mail_encryption' => 'required|string|max:20',
+            ]);
+            $mailSettings = array_merge($mailSettings, [
+                'mail_host' => $request->mail_host,
+                'mail_port' => $request->mail_port,
+                'mail_username' => $request->mail_username,
+                'mail_password' => $request->mail_password,
+                'mail_encryption' => $request->mail_encryption,
+                // Xoá các trường outlook nếu có
+                'mail_outlook_client_id' => null,
+                'mail_outlook_secret_id' => null,
+                'mail_outlook_tenant_id' => null,
+            ]);
+        } elseif ($request->mail_mailer === 'outlook') {
+            $request->validate([
+                'mail_outlook_client_id' => 'required|string|max:255',
+                'mail_outlook_secret_id' => 'required|string|max:255',
+                'mail_outlook_tenant_id' => 'required|string|max:255',
+            ]);
+            $mailSettings = array_merge($mailSettings, [
+                'mail_outlook_client_id' => $request->mail_outlook_client_id,
+                'mail_outlook_secret_id' => $request->mail_outlook_secret_id,
+                'mail_outlook_tenant_id' => $request->mail_outlook_tenant_id,
+                // Xoá các trường smtp nếu có
+                'mail_host' => null,
+                'mail_port' => null,
+                'mail_username' => null,
+                'mail_password' => null,
+                'mail_encryption' => null,
+            ]);
+        }
+        foreach ($mailSettings as $key => $value) {
+            Setting::updateOrCreate(
+                ['club_id' => $clubId, 'key' => $key],
+                ['value' => $value]
+            );
+        }
+        return redirect()->back()->with('success', 'Cấu hình gửi mail đã được cập nhật thành công.');
+    }
+
+    /**
+     * Test gửi mail theo cấu hình club (SMTP hoặc Microsoft Graph API)
+     */
+    public function testMail(Request $request)
+    {
+        $request->validate([
+            'to' => 'required|email',
+        ]);
+        $clubId = session('club_id');
+        $to = $request->to;
+        $subject = 'Test gửi mail từ hệ thống';
+        $body = '<p>Đây là email test gửi từ hệ thống Tezonew.</p>';
+        $result = \App\Services\MailService::sendClubMail($clubId, $to, $subject, $body);
+        if ($result === true) {
+            return back()->with('success', 'Đã gửi mail test thành công!');
+        } else {
+            return back()->with('error', 'Gửi mail thất bại: ' . $result);
+        }
     }
 }

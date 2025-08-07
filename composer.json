@@ -16,12 +16,14 @@
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.10.1",
         "maatwebsite/excel": "^3.1",
+        "microsoft/microsoft-graph": "^2.41",
         "php-flasher/flasher-notyf-laravel": "^2.1",
         "phpoffice/phpword": "^1.4",
         "pusher/pusher-php-server": "^7.2",
         "sepayvn/laravel-sepay": "^1.2",
         "simplesoftwareio/simple-qrcode": "^4.2"
     },
+
     "require-dev": {
         "fakerphp/faker": "^1.23",
         "laravel/pail": "^1.2.2",
@@ -80,7 +82,8 @@
         "sort-packages": true,
         "allow-plugins": {
             "pestphp/pest-plugin": true,
-            "php-http/discovery": true
+            "php-http/discovery": true,
+            "tbachert/spi": true
         }
     },
     "minimum-stability": "stable",

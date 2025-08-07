@@ -2,6 +2,7 @@
 // Updated: Đổi tên các trường image_vertical_light và image_vertical_dark thành image_square_light và image_square_dark trong $fillable
 // Added roles(), awards(), invoices() and events() relationships to manage club-specific data
 // Updated: Thêm quan hệ userClubRoles (hasMany) và users (belongsToMany qua user_club_roles) cho multi-club
+// Added: address() relationship to support club addresses
 
 namespace App\Models;
 
@@ -16,9 +17,7 @@ class Club extends Model
         'name',
         'email',
         'phone',
-        'address',
         'status',
-        'image',
         'image_horizontal_light',
         'image_horizontal_dark',
         'image_square_light',
@@ -55,6 +54,14 @@ class Club extends Model
     public function events()
     {
         return $this->hasMany(Event::class);
+    }
+
+    /**
+     * Get the club's address
+     */
+    public function address()
+    {
+        return $this->hasOne(Address::class);
     }
 
     /**

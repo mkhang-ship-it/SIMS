@@ -61,6 +61,56 @@ class User extends Authenticatable
         ];
     }
 
+    /**
+     * Check if user account is active
+     */
+    public function isActive()
+    {
+        return $this->status === 'active';
+    }
+
+    /**
+     * Get status label in Vietnamese
+     */
+    public function getStatusLabelAttribute()
+    {
+        $statuses = [
+            'active' => 'Hoạt động',
+            'inactive' => 'Vô hiệu hóa'
+        ];
+
+        return $statuses[$this->status] ?? $this->status;
+    }
+
+    /**
+     * Get status color for UI
+     */
+    public function getStatusColorAttribute()
+    {
+        $colors = [
+            'active' => 'success',
+            'inactive' => 'danger'
+        ];
+
+        return $colors[$this->status] ?? 'secondary';
+    }
+
+    /**
+     * Scope for active users
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'active');
+    }
+
+    /**
+     * Scope for inactive users
+     */
+    public function scopeInactive($query)
+    {
+        return $query->where('status', 'inactive');
+    }
+
     public function role()
     {
         return $this->belongsTo(Role::class, 'role_id');
@@ -152,7 +202,7 @@ class User extends Authenticatable
     {
         return $this->hasOne(UserBankAccount::class);
     }
-    
+
     public function hasPermissionForModuleCode($moduleCode, $action, $roleType = null)
     {
         $clubId = session('club_id');

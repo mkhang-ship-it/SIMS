@@ -21,4 +21,9 @@ class Semester extends Model
     {
         return $this->hasMany(Invoice::class);
     }
+
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date' => 'date',
+    ];
 }

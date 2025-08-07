@@ -120,7 +120,9 @@ class ModuleClubSeeder extends Seeder
                     ['name' => 'view', 'display_name' => 'Xem'],
                     ['name' => 'general', 'display_name' => 'Thông tin chung'],
                     ['name' => 'word_template', 'display_name' => 'Mẫu word'],
-                    ['name' => 'payment', 'display_name' => 'Thanh toán']
+                    ['name' => 'payment', 'display_name' => 'Thanh toán'],
+                    ['name' => 'api_key', 'display_name' => 'API Keys'],
+                    ['name' => 'mail', 'display_name' => 'Email']
                 ]
             ],
             [
@@ -130,7 +132,13 @@ class ModuleClubSeeder extends Seeder
                     ['name' => 'view', 'display_name' => 'Xem']
                 ]
             ],
-
+            [
+                'module_code' => 'notification_management',
+                'name' => 'Quản Lý Thông Báo',
+                'permissions' => [
+                    ['name' => 'view', 'display_name' => 'Xem'],
+                ]
+            ]
         ];
 
         foreach ($modules as $moduleData) {

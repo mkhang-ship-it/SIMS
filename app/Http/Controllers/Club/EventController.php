@@ -1,4 +1,6 @@
 <?php
+// Controller for Club Events - handles CRUD for events
+// Updated: requires_approval is now enum ('yes', 'no') instead of boolean
 
 namespace App\Http\Controllers\Club;
 
@@ -32,10 +34,20 @@ class EventController extends Controller
         $semesters = Semester::where('status', 'active')
             ->orderBy('start_date', 'desc')
             ->get();
+
+        $semesterData = $semesters->mapWithKeys(function ($semester) {
+            return [
+                $semester->id => [
+                    'start_date' => $semester->start_date->toDateString(),
+                    'end_date' => $semester->end_date->toDateString(),
+                ],
+            ];
+        })->toArray();
+
         $slots = Slot::where('status', 'active')->orderBy('start_time')->get();
         $classRooms = ClassRoom::where('status', 'active')->orderBy('name')->get();
 
-        return view('clubs.events.index', compact('events', 'semesters', 'slots', 'classRooms'));
+        return view('clubs.events.index', compact('events', 'semesters', 'slots', 'classRooms', 'semesterData'));
     }
 
     public function store(Request $request)
@@ -50,6 +62,7 @@ class EventController extends Controller
             'class_room_id' => 'required|exists:class_rooms,id',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'event_date' => 'required|date',
+            'requires_approval' => 'in:yes,no',
         ]);
 
         try {
@@ -62,8 +75,9 @@ class EventController extends Controller
                 'semester_id' => $validatedData['semester_id'],
                 'slot_id' => $validatedData['slot_id'],
                 'class_room_id' => $validatedData['class_room_id'],
-                'status' => 'pending', // Default status
+                'status' => 'pending', // Default status (will be auto-updated if requires_approval is 'no')
                 'event_date' => $validatedData['event_date'],
+                'requires_approval' => $validatedData['requires_approval'] ?? 'yes',
             ];
 
             if ($request->hasFile('image')) {
@@ -118,21 +132,26 @@ class EventController extends Controller
             return redirect()->route('backend.club.events.index')
                 ->with('error', 'Không thể chỉnh sửa sự kiện đã hoàn thành hoặc đã hủy!');
         }
-        $availableStatuses = $event->getAvailableStatusOptions($user);
-        if (empty($availableStatuses)) {
-            return redirect()->route('backend.club.events.index')
-                ->with('error', 'Không thể thay đổi trạng thái của sự kiện này!');
-        }
-        $validatedData = $request->validate([
+        $availableStatuses = $event->getAvailableStatusOptions($user, true);
+        // Allow editing even if no status changes are available
+        // The status field will be hidden in the form if no options are available
+        $validationRules = [
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'semester_id' => 'required|exists:semesters,id',
             'slot_id' => 'required|exists:slots,id',
             'class_room_id' => 'required|exists:class_rooms,id',
-            'status' => 'required|in:' . implode(',', array_keys($availableStatuses)),
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'event_date' => 'required|date',
-        ]);
+            'requires_approval' => 'in:yes,no',
+        ];
+
+        // Only validate status if there are available status options
+        if (!empty($availableStatuses)) {
+            $validationRules['status'] = 'required|in:' . implode(',', array_keys($availableStatuses));
+        }
+
+        $validatedData = $request->validate($validationRules);
 
         try {
             DB::beginTransaction();
@@ -142,9 +161,29 @@ class EventController extends Controller
                 'semester_id' => $validatedData['semester_id'],
                 'slot_id' => $validatedData['slot_id'],
                 'class_room_id' => $validatedData['class_room_id'],
-                'status' => $validatedData['status'],
                 'event_date' => $validatedData['event_date'],
+                'requires_approval' => $validatedData['requires_approval'] ?? 'yes',
             ];
+
+            // Update status based on requires_approval change
+            $newRequiresApproval = $validatedData['requires_approval'] ?? 'yes';
+            $oldRequiresApproval = $event->requires_approval;
+
+            // If requires_approval changed, update status accordingly
+            if ($newRequiresApproval !== $oldRequiresApproval) {
+                if ($newRequiresApproval === 'no') {
+                    // Changed to self-approval, set status to active
+                    $updateData['status'] = 'active';
+                } else {
+                    // Changed to require approval, set status to pending
+                    $updateData['status'] = 'pending';
+                }
+            } else {
+                // Only update status if it's provided and there are available options
+                if (!empty($availableStatuses) && isset($validatedData['status'])) {
+                    $updateData['status'] = $validatedData['status'];
+                }
+            }
             if ($request->hasFile('image')) {
                 if ($event->image && Storage::disk('public')->exists($event->image)) {
                     Storage::disk('public')->delete($event->image);

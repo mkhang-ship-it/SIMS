@@ -783,7 +783,7 @@
                                     <p class="font-bold">{{ $club->name ?? 'Câu lạc bộ' }}</p>
                                     <p>Email: {{ $club->email ?? '-' }}</p>
                                     <p>Điện thoại: {{ $club->phone ?? '-' }}</p>
-                                    <p>Địa chỉ: {{ $club->address ?? '-' }}</p>
+                                    <p>Địa chỉ: {{ $club->address ? $club->address->address : '-' }}</p>
                                 </div>
                             </td>
                             <td class="w-1/2 align-top pl-2">
@@ -1050,7 +1050,8 @@
                                 <p class="mb-3"><span class="font-bold">Điện thoại:</span>
                                     {{ $club->phone ?? '-' }}
                                 </p>
-                                <p class="mb-3"><span class="font-bold">Địa chỉ:</span> {{ $club->address ?? '-' }}
+                                <p class="mb-3"><span class="font-bold">Địa chỉ:</span>
+                                    {{ $club->address ? $club->address->address : '-' }}
                                 </p>
 
                             </div>

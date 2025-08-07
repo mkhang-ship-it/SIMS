@@ -1,21 +1,8 @@
 <?php
-// Updated: Replaced Route::resource() with individual routes to add CheckPermission middleware for each action
-// Each route now has specific middleware for view, create, edit, delete permissions
-// Added Major routes with parent-child relationship support
-// Updated root route to dynamically redirect to backend.dashboard or backend.club.dashboard based on user permissions
-// Added AdminEventController routes for global event management with view and approve permissions
-// Merged QR scanner and check-in pages into one - removed separate checkin route, added API endpoint for event info
-// Added Event Images routes for club event image management with upload, view, download, single delete, and bulk delete functionality (using separate route path to avoid conflicts)
-// Added Event Plans routes for individual event planning management with detailed view and update functionality
-// Added Event Action Plans routes for detailed action plan management with CRUD operations and timeline management
-// Added Event Plan Budget Items routes for budget cost management with CRUD operations and financial calculations
-// Added Event Plan Equipment routes for equipment management with CRUD operations
-// Added Event Plan Timeline routes for timeline management with CRUD operations and drag/drop ordering support
-// Added Excel export route for event plans to export comprehensive event plan information to Excel format
+
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Broadcast;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\CourseController;
@@ -43,8 +30,10 @@ use App\Http\Controllers\MyProfileController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\Club\MyProfileController as ClubMyProfileController;
 use App\Http\Controllers\Club\SettingController as ClubSettingController;
-use App\Http\Controllers\ChatController;
+use App\Http\Controllers\Club\NotificationController as ClubNotificationController;
+use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SwitchClubController;
+use App\Http\Controllers\NotificationController;
 
 Route::get('/', function () {
     if (!Auth::check()) {
@@ -101,6 +90,7 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/clubs/{club}', [ClubController::class, 'update'])->name('clubs.update')->middleware('CheckPermission:club_management,edit,central');
         Route::delete('/clubs/{club}', [ClubController::class, 'destroy'])->name('clubs.destroy')->middleware('CheckPermission:club_management,delete,central');
         Route::get('/clubs/{club}', [ClubController::class, 'show'])->name('clubs.show')->middleware('CheckPermission:club_management,view,central');
+        Route::get('/clubs/get/communes', [ClubController::class, 'getCommunes'])->name('clubs.get-communes')->middleware('CheckPermission:club_management,view,central');
 
         // Slots routes
         Route::get('/slots', [SlotController::class, 'index'])->name('slots.index')->middleware('CheckPermission:slot_management,view,central');
@@ -161,6 +151,19 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/members/update-club-role', [MemberController::class, 'updateClubRole'])->name('members.update-club-role')->middleware('CheckPermission:member_management,edit,central');
         Route::get('/members/get-club-roles', [MemberController::class, 'getClubRoles'])->name('members.get-club-roles')->middleware('CheckPermission:member_management,view,central');
         Route::get('/members/check-email', [MemberController::class, 'checkUserEmail'])->name('members.check-email')->middleware('CheckPermission:member_management,view,central');
+
+        // Admin Settings routes
+        Route::get('/settings', [SettingController::class, 'index'])->name('settings.index')->middleware('CheckPermission:setting_management,view,central');
+        Route::post('/settings/general', [SettingController::class, 'updateGeneralSettings'])->name('settings.general.update')->middleware('CheckPermission:setting_management,general,central');
+        Route::get('/settings/get-communes', [SettingController::class, 'getCommunes'])->name('settings.get-communes')->middleware('CheckPermission:setting_management,general,central');
+        Route::post('/settings/mail', [SettingController::class, 'updateMailSettings'])->name('settings.mail.update')->middleware('CheckPermission:setting_management,mail,central');
+        Route::post('/settings/mail-test', [SettingController::class, 'testMail'])->name('settings.mail.test')->middleware('CheckPermission:setting_management,mail,central');
+
+        // Notifications routes
+        Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index')->middleware('CheckPermission:notification_management,view,central');
+        Route::post('/notifications', [NotificationController::class, 'store'])->name('notifications.store')->middleware('CheckPermission:notification_management,create,central');
+        Route::put('/notifications/{notification}', [NotificationController::class, 'update'])->name('notifications.update')->middleware('CheckPermission:notification_management,edit,central');
+        Route::delete('/notifications/{notification}', [NotificationController::class, 'destroy'])->name('notifications.destroy')->middleware('CheckPermission:notification_management,delete,central');
     });
 });
 
@@ -190,6 +193,8 @@ Route::middleware(['auth'])->prefix('club')->group(function () {
         Route::get('/members/{member}', [ClubMemberController::class, 'show'])->name('members.show')->middleware('CheckPermission:member_management,view,branch');
         Route::put('/members/{member}', [ClubMemberController::class, 'update'])->name('members.update')->middleware('CheckPermission:member_management,edit,branch');
         Route::delete('/members/{member}', [ClubMemberController::class, 'destroy'])->name('members.destroy')->middleware('CheckPermission:member_management,delete,branch');
+        Route::get('/members/check/email', [ClubMemberController::class, 'checkUserEmail'])->name('members.check-email')->middleware('CheckPermission:member_management,view,branch');
+        Route::post('/members/assign/to-club', [ClubMemberController::class, 'assignToClub'])->name('members.assign-to-club')->middleware('CheckPermission:member_management,create,branch');
 
         // Awards routes
         Route::get('/awards', [ClubAwardController::class, 'index'])->name('awards.index')->middleware('CheckPermission:award_management,view,branch');
@@ -304,6 +309,8 @@ Route::middleware(['auth'])->prefix('club')->group(function () {
         Route::get('/settings', [ClubSettingController::class, 'index'])->name('settings.index')->middleware('CheckPermission:setting_management,view,branch');
         // Update general settings
         Route::post('/settings/general', [ClubSettingController::class, 'updateGeneralSettings'])->name('settings.general.update')->middleware('CheckPermission:setting_management,general,branch');
+        // Get communes for address selection (AJAX)
+        Route::get('/settings/get-communes', [ClubSettingController::class, 'getCommunes'])->name('settings.get-communes')->middleware('CheckPermission:setting_management,general,branch');
         // Update word commitment template
         Route::post('/settings/word-commitment-template', [ClubSettingController::class, 'updateWordCommitmentTemplate'])->name('settings.word-commitment-template.update')->middleware('CheckPermission:setting_management,word_template,branch');
         // Download word commitment template
@@ -311,6 +318,17 @@ Route::middleware(['auth'])->prefix('club')->group(function () {
         // Bank settings routes
         Route::get('/settings/banks', [ClubSettingController::class, 'getBanksFromAPI'])->name('settings.banks.api')->middleware('CheckPermission:setting_management,payment,branch');
         Route::post('/settings/bank', [ClubSettingController::class, 'updateBankSettings'])->name('settings.bank.update')->middleware('CheckPermission:setting_management,payment,branch');
+        // Mail settings route (SMTP/Outlook)
+        Route::post('/settings/mail', [ClubSettingController::class, 'updateMailSettings'])->name('settings.mail.update')->middleware('CheckPermission:setting_management,mail,branch');
+        // Test gửi mail
+        Route::post('/settings/mail-test', [ClubSettingController::class, 'testMail'])->name('settings.mail.test')->middleware('CheckPermission:setting_management,mail,branch');
+
+        // Notifications routes
+        Route::get('/notifications', [ClubNotificationController::class, 'index'])->name('notifications.index')->middleware('CheckPermission:notification_management,view,branch');
+        Route::post('/notifications/{notification}/mark-as-read', [ClubNotificationController::class, 'markAsRead'])->name('notifications.mark-as-read')->middleware('CheckPermission:notification_management,view,branch');
+        Route::post('/notifications/mark-all-as-read', [ClubNotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-as-read')->middleware('CheckPermission:notification_management,view,branch');
+        Route::get('/notifications/unread-count', [ClubNotificationController::class, 'unreadCount'])->name('notifications.unread-count')->middleware('CheckPermission:notification_management,view,branch');
+        Route::get('/notifications/recent', [ClubNotificationController::class, 'recent'])->name('notifications.recent')->middleware('CheckPermission:notification_management,view,branch');
     });
 });
 

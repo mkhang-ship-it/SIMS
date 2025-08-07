@@ -1,3 +1,5 @@
+{{-- Club Members Index - Updated: Added email checking functionality for adding new members --}}
+{{-- [2024-12-19] Updated: Added real-time email validation with AJAX, form field disabling when email exists --}}
 @extends('layouts.app')
 
 @section('content')
@@ -14,6 +16,10 @@
                         <i class="ti ti-plus"></i>
                         Thêm Mới
                     </button>
+                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#assignToClubModal">
+                        <i class="ti ti-user-plus"></i>
+                        Gán Thành Viên
+                    </button>
                 </div>
             @endif
             <!-- Dropdown trên mobile -->
@@ -27,6 +33,12 @@
                         <li>
                             <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#addMemberModal">
                                 <i class="ti ti-plus"></i> Thêm Thành Viên
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                data-bs-target="#assignToClubModal">
+                                <i class="ti ti-user-plus"></i> Gán Thành Viên
                             </a>
                         </li>
                     @endif
@@ -164,7 +176,8 @@
                                                                             <input type="text" class="form-control"
                                                                                 id="edit_name{{ $member->user->id }}"
                                                                                 name="name"
-                                                                                value="{{ $member->user->name }}" required>
+                                                                                value="{{ $member->user->name }}"
+                                                                                required>
                                                                         </div>
                                                                     </div>
                                                                     <div class="col-md-6">
@@ -407,11 +420,17 @@
                                                                 <p class="mb-2">Bạn có chắc chắn muốn xóa thành viên
                                                                     <span
                                                                         class="fw-bold text-danger">{{ $member->user->name }}</span>
-                                                                    không?
+                                                                    khỏi câu lạc bộ không?
                                                                 </p>
                                                                 <p class="text-muted small">Email:
                                                                     {{ $member->user->email }}
                                                                 </p>
+                                                                <div class="alert alert-warning mt-3">
+                                                                    <i class="ri-information-line me-2"></i>
+                                                                    <strong>Lưu ý:</strong> Thành viên sẽ chỉ bị xóa khỏi
+                                                                    câu lạc bộ này. Tài khoản của họ vẫn tồn tại trong hệ
+                                                                    thống.
+                                                                </div>
                                                             </div>
                                                         </div>
                                                         <form
@@ -455,13 +474,17 @@
                         enctype="multipart/form-data">
                         @csrf
                         <div class="modal-body">
+                            <div id="email-exists-alert" class="alert alert-warning d-none" role="alert">
+                                Thành viên với email này đã tồn tại, vui lòng gán thành viên vào câu lạc bộ thay vì tạo
+                                tài khoản mới cho thành viên này.
+                            </div>
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label for="add_name" class="form-label">Tên Thành Viên <span
                                                 class="text-danger">*</span></label>
                                         <input type="text" class="form-control" id="add_name" name="name"
-                                            required value="{{ old('name') }}">
+                                            required value="{{ old('name') }}" disabled>
                                         @error('name')
                                             <div class="text-danger small">{{ $message }}</div>
                                         @enderror
@@ -484,7 +507,7 @@
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label for="add_gender" class="form-label">Giới Tính</label>
-                                        <select class="form-select" id="add_gender" name="gender">
+                                        <select class="form-select" id="add_gender" name="gender" disabled>
                                             <option value="">Chọn giới tính</option>
                                             <option value="male" {{ old('gender') == 'male' ? 'selected' : '' }}>Nam
                                             </option>
@@ -500,7 +523,7 @@
                                     <div class="mb-3">
                                         <label for="add_birthday" class="form-label">Ngày Sinh</label>
                                         <input type="date" class="form-control" id="add_birthday" name="birthday"
-                                            value="{{ old('birthday') }}">
+                                            value="{{ old('birthday') }}" disabled>
                                         @error('birthday')
                                             <div class="text-danger small">{{ $message }}</div>
                                         @enderror
@@ -512,7 +535,7 @@
                                     <div class="mb-3">
                                         <label for="add_identity_card_code" class="form-label">CCCD/CMND</label>
                                         <input type="text" class="form-control" id="add_identity_card_code"
-                                            name="identity_card_code" value="{{ old('identity_card_code') }}">
+                                            name="identity_card_code" value="{{ old('identity_card_code') }}" disabled>
                                         @error('identity_card_code')
                                             <div class="text-danger small">{{ $message }}</div>
                                         @enderror
@@ -522,7 +545,7 @@
                                     <div class="mb-3">
                                         <label for="add_phone" class="form-label">Số Điện Thoại</label>
                                         <input type="text" class="form-control" id="add_phone" name="phone"
-                                            value="{{ old('phone') }}">
+                                            value="{{ old('phone') }}" disabled>
                                         @error('phone')
                                             <div class="text-danger small">{{ $message }}</div>
                                         @enderror
@@ -535,7 +558,7 @@
                                     <div class="mb-3">
                                         <label for="add_student_code" class="form-label">Mã Sinh Viên</label>
                                         <input type="text" class="form-control" id="add_student_code"
-                                            name="student_code" value="{{ old('student_code') }}">
+                                            name="student_code" value="{{ old('student_code') }}" disabled>
                                         @error('student_code')
                                             <div class="text-danger small">{{ $message }}</div>
                                         @enderror
@@ -544,7 +567,7 @@
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label for="add_major_id" class="form-label">Chuyên Ngành</label>
-                                        <select class="form-select" id="add_major_id" name="major_id">
+                                        <select class="form-select" id="add_major_id" name="major_id" disabled>
                                             <option value="">Chọn chuyên ngành</option>
                                             @foreach ($majors as $major)
                                                 <option value="{{ $major->id }}"
@@ -563,7 +586,7 @@
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label for="add_course_id" class="form-label">Khóa Học</label>
-                                        <select class="form-select" id="add_course_id" name="course_id">
+                                        <select class="form-select" id="add_course_id" name="course_id" disabled>
                                             <option value="">Chọn khóa học</option>
                                             @foreach ($courses as $course)
                                                 <option value="{{ $course->id }}"
@@ -581,7 +604,7 @@
                                     <div class="mb-3">
                                         <label for="add_avatar" class="form-label">Avatar</label>
                                         <input type="file" class="form-control" id="add_avatar" name="avatar"
-                                            accept="image/jpeg,image/png,image/jpg,image/gif">
+                                            accept="image/jpeg,image/png,image/jpg,image/gif" disabled>
                                         <small class="text-muted">Tối đa 2MB. Định dạng: JPG, PNG, GIF</small>
                                         @error('avatar')
                                             <div class="text-danger small">{{ $message }}</div>
@@ -595,7 +618,7 @@
                                     <div class="mb-3">
                                         <label for="add_role_id" class="form-label">Vai Trò <span
                                                 class="text-danger">*</span></label>
-                                        <select class="form-select" id="add_role_id" name="role_id" required>
+                                        <select class="form-select" id="add_role_id" name="role_id" required disabled>
                                             <option value="">Chọn vai trò</option>
                                             @foreach ($roles as $role)
                                                 <option value="{{ $role->id }}"
@@ -613,7 +636,7 @@
                                     <div class="mb-3">
                                         <label for="add_status" class="form-label">Trạng Thái <span
                                                 class="text-danger">*</span></label>
-                                        <select class="form-select" id="add_status" name="status" required>
+                                        <select class="form-select" id="add_status" name="status" required disabled>
                                             <option value="">Chọn trạng thái</option>
                                             <option value="active" {{ old('status') == 'active' ? 'selected' : '' }}>Hoạt
                                                 Động
@@ -628,15 +651,29 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="mb-3">
-                                <label for="add_password" class="form-label">Mật Khẩu <span class="text-danger">*</span>
-                                    <small class="text-muted">Tối thiểu 8 ký tự</small>
-                                </label>
-                                <input type="password" class="form-control" id="add_password" name="password" required>
-
-                                @error('password')
-                                    <div class="text-danger small">{{ $message }}</div>
-                                @enderror
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="add_password" class="form-label">Mật Khẩu <span
+                                                class="text-danger">*</span></label>
+                                        <input type="password" class="form-control" id="add_password" name="password"
+                                            required disabled>
+                                        @error('password')
+                                            <div class="text-danger small">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="add_password_confirmation" class="form-label">Xác Nhận Mật Khẩu <span
+                                                class="text-danger">*</span></label>
+                                        <input type="password" class="form-control" id="add_password_confirmation"
+                                            name="password_confirmation" required disabled>
+                                        @error('password_confirmation')
+                                            <div class="text-danger small">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -648,4 +685,107 @@
             </div>
         </div>
     @endif
+
+    <!-- Assign To Club Modal -->
+    @if (auth()->user()->hasPermissionForModuleCode('member_management', 'create', 'branch'))
+        <div class="modal fade" id="assignToClubModal" tabindex="-1" aria-labelledby="assignToClubModalLabel"
+            aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="assignToClubModalLabel">
+                            Gán Thành Viên Vào Câu Lạc Bộ
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form action="{{ route('backend.club.members.assign-to-club') }}" method="POST"
+                        id="assignToClubForm">
+                        @csrf
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="assign_user_id" class="form-label">Thành Viên <span
+                                        class="text-danger">*</span></label>
+                                <select class="form-select" id="assign_user_id" name="user_id" required>
+                                    <option value="">Chọn thành viên</option>
+                                    @foreach ($availableUsers as $user)
+                                        <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="assign_role_id" class="form-label">Vai Trò <span
+                                        class="text-danger">*</span></label>
+                                <select class="form-select" id="assign_role_id" name="role_id" required>
+                                    <option value="">Chọn vai trò</option>
+                                    @foreach ($roles as $role)
+                                        <option value="{{ $role->id }}">{{ $role->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                            <button type="submit" class="btn btn-success">
+                                <i class="ti ti-user-plus me-1"></i>Gán Thành Viên
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    @endif
+@endsection
+
+@section('scripts')
+    <script>
+        $(document).ready(function() {
+            // Function to set form fields disabled/enabled
+            function setAddMemberFieldsDisabled(disabled) {
+                const fields = [
+                    '#add_name', '#add_gender', '#add_birthday', '#add_identity_card_code',
+                    '#add_phone', '#add_student_code', '#add_major_id', '#add_course_id',
+                    '#add_avatar', '#add_role_id', '#add_status', '#add_password', '#add_password_confirmation'
+                ];
+
+                fields.forEach(field => {
+                    $(field).prop('disabled', disabled);
+                });
+
+                // Disable submit button if email exists
+                $('button[type="submit"]').prop('disabled', disabled);
+            }
+
+            // Email checking functionality
+            $('#add_email').on('blur', function() {
+                const email = $(this).val();
+                if (email) {
+                    $.get(`{{ route('backend.club.members.check-email') }}?email=${email}`, function(
+                        data) {
+                        if (data.exists) {
+                            $('#add_email').addClass('is-invalid');
+                            setAddMemberFieldsDisabled(true);
+                            $('#email-exists-alert').removeClass('d-none');
+                        } else {
+                            $('#add_email').removeClass('is-invalid');
+                            setAddMemberFieldsDisabled(false);
+                            $('#email-exists-alert').addClass('d-none');
+                        }
+                    });
+                } else {
+                    setAddMemberFieldsDisabled(true);
+                    $('#add_email').removeClass('is-invalid');
+                    $('#email-exists-alert').addClass('d-none');
+                }
+            });
+
+            // Reset form when modal is closed
+            $('#addMemberModal').on('hidden.bs.modal', function() {
+                $('#addMemberForm')[0].reset();
+                $('#add_email').removeClass('is-invalid');
+                $('#email-exists-alert').addClass('d-none');
+                setAddMemberFieldsDisabled(false);
+            });
+        });
+    </script>
 @endsection

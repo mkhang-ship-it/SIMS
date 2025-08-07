@@ -3,6 +3,7 @@
 {{-- [2024-07-14] Updated: remove unique:users,email from form, add AJAX email check, show message if user exists, password required only if new user --}}
 {{-- [2024-12-19] Updated: Removed addUserModal and related functionality --}}
 {{-- [2024-12-19] Updated: Fixed member display to use new UserClubRole pivot table structure instead of direct role_id relationship --}}
+{{-- [2024-12-19] Updated: Added remove from club functionality with delete buttons and modals for both leaders and members --}}
 @extends('layouts.app')
 
 @section('content')
@@ -65,7 +66,7 @@
                                     <span class="avatar avatar-sm avatar-rounded me-2 bg-light text-muted">
                                         <i class="ri-map-pin-line align-middle fs-14"></i>
                                     </span>
-                                    {{ $club->address }}
+                                    {{ $club->address ? $club->address->full_address : '-' }}
                                 </p>
                             </div>
                         </div>
@@ -158,6 +159,15 @@
                                                                         data-bs-target="#memberDetailsModal-{{ $leader->id }}">
                                                                         <i class="ri-eye-line me-1"></i>Chi Tiết
                                                                     </button>
+                                                                    @if (auth()->user()->hasPermissionForModuleCode('member_management', 'delete', 'branch') &&
+                                                                            $leader->club_role &&
+                                                                            $leader->club_role->is_admin == false)
+                                                                        <button class="btn btn-sm btn-danger btn-wave"
+                                                                            data-bs-toggle="modal"
+                                                                            data-bs-target="#removeFromClubModal-{{ $leader->id }}">
+                                                                            <i class="ri-user-unfollow-line me-1"></i>Xóa
+                                                                        </button>
+                                                                    @endif
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -203,6 +213,15 @@
                                                                         data-bs-target="#memberDetailsModal-{{ $member->id }}">
                                                                         <i class="ri-eye-line me-1"></i>Chi Tiết
                                                                     </button>
+                                                                    @if (auth()->user()->hasPermissionForModuleCode('member_management', 'delete', 'branch') &&
+                                                                            $member->club_role &&
+                                                                            $member->club_role->is_admin == false)
+                                                                        <button class="btn btn-sm btn-danger btn-wave"
+                                                                            data-bs-toggle="modal"
+                                                                            data-bs-target="#removeFromClubModal-{{ $member->id }}">
+                                                                            <i class="ri-user-unfollow-line me-1"></i>Xóa
+                                                                        </button>
+                                                                    @endif
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -229,4 +248,13 @@
 
 @foreach ($members as $member)
     @include('clubs.partials.member-details-modal', ['user' => $member])
+@endforeach
+
+<!-- Include Remove From Club Modals -->
+@foreach ($leaders as $leader)
+    @include('clubs.partials.remove-from-club-modal', ['user' => $leader])
+@endforeach
+
+@foreach ($members as $member)
+    @include('clubs.partials.remove-from-club-modal', ['user' => $member])
 @endforeach

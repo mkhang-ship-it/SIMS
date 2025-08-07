@@ -1,5 +1,7 @@
 {{-- Club index view - Created based on course index view with image display support --}}
 {{-- Handles listing, creating, editing, and deleting clubs with image management --}}
+{{-- [2024-12-19] Updated: Replaced address textarea with province and commune select dropdowns for better address management --}}
+{{-- Added AJAX functionality to load communes based on selected province --}}
 
 @extends('layouts.app')
 
@@ -66,7 +68,8 @@
                                             <td class="fw-semibold">{{ $club->name }}</td>
                                             <td class="text-center">{{ $club->email }}</td>
                                             <td class="text-center">{{ $club->phone }}</td>
-                                            <td class="text-center">{{ $club->address }}</td>
+                                            <td class="text-center">
+                                                {{ $club->address ? $club->address->full_address : '-' }}</td>
                                             <td class="text-center">
                                                 @switch($club->status)
                                                     @case('active')
@@ -146,8 +149,8 @@
                                                                                     class="text-danger">*</span></label>
                                                                             <input type="email" class="form-control"
                                                                                 id="edit_email{{ $club->id }}"
-                                                                                name="email"
-                                                                                value="{{ $club->email }}" required>
+                                                                                name="email" value="{{ $club->email }}"
+                                                                                required>
                                                                         </div>
                                                                     </div>
                                                                     <div class="col-md-6">
@@ -162,11 +165,58 @@
                                                                         </div>
                                                                     </div>
                                                                 </div>
+                                                                <!-- Address Selection -->
+                                                                <div class="row">
+                                                                    <div class="col-md-6">
+                                                                        <div class="mb-3">
+                                                                            <label
+                                                                                for="edit_province_id{{ $club->id }}"
+                                                                                class="form-label">Tỉnh/Thành <span
+                                                                                    class="text-danger">*</span></label>
+                                                                            <select class="form-select"
+                                                                                id="edit_province_id{{ $club->id }}"
+                                                                                name="province_id" required>
+                                                                                <option value="">-- Chọn tỉnh/thành
+                                                                                    --</option>
+                                                                                @foreach ($provinces as $province)
+                                                                                    <option value="{{ $province->id }}"
+                                                                                        @if ($club->address && $club->address->province_id == $province->id) selected @endif>
+                                                                                        {{ $province->name }}
+                                                                                        ({{ $province->code }})
+                                                                                    </option>
+                                                                                @endforeach
+                                                                            </select>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="col-md-6">
+                                                                        <div class="mb-3">
+                                                                            <label
+                                                                                for="edit_commune_id{{ $club->id }}"
+                                                                                class="form-label">Xã/Phường <span
+                                                                                    class="text-danger">*</span></label>
+                                                                            <select class="form-select"
+                                                                                id="edit_commune_id{{ $club->id }}"
+                                                                                name="commune_id" required>
+                                                                                <option value="">-- Chọn xã/phường --
+                                                                                </option>
+                                                                                @if ($club->address && $club->address->commune)
+                                                                                    <option
+                                                                                        value="{{ $club->address->commune->id }}"
+                                                                                        selected>
+                                                                                        {{ $club->address->commune->name }}
+                                                                                        ({{ $club->address->commune->code }})
+                                                                                    </option>
+                                                                                @endif
+                                                                            </select>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
                                                                 <div class="mb-3">
                                                                     <label for="edit_address{{ $club->id }}"
-                                                                        class="form-label">Địa Chỉ <span
+                                                                        class="form-label">Địa Chỉ Chi Tiết <span
                                                                             class="text-danger">*</span></label>
-                                                                    <textarea class="form-control" id="edit_address{{ $club->id }}" name="address" rows="3" required>{{ $club->address }}</textarea>
+                                                                    <textarea class="form-control" id="edit_address{{ $club->id }}" name="address" rows="3"
+                                                                        placeholder="Nhập địa chỉ chi tiết (số nhà, đường, phố...)" required>{{ $club->address ? $club->address->address : '' }}</textarea>
                                                                 </div>
                                                                 <div class="row">
                                                                     <div class="col-md-6">
@@ -303,10 +353,43 @@
                                     </div>
                                 </div>
                             </div>
+                            <!-- Address Selection -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="add_province_id" class="form-label">Tỉnh/Thành <span
+                                                class="text-danger">*</span></label>
+                                        <select class="form-select" id="add_province_id" name="province_id" required>
+                                            <option value="">-- Chọn tỉnh/thành --</option>
+                                            @foreach ($provinces as $province)
+                                                <option value="{{ $province->id }}"
+                                                    {{ old('province_id') == $province->id ? 'selected' : '' }}>
+                                                    {{ $province->name }} ({{ $province->code }})</option>
+                                            @endforeach
+                                        </select>
+                                        @error('province_id')
+                                            <div class="text-danger small">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="add_commune_id" class="form-label">Xã/Phường <span
+                                                class="text-danger">*</span></label>
+                                        <select class="form-select" id="add_commune_id" name="commune_id" required>
+                                            <option value="">-- Chọn xã/phường --</option>
+                                        </select>
+                                        @error('commune_id')
+                                            <div class="text-danger small">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                            </div>
                             <div class="mb-3">
-                                <label for="add_address" class="form-label">Địa Chỉ <span
+                                <label for="add_address" class="form-label">Địa Chỉ Chi Tiết <span
                                         class="text-danger">*</span></label>
-                                <textarea class="form-control" id="add_address" name="address" rows="3" required>{{ old('address') }}</textarea>
+                                <textarea class="form-control" id="add_address" name="address" rows="3"
+                                    placeholder="Nhập địa chỉ chi tiết (số nhà, đường, phố...)" required>{{ old('address') }}</textarea>
                                 @error('address')
                                     <div class="text-danger small">{{ $message }}</div>
                                 @enderror
@@ -342,4 +425,74 @@
             </div>
         </div>
     @endif
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Xử lý cho modal Add Club
+            const addProvinceSelect = document.getElementById('add_province_id');
+            const addCommuneSelect = document.getElementById('add_commune_id');
+
+            if (addProvinceSelect) {
+                addProvinceSelect.addEventListener('change', function() {
+                    const provinceId = this.value;
+
+                    // Reset commune select
+                    addCommuneSelect.innerHTML = '<option value="">-- Chọn xã/phường --</option>';
+
+                    if (provinceId) {
+                        // Load communes via AJAX
+                        fetch(`{{ route('backend.clubs.get-communes') }}?province_id=${provinceId}`)
+                            .then(response => response.json())
+                            .then(communes => {
+                                communes.forEach(commune => {
+                                    const option = document.createElement('option');
+                                    option.value = commune.id;
+                                    option.textContent = `${commune.name} (${commune.code})`;
+                                    addCommuneSelect.appendChild(option);
+                                });
+                            })
+                            .catch(error => {
+                                console.error('Error loading communes:', error);
+                            });
+                    }
+                });
+            }
+
+            // Xử lý cho modal Edit Club
+            const editProvinceSelects = document.querySelectorAll('[id^="edit_province_id"]');
+            editProvinceSelects.forEach(provinceSelect => {
+                const clubId = provinceSelect.id.replace('edit_province_id', '');
+                const communeSelect = document.getElementById(`edit_commune_id${clubId}`);
+
+                if (communeSelect) {
+                    provinceSelect.addEventListener('change', function() {
+                        const provinceId = this.value;
+
+                        // Reset commune select
+                        communeSelect.innerHTML = '<option value="">-- Chọn xã/phường --</option>';
+
+                        if (provinceId) {
+                            // Load communes via AJAX
+                            fetch(
+                                    `{{ route('backend.clubs.get-communes') }}?province_id=${provinceId}`
+                                    )
+                                .then(response => response.json())
+                                .then(communes => {
+                                    communes.forEach(commune => {
+                                        const option = document.createElement('option');
+                                        option.value = commune.id;
+                                        option.textContent =
+                                            `${commune.name} (${commune.code})`;
+                                        communeSelect.appendChild(option);
+                                    });
+                                })
+                                .catch(error => {
+                                    console.error('Error loading communes:', error);
+                                });
+                        }
+                    });
+                }
+            });
+        });
+    </script>
 @endsection

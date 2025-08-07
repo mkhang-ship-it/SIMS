@@ -48,7 +48,7 @@
                                 </div>
                                 @php
                                     $clubId = session('club_id') ?? $user->default_club_id;
-                                    $userClubRole = $user->userClubRoles->where('club_id', $clubId)->first();
+                                    $userClubRole = $userClubRoles->where('club_id', $clubId)->first();
                                 @endphp
                                 <p class="mb-1 text-muted text-fixed-white op-7">
                                     {{ $userClubRole && $userClubRole->role ? $userClubRole->role->name : '-' }}
@@ -76,41 +76,30 @@
                             </div>
                         </div>
                         <div class="p-4 border-bottom border-block-end-dashed">
-                            <div class="mb-4">
-                                <p class="fs-15 mb-2 fw-semibold">Professional Bio :</p>
-                                <p class="fs-12 text-muted op-7 mb-0">
-                                    I am <b class="text-default">Sonya Taylor,</b> here by conclude that,i am the founder
-                                    and managing director of the prestigeous company name laugh at all and acts as the cheif
-                                    executieve officer of the company.
-                                </p>
-                            </div>
-
-                        </div>
-                        <div class="p-4 border-bottom border-block-end-dashed">
-                            <p class="fs-15 mb-2 me-4 fw-semibold">Contact Information :</p>
+                            <p class="fs-15 mb-2 me-4 fw-semibold">Thông Tin Liên Hệ:</p>
                             <div class="text-muted">
                                 <p class="mb-2">
                                     <span class="avatar avatar-sm avatar-rounded me-2 bg-light text-muted">
                                         <i class="ri-mail-line align-middle fs-14"></i>
                                     </span>
-                                    sonyataylor2531@gmail.com
+                                    {{ $user->email }}
                                 </p>
                                 <p class="mb-2">
                                     <span class="avatar avatar-sm avatar-rounded me-2 bg-light text-muted">
                                         <i class="ri-phone-line align-middle fs-14"></i>
                                     </span>
-                                    +(555) 555-1234
+                                    {{ $user->phone }}
                                 </p>
                                 <p class="mb-0">
                                     <span class="avatar avatar-sm avatar-rounded me-2 bg-light text-muted">
                                         <i class="ri-map-pin-line align-middle fs-14"></i>
                                     </span>
-                                    MIG-1-11, Monroe Street, Georgetown, Washington D.C, USA,20071
+                                    {{ $user->address->full_address ?? '-' }}
                                 </p>
                             </div>
                         </div>
                         <div class="p-4 border-bottom border-block-end-dashed d-flex align-items-center">
-                            <p class="fs-15 mb-2 me-4 fw-semibold">Social Networks :</p>
+                            <p class="fs-15 mb-2 me-4 fw-semibold">Mạng Xã Hội:</p>
                             <div class="btn-list mb-0">
                                 <button class="btn btn-sm btn-icon btn-primary-light btn-wave waves-effect waves-light">
                                     <i class="ri-facebook-line fw-semibold"></i>
@@ -493,14 +482,14 @@
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="role_id" class="form-label">Vai Trò </label>
-                                <select class="form-select" id="role_id" name="role_id" disabled>
-                                    <option value="">Chọn vai trò</option>
-                                    @foreach ($roles as $role)
-                                        <option value="{{ $role->id }}"
-                                            @if ($user->role_id == $role->id) selected @endif>
-                                            {{ $role->name }}</option>
-                                    @endforeach
-                                </select>
+                                @php
+                                    $clubId = session('club_id') ?? $user->default_club_id;
+                                    $userClubRole = $userClubRoles->where('club_id', $clubId)->first();
+                                    $currentRole = $userClubRole && $userClubRole->role ? $userClubRole->role : null;
+                                @endphp
+                                <input type="text" class="form-control"
+                                    value="{{ $currentRole ? $currentRole->name : '-' }}" readonly>
+                                <input type="hidden" name="role_id" value="{{ $currentRole ? $currentRole->id : '' }}">
                             </div>
                             {{-- Trong modal cập nhật thông tin cá nhân, sau trường email hoặc trước nút submit --}}
                             @if (isset($clubs) && $clubs->count() > 1)
@@ -543,7 +532,7 @@
                             <div class="col-12">
                                 <label class="form-label fw-semibold">Chọn Ngân Hàng <span
                                         class="text-danger">*</span></label>
-                                <select class="form-select" id="bank-select" name="bank_name" required>
+                                <select class="form-select" id="bank-select" name="bank_name">
                                     <option value="">-- Chọn ngân hàng --</option>
                                 </select>
                             </div>

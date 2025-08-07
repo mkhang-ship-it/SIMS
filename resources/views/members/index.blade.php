@@ -403,10 +403,16 @@
                                                         <div class="modal-body">
                                                             <div class="text-center">
                                                                 <p class="mb-2">Bạn có chắc chắn muốn xóa thành viên
-                                                                    <strong>{{ $member->name }}</strong>?
+                                                                    <strong>{{ $member->name }}</strong> khỏi hệ thống?
                                                                 </p>
                                                                 <p class="text-danger small">Hành động này sẽ xóa tất cả dữ
                                                                     liệu liên quan và không thể hoàn tác!</p>
+                                                                <div class="alert alert-danger mt-3">
+                                                                    <i class="ri-error-warning-line me-2"></i>
+                                                                    <strong>Cảnh báo:</strong> Thành viên sẽ bị xóa hoàn
+                                                                    toàn khỏi hệ thống, bao gồm tất cả câu lạc bộ mà họ tham
+                                                                    gia.
+                                                                </div>
                                                             </div>
                                                         </div>
                                                         <div class="modal-footer">

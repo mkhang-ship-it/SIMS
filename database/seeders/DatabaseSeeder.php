@@ -41,6 +41,7 @@ class DatabaseSeeder extends Seeder
             ClubSeeder::class,
             AwardSeeder::class, // Gọi seeder giải thưởng cho user trong club
             EventSeeder::class, // Gọi seeder sự kiện cho các club
+            NotificationSeeder::class, // Gọi seeder thông báo cho testing
         ]);
 
         // Create roles first

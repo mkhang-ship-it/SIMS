@@ -30,7 +30,6 @@ class DatabaseSeeder extends Seeder
         if (env('APP_ENV') !== 'production') {
             // Seed modules and permissions first
             $this->call([
-                ModuleSeeder::class,
                 ClassRoomSeeder::class,
                 SlotSeeder::class,
                 MajorSeeder::class,
@@ -45,6 +44,9 @@ class DatabaseSeeder extends Seeder
                 NotificationSeeder::class, // Gọi seeder thông báo cho testing
             ]);
         }
+        $this->call([
+            ModuleSeeder::class,
+        ]);
 
         // Create roles first
         $adminRole = Role::create([
@@ -55,31 +57,10 @@ class DatabaseSeeder extends Seeder
             'is_default' => true
         ]);
 
-        $managerRole = Role::create([
-            'name' => 'Manager',
-            'type' => 'central',
-            'club_id' => null,
-            'status' => 'active',
-            'is_default' => false
-        ]);
-
-        $userRole = Role::create([
-            'name' => 'User',
-            'type' => 'central',
-            'club_id' => null,
-            'status' => 'active',
-            'is_default' => false
-        ]);
-
         // Assign permissions to roles
         $allPermissions = Permission::all();
         $adminRole->permissions()->attach($allPermissions->pluck('id'));
 
-        $managerPermissions = Permission::whereIn('name', ['view', 'edit'])->get();
-        $managerRole->permissions()->attach($managerPermissions->pluck('id'));
-
-        $viewPermissions = Permission::where('name', 'view')->get();
-        $userRole->permissions()->attach($viewPermissions->pluck('id'));
 
         // Create users after roles are created
         User::create([
@@ -87,13 +68,6 @@ class DatabaseSeeder extends Seeder
             'email' => 'admin@gmail.com',
             'password' => bcrypt('12345678'), // Default password: 123456
             'role_id' => $adminRole->id,
-        ]);
-
-        User::create([
-            'name' => 'Test User',
-            'email' => 'test@gmail.com',
-            'password' => bcrypt('12345678'), // Default password: 123456
-            'role_id' => $userRole->id,
         ]);
     }
 }

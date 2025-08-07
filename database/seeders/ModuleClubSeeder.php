@@ -138,6 +138,16 @@ class ModuleClubSeeder extends Seeder
                 'permissions' => [
                     ['name' => 'view', 'display_name' => 'Xem'],
                 ]
+            ],
+            [
+                'module_code' => 'lucky_draw_management',
+                'name' => 'Quản Lý Lucky Draw',
+                'permissions' => [
+                    ['name' => 'view', 'display_name' => 'Xem'],
+                    ['name' => 'create', 'display_name' => 'Tạo mới'],
+                    ['name' => 'edit', 'display_name' => 'Chỉnh sửa'],
+                    ['name' => 'delete', 'display_name' => 'Xóa']
+                ]
             ]
         ];
 

@@ -31,6 +31,9 @@ use App\Http\Controllers\MemberController;
 use App\Http\Controllers\Club\MyProfileController as ClubMyProfileController;
 use App\Http\Controllers\Club\SettingController as ClubSettingController;
 use App\Http\Controllers\Club\NotificationController as ClubNotificationController;
+use App\Http\Controllers\Club\LuckyDrawController as ClubLuckyDrawController;
+use App\Http\Controllers\Club\PrizeController as ClubPrizeController;
+use App\Http\Controllers\LuckyDrawPublicController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SwitchClubController;
 use App\Http\Controllers\NotificationController;
@@ -329,9 +332,37 @@ Route::middleware(['auth'])->prefix('club')->group(function () {
         Route::post('/notifications/mark-all-as-read', [ClubNotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-as-read')->middleware('CheckPermission:notification_management,view,branch');
         Route::get('/notifications/unread-count', [ClubNotificationController::class, 'unreadCount'])->name('notifications.unread-count')->middleware('CheckPermission:notification_management,view,branch');
         Route::get('/notifications/recent', [ClubNotificationController::class, 'recent'])->name('notifications.recent')->middleware('CheckPermission:notification_management,view,branch');
+
+        // Lucky Draw routes
+        Route::get('/lucky-draws', [ClubLuckyDrawController::class, 'index'])->name('lucky-draws.index')->middleware('CheckPermission:lucky_draw_management,view,branch');
+        Route::get('/lucky-draws/create', [ClubLuckyDrawController::class, 'create'])->name('lucky-draws.create')->middleware('CheckPermission:lucky_draw_management,create,branch');
+        Route::post('/lucky-draws', [ClubLuckyDrawController::class, 'store'])->name('lucky-draws.store')->middleware('CheckPermission:lucky_draw_management,create,branch');
+        Route::get('/lucky-draws/{luckyDraw}', [ClubLuckyDrawController::class, 'show'])->name('lucky-draws.show')->middleware('CheckPermission:lucky_draw_management,view,branch');
+        Route::get('/lucky-draws/{luckyDraw}/edit', [ClubLuckyDrawController::class, 'edit'])->name('lucky-draws.edit')->middleware('CheckPermission:lucky_draw_management,edit,branch');
+        Route::put('/lucky-draws/{luckyDraw}', [ClubLuckyDrawController::class, 'update'])->name('lucky-draws.update')->middleware('CheckPermission:lucky_draw_management,edit,branch');
+        Route::delete('/lucky-draws/{luckyDraw}', [ClubLuckyDrawController::class, 'destroy'])->name('lucky-draws.destroy')->middleware('CheckPermission:lucky_draw_management,delete,branch');
+        Route::post('/lucky-draws/{luckyDraw}/toggle-active', [ClubLuckyDrawController::class, 'toggleActive'])->name('lucky-draws.toggle-active')->middleware('CheckPermission:lucky_draw_management,edit,branch');
+
+        // Lucky Draw Prizes routes
+        Route::get('/lucky-draws/{luckyDraw}/prizes', [ClubPrizeController::class, 'index'])->name('lucky-draws.prizes.index')->middleware('CheckPermission:lucky_draw_management,edit,branch');
+        Route::post('/lucky-draws/{luckyDraw}/prizes', [ClubPrizeController::class, 'store'])->name('lucky-draws.prizes.store')->middleware('CheckPermission:lucky_draw_management,edit,branch');
+        Route::put('/lucky-draws/{luckyDraw}/prizes/{prize}', [ClubPrizeController::class, 'update'])->name('lucky-draws.prizes.update')->middleware('CheckPermission:lucky_draw_management,edit,branch');
+        Route::delete('/lucky-draws/{luckyDraw}/prizes/{prize}', [ClubPrizeController::class, 'destroy'])->name('lucky-draws.prizes.destroy')->middleware('CheckPermission:lucky_draw_management,edit,branch');
+        Route::post('/lucky-draws/{luckyDraw}/prizes/reorder', [ClubPrizeController::class, 'reorder'])->name('lucky-draws.prizes.reorder')->middleware('CheckPermission:lucky_draw_management,edit,branch');
     });
 });
 
 Route::middleware(['auth'])->group(function () {
     Route::post('/switch-default-club', [SwitchClubController::class, 'switch'])->name('switch.default.club')->middleware('auth');
+});
+
+// Public Lucky Draw routes (no authentication required)
+Route::prefix('lucky-draw')->name('lucky-draw.')->group(function () {
+    Route::get('/{slug}', [LuckyDrawPublicController::class, 'show'])->name('show');
+    Route::get('/{slug}/prizes', [LuckyDrawPublicController::class, 'getPrizes'])->name('prizes');
+    Route::get('/{slug}/prizes-details', [LuckyDrawPublicController::class, 'getPrizesWithDetails'])->name('prizes.details');
+    Route::get('/{slug}/participants', [LuckyDrawPublicController::class, 'getParticipants'])->name('participants');
+    Route::get('/{slug}/winners', [LuckyDrawPublicController::class, 'getWinners'])->name('winners');
+    Route::post('/{slug}/check-eligibility', [LuckyDrawPublicController::class, 'checkParticipantEligibility'])->name('check-eligibility');
+    Route::post('/{slug}/api', [LuckyDrawPublicController::class, 'handleApi'])->name('api');
 });

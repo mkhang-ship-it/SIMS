@@ -1,7 +1,8 @@
+// Updated: Fixed duplicate variable declarations (APP_URL and timestamp) by commenting them out since they're declared in the view file
 // const APP_URL = "http://luckydraw.btec";
-const APP_URL = "https://luckydraw.webdevelopment.io.vn"
+// const APP_URL = "https://luckydraw.webdevelopment.io.vn" // Commented out - declared in view file
 var currentPrize, currentPrizeText;
-const timestamp = new Date().getTime(); // Get current timestamp
+// const timestamp = new Date().getTime(); // Commented out - declared in view file
 
 $('#setting').on('click', function () {
     $('#settingModal').modal('show');

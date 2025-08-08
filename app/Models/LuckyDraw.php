@@ -1,5 +1,5 @@
 <?php
-// Updated: Added participant winner checking methods and improved prize availability validation for lucky draw system
+// Updated: Added security_code field to LuckyDraw model fillable array and updated participant winner checking methods
 // - Added hasParticipantWon() method to check if a participant has already won
 // - Updated getAvailableParticipants() to be more efficient
 // - Added getAvailableParticipantsForPrize() method to get participants available for a specific prize
@@ -18,8 +18,8 @@ class LuckyDraw extends Model
     protected $fillable = [
         'club_id',
         'title',
-        'description',
         'slug',
+        'security_code',
         'participants',
         'winners',
         'start_date',

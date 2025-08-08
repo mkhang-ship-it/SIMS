@@ -1,5 +1,5 @@
 <?php
-// Updated: Added background_image file upload handling with proper validation and storage management
+// Updated: Added security_code field to LuckyDrawController validation and create/update methods with auto-generation
 
 namespace App\Http\Controllers\Club;
 
@@ -26,11 +26,11 @@ class LuckyDrawController extends Controller
     {
         $request->validate([
             'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after:start_date',
             'participants' => 'nullable|string',
-            'background_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048'
+            'background_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'security_code' => 'nullable|string|max:50'
         ]);
 
         $participants = [];
@@ -46,11 +46,14 @@ class LuckyDrawController extends Controller
             $backgroundImagePath = $request->file('background_image')->store('lucky-draws/backgrounds', 'public');
         }
 
+        // Generate security code if not provided
+        $securityCode = $request->security_code ?: Str::random(12);
+
         $luckyDraw = LuckyDraw::create([
             'club_id' => session('club_id'),
             'title' => $request->title,
-            'description' => $request->description,
             'slug' => Str::random(12),
+            'security_code' => $securityCode,
             'participants' => $participants,
             'winners' => [],
             'start_date' => $request->start_date,
@@ -92,11 +95,11 @@ class LuckyDrawController extends Controller
 
         $request->validate([
             'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after:start_date',
             'participants' => 'nullable|string',
-            'background_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048'
+            'background_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'security_code' => 'nullable|string|max:50'
         ]);
 
         $participants = [];
@@ -117,9 +120,12 @@ class LuckyDrawController extends Controller
             $backgroundImagePath = $request->file('background_image')->store('lucky-draws/backgrounds', 'public');
         }
 
+        // Generate security code if not provided and doesn't exist
+        $securityCode = $request->security_code ?: ($luckyDraw->security_code ?: Str::random(12));
+
         $luckyDraw->update([
             'title' => $request->title,
-            'description' => $request->description,
+            'security_code' => $securityCode,
             'participants' => $participants,
             'start_date' => $request->start_date,
             'end_date' => $request->end_date,

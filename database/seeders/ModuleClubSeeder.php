@@ -148,6 +148,14 @@ class ModuleClubSeeder extends Seeder
                     ['name' => 'edit', 'display_name' => 'Chỉnh sửa'],
                     ['name' => 'delete', 'display_name' => 'Xóa']
                 ]
+            ],
+            [
+                'module_code' => 'feature_request_management',
+                'name' => 'Quản Lý Yêu Cầu Tính Năng',
+                'permissions' => [
+                    ['name' => 'view', 'display_name' => 'Xem'],
+                    ['name' => 'create', 'display_name' => 'Tạo mới'],
+                ]
             ]
         ];
 

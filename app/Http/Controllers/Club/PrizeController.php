@@ -1,5 +1,4 @@
 <?php
-// Controller for Prize management - Handle CRUD operations and reordering for lucky draw prizes (supports UUID)
 
 namespace App\Http\Controllers\Club;
 

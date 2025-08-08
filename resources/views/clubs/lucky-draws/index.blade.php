@@ -1,4 +1,4 @@
-{{-- Updated: Added background_image field with file upload functionality for lucky draw forms --}}
+{{-- Updated: Added security_code field to lucky draw forms and views for public page protection --}}
 @extends('layouts.app')
 
 @section('content')
@@ -45,6 +45,7 @@
                                         <tr>
                                             <th style="text-align: center !important;">STT</th>
                                             <th>Tiêu đề</th>
+                                            <th style="text-align: center !important;">Mã bảo mật</th>
                                             <th style="text-align: center !important;">Hình nền</th>
                                             <th style="text-align: center !important;">Trạng thái</th>
                                             <th style="text-align: center !important;">Thời gian</th>
@@ -60,9 +61,21 @@
                                                 <td class="text-center">{{ $index + 1 }}</td>
                                                 <td>
                                                     <div class="fw-semibold">{{ $luckyDraw->title }}</div>
-                                                    @if ($luckyDraw->description)
-                                                        <small
-                                                            class="text-muted">{{ Str::limit($luckyDraw->description, 50) }}</small>
+                                                </td>
+                                                <td class="text-center">
+                                                    @if ($luckyDraw->security_code)
+                                                        <div class="d-flex align-items-center justify-content-center">
+                                                            <code
+                                                                class="bg-light px-2 py-1 rounded">{{ $luckyDraw->security_code }}</code>
+                                                            <button
+                                                                class="btn btn-sm btn-outline-secondary ms-2 copy-security-code"
+                                                                data-code="{{ $luckyDraw->security_code }}"
+                                                                title="Copy mã bảo mật">
+                                                                <i class="ti ti-copy"></i>
+                                                            </button>
+                                                        </div>
+                                                    @else
+                                                        <span class="text-muted small">Chưa có</span>
                                                     @endif
                                                 </td>
                                                 <td class="text-center">
@@ -116,7 +129,8 @@
                                                         </a>
                                                     </div>
                                                 </td>
-                                                {{-- [2024-06-19] Updated: Action buttons style to match notification index style --}}
+                                                {{-- [2024-06-19] Updated: Action buttons style to match notification index style
+                                    --}}
                                                 <td class="text-center">
                                                     <div class="gap-2 fs-15">
                                                         <a href="{{ route('backend.club.lucky-draws.show', $luckyDraw->slug) }}"
@@ -176,7 +190,7 @@
                                                             @method('PUT')
                                                             <div class="modal-body">
                                                                 <div class="row">
-                                                                    <div class="col-md-8">
+                                                                    <div class="col-md-12">
                                                                         <div class="mb-3">
                                                                             <label for="edit_title{{ $luckyDraw->id }}"
                                                                                 class="form-label">Tiêu đề <span
@@ -189,9 +203,25 @@
 
                                                                         <div class="mb-3">
                                                                             <label
-                                                                                for="edit_description{{ $luckyDraw->id }}"
-                                                                                class="form-label">Mô tả</label>
-                                                                            <textarea class="form-control" id="edit_description{{ $luckyDraw->id }}" name="description" rows="3">{{ $luckyDraw->description }}</textarea>
+                                                                                for="edit_security_code{{ $luckyDraw->id }}"
+                                                                                class="form-label">Mã bảo mật</label>
+                                                                            <div class="input-group">
+                                                                                <input type="text" class="form-control"
+                                                                                    id="edit_security_code{{ $luckyDraw->id }}"
+                                                                                    name="security_code"
+                                                                                    value="{{ $luckyDraw->security_code }}"
+                                                                                    placeholder="Để trống để tự động tạo">
+                                                                                <button class="btn btn-outline-secondary"
+                                                                                    type="button"
+                                                                                    onclick="generateSecurityCode('edit_security_code{{ $luckyDraw->id }}')">
+                                                                                    <i class="ti ti-refresh"></i> Tạo tự
+                                                                                    động
+                                                                                </button>
+                                                                            </div>
+                                                                            <small class="form-text text-danger">Mã bảo mật
+                                                                                để truy cập modal setting ở trang quay
+                                                                                thưởng, bỏ trống nếu không cần mã bảo
+                                                                                mật.</small>
                                                                         </div>
 
                                                                         <div class="mb-3">
@@ -263,63 +293,18 @@
                                                                             </div>
                                                                         </div>
                                                                     </div>
-
-                                                                    <div class="col-md-4">
-                                                                        <div class="card bg-light">
-                                                                            <div class="card-body">
-                                                                                <h6 class="card-title">
-                                                                                    <i
-                                                                                        class="ti ti-info-circle text-info"></i>
-                                                                                    Thông tin
-                                                                                </h6>
-                                                                                <p><strong>Slug:</strong>
-                                                                                    {{ $luckyDraw->slug }}</p>
-                                                                                <p><strong>Người tạo:</strong>
-                                                                                    {{ $luckyDraw->creator->name ?? 'N/A' }}
-                                                                                </p>
-                                                                                <p><strong>Ngày tạo:</strong>
-                                                                                    {{ $luckyDraw->created_at->format('d/m/Y H:i') }}
-                                                                                </p>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
                                                                 </div>
 
-                                                                <!-- Tab Navigation -->
-                                                                <ul class="nav nav-tabs" id="editTab{{ $luckyDraw->id }}"
-                                                                    role="tablist">
-                                                                    <li class="nav-item" role="presentation">
-                                                                        <button class="nav-link active"
-                                                                            id="edit-participants-tab{{ $luckyDraw->id }}"
-                                                                            data-bs-toggle="tab"
-                                                                            data-bs-target="#edit-participants{{ $luckyDraw->id }}"
-                                                                            type="button" role="tab">
-                                                                            <i class="ti ti-users text-success"></i> Người
-                                                                            tham gia
-                                                                        </button>
-                                                                    </li>
-                                                                </ul>
-
-                                                                <!-- Tab Content -->
-                                                                <div class="tab-content mt-3"
-                                                                    id="editTabContent{{ $luckyDraw->id }}">
-                                                                    <!-- Participants Tab -->
-                                                                    <div class="tab-pane fade show active"
-                                                                        id="edit-participants{{ $luckyDraw->id }}"
-                                                                        role="tabpanel">
-                                                                        <div class="mb-3">
-                                                                            <label
-                                                                                for="edit_participants{{ $luckyDraw->id }}"
-                                                                                class="form-label">
-                                                                                <i class="ti ti-users text-success"></i>
-                                                                                Danh sách người tham gia
-                                                                            </label>
-                                                                            <textarea class="form-control" id="edit_participants{{ $luckyDraw->id }}" name="participants" rows="8"
-                                                                                placeholder="Mỗi người tham gia một dòng">{{ $luckyDraw->participants ? implode("\n", $luckyDraw->participants) : '' }}</textarea>
-                                                                            <small class="form-text text-muted">Mỗi người
-                                                                                tham gia trên một dòng</small>
-                                                                        </div>
-                                                                    </div>
+                                                                <div class="mb-3">
+                                                                    <label for="edit_participants{{ $luckyDraw->id }}"
+                                                                        class="form-label">
+                                                                        <i class="ti ti-users text-success"></i>
+                                                                        Danh sách người tham gia
+                                                                    </label>
+                                                                    <textarea class="form-control" id="edit_participants{{ $luckyDraw->id }}" name="participants" rows="8"
+                                                                        placeholder="Mỗi người tham gia một dòng">{{ $luckyDraw->participants ? implode("\n", $luckyDraw->participants) : '' }}</textarea>
+                                                                    <small class="form-text text-muted">Mỗi người
+                                                                        tham gia trên một dòng</small>
                                                                 </div>
                                                             </div>
                                                             <div class="modal-footer">
@@ -434,7 +419,7 @@
                     @csrf
                     <div class="modal-body">
                         <div class="row">
-                            <div class="col-md-8">
+                            <div class="col-md-12">
                                 <div class="mb-3">
                                     <label for="title" class="form-label">Tiêu đề <span
                                             class="text-danger">*</span></label>
@@ -442,15 +427,24 @@
                                 </div>
 
                                 <div class="mb-3">
-                                    <label for="description" class="form-label">Mô tả</label>
-                                    <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                                    <label for="security_code" class="form-label">Mã bảo mật</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="security_code"
+                                            name="security_code" placeholder="Để trống để tự động tạo">
+                                        <button class="btn btn-outline-secondary" type="button"
+                                            onclick="generateSecurityCode('security_code')">
+                                            <i class="ti ti-refresh"></i> Tạo tự động
+                                        </button>
+                                    </div>
+                                    <small class="form-text text-danger">Mã bảo mật để truy cập modal setting ở trang quay
+                                        thưởng, bỏ trống nếu không cần mã bảo mật.</small>
                                 </div>
 
                                 <div class="mb-3">
                                     <label for="background_image" class="form-label">Hình nền</label>
                                     <input type="file" class="form-control" id="background_image"
                                         name="background_image" accept="image/*">
-                                    <small class="form-text text-muted">Để trống nếu không muốn thêm hình nền</small>
+                                    <small class="form-text text-muted">Để trống nếu không muốn thêm hình nền.</small>
                                 </div>
 
                                 <div class="row">
@@ -482,25 +476,6 @@
                                     </div>
                                 </div>
                             </div>
-
-                            <div class="col-md-4">
-                                <div class="card bg-light">
-                                    <div class="card-body">
-                                        <h6 class="card-title">
-                                            <i class="ti ti-info-circle text-info"></i>
-                                            Thông tin
-                                        </h6>
-                                        <ul class="list-unstyled small">
-                                            <li><i class="ti ti-check text-success"></i> Link public sẽ được tạo tự động
-                                            </li>
-                                            <li><i class="ti ti-check text-success"></i> Có thể quản lý giải thưởng và
-                                                người tham gia sau</li>
-                                            <li><i class="ti ti-check text-success"></i> Chỉ Lucky Draw đang hoạt động mới
-                                                có thể quay số</li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
 
                         <div class="row">
@@ -512,7 +487,7 @@
                                     </label>
                                     <textarea class="form-control" id="participants" name="participants" rows="6"
                                         placeholder="Mỗi người tham gia một dòng&#10;Ví dụ:&#10;Nguyễn Văn A&#10;Trần Thị B&#10;Lê Văn C"></textarea>
-                                    <small class="form-text text-muted">Mỗi người tham gia trên một dòng</small>
+                                    <small class="form-text text-muted">Mỗi người tham gia trên một dòng.</small>
                                 </div>
                             </div>
                         </div>
@@ -582,7 +557,7 @@
                 if (!$(previewId).length) {
                     $(this).after(
                         '<div class="mt-2"><label class="form-label">Xem trước:</label><br><img id="background_image_preview" src="" alt="Preview" class="img-thumbnail rounded" style="max-width: 200px; max-height: 120px; object-fit: cover; display: none;"></div>'
-                        );
+                    );
                 }
                 handleImagePreview(this, previewId);
             });
@@ -597,7 +572,7 @@
                         '<div class="mt-2"><label class="form-label">Xem trước:</label><br><img id="edit_background_image_preview' +
                         luckyDrawId +
                         '" src="" alt="Preview" class="img-thumbnail rounded" style="max-width: 200px; max-height: 120px; object-fit: cover; display: none;"></div>'
-                        );
+                    );
                 }
                 handleImagePreview(this, previewId);
             });
@@ -637,6 +612,16 @@
                     toastr.success('Đã copy link vào clipboard!');
                 }, function() {
                     toastr.error('Không thể copy link!');
+                });
+            });
+
+            // Copy security code functionality
+            $('.copy-security-code').on('click', function() {
+                const code = $(this).data('code');
+                navigator.clipboard.writeText(code).then(function() {
+                    toastr.success('Đã copy mã bảo mật vào clipboard!');
+                }, function() {
+                    toastr.error('Không thể copy mã bảo mật!');
                 });
             });
 
@@ -686,5 +671,15 @@
                 });
             });
         });
+
+        // Function to generate random security code
+        function generateSecurityCode(inputId) {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let result = '';
+            for (let i = 0; i < 12; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            document.getElementById(inputId).value = result;
+        }
     </script>
 @endsection

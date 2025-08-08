@@ -1,7 +1,4 @@
 <?php
-// Updated: Modified EventImageController to implement 3-step filter flow: semester -> club -> event
-// Added club filtering logic and cascading dropdown support for better event image management
-// Added download method for admin image downloading functionality
 
 namespace App\Http\Controllers;
 

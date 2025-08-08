@@ -1,5 +1,6 @@
 <?php
-// Updated: Added prize availability checks and participant winner validation for lucky draw system
+// Updated: Added security code validation for lucky draw setting modifications and prize availability checks
+// - Added security code validation to API methods that modify data (savePrizes, saveParticipants, saveSpinResult, clearWinners)
 // - Modified getPrizes() to only return available prizes with remaining quantity
 // - Added checkParticipantEligibility() method to validate if participant can win
 // - Added prize availability validation in saveSpinResult()
@@ -17,6 +18,11 @@ class LuckyDrawPublicController extends Controller
     {
         $luckyDraw = LuckyDraw::where('slug', $slug)->firstOrFail();
 
+        // Check if lucky draw is active and not expired
+        if (!$luckyDraw->isActive()) {
+            abort(404, 'Lucky draw not found or has expired.');
+        }
+
         $prizes = $luckyDraw->prizes()->orderBy('order')->get();
         $total = $prizes->count();
 
@@ -24,13 +30,10 @@ class LuckyDrawPublicController extends Controller
         $prizesChunk1 = $prizes->slice(0, 3);
         $prizesChunk2 = $prizes->slice(3);
 
-        // Check if lucky draw is active and not expired
-        if (!$luckyDraw->isActive()) {
-            abort(404, 'Lucky draw not found or has expired.');
-        }
-
         return view('lucky-draw.show', compact('luckyDraw', 'prizesChunk1', 'prizesChunk2'));
     }
+
+
 
     public function getPrizes($slug)
     {
@@ -153,6 +156,11 @@ class LuckyDrawPublicController extends Controller
             return response()->json(['error' => 'Lucky draw not active'], 404);
         }
 
+        // Check security verification
+        if (!$this->checkSecurityVerification($slug)) {
+            return response()->json(['error' => 'Mã bảo mật không đúng'], 403);
+        }
+
         $prizeSetting = $request->input('prizeSetting', '');
         $lines = explode("\n", trim($prizeSetting));
 
@@ -182,6 +190,11 @@ class LuckyDrawPublicController extends Controller
             return response()->json(['error' => 'Lucky draw not active'], 404);
         }
 
+        // Check security verification
+        if (!$this->checkSecurityVerification($slug)) {
+            return response()->json(['error' => 'Mã bảo mật không đúng'], 403);
+        }
+
         $participants = $request->input('participants', '');
         $lines = explode("\n", trim($participants));
         $participantList = [];
@@ -203,6 +216,11 @@ class LuckyDrawPublicController extends Controller
 
         if (!$luckyDraw->isActive()) {
             return response()->json(['error' => 'Lucky draw not active'], 404);
+        }
+
+        // Check security verification
+        if (!$this->checkSecurityVerification($slug)) {
+            return response()->json(['error' => 'Mã bảo mật không đúng'], 403);
         }
 
         $result = $request->input('result');
@@ -271,6 +289,11 @@ class LuckyDrawPublicController extends Controller
             return response()->json(['error' => 'Lucky draw not active'], 404);
         }
 
+        // Check security verification
+        if (!$this->checkSecurityVerification($slug)) {
+            return response()->json(['error' => 'Mã bảo mật không đúng'], 403);
+        }
+
         $luckyDraw->clearWinners();
 
         return response()->json(['success' => true, 'message' => 'Winners list cleared']);
@@ -282,6 +305,15 @@ class LuckyDrawPublicController extends Controller
             $action = $request->input('action');
 
             switch ($action) {
+                case 'verifySecurityCode':
+                    return $this->verifySecurityCode($request, $slug);
+
+                case 'checkSecurityStatus':
+                    return $this->checkSecurityStatus($request, $slug);
+
+                case 'resetSecurityVerification':
+                    return $this->resetSecurityVerification($request, $slug);
+
                 case 'savePrizeSetting':
                     return $this->savePrizes($request, $slug);
 
@@ -306,5 +338,94 @@ class LuckyDrawPublicController extends Controller
 
             return response()->json(['error' => 'Internal server error'], 500);
         }
+    }
+
+    public function verifySecurityCode(Request $request, $slug)
+    {
+        $luckyDraw = LuckyDraw::where('slug', $slug)->firstOrFail();
+
+        if (!$luckyDraw->isActive()) {
+            return response()->json(['error' => 'Lucky draw not active'], 404);
+        }
+
+        $securityCode = $request->input('security_code');
+
+        if ($securityCode === $luckyDraw->security_code) {
+            // Store verification in session for 60 minutes
+            session([
+                'lucky_draw_verified_' . $slug => [
+                    'verified' => true,
+                    'expires_at' => now()->addMinutes(60)->timestamp
+                ]
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Security code verified successfully'
+            ]);
+        } else {
+            return response()->json([
+                'success' => false,
+                'error' => 'Mã bảo mật không đúng'
+            ], 403);
+        }
+    }
+
+    private function checkSecurityVerification($slug)
+    {
+        $luckyDraw = LuckyDraw::where('slug', $slug)->firstOrFail();
+
+        // If no security code is required, allow access
+        if (!$luckyDraw->security_code) {
+            return true;
+        }
+
+        // Check if user is verified in session and not expired
+        $verification = session('lucky_draw_verified_' . $slug);
+
+        if (!$verification) {
+            return false;
+        }
+
+        // Check if verification is expired
+        if (isset($verification['expires_at']) && $verification['expires_at'] < now()->timestamp) {
+            // Remove expired verification
+            session()->forget('lucky_draw_verified_' . $slug);
+            return false;
+        }
+
+        return $verification['verified'] ?? false;
+    }
+
+    public function checkSecurityStatus(Request $request, $slug)
+    {
+        $luckyDraw = LuckyDraw::where('slug', $slug)->firstOrFail();
+
+        if (!$luckyDraw->isActive()) {
+            return response()->json(['error' => 'Lucky draw not active'], 404);
+        }
+
+        $isVerified = $this->checkSecurityVerification($slug);
+
+        return response()->json([
+            'verified' => $isVerified
+        ]);
+    }
+
+    public function resetSecurityVerification(Request $request, $slug)
+    {
+        $luckyDraw = LuckyDraw::where('slug', $slug)->firstOrFail();
+
+        if (!$luckyDraw->isActive()) {
+            return response()->json(['error' => 'Lucky draw not active'], 404);
+        }
+
+        // Remove verification from session
+        session()->forget('lucky_draw_verified_' . $slug);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Security verification reset'
+        ]);
     }
 }

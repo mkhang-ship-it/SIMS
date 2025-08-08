@@ -1,17 +1,4 @@
 <?php
-// ClubController - Created based on CourseController pattern with image upload functionality
-// Updated to automatically create default roles when creating a club and run ModuleClubSeeder
-// Chủ Nhiệm role is assigned all permissions automatically
-// Handles CRUD operations for clubs with image storage support
-// Fixed show method to properly load User objects instead of Role objects for leaders/members display
-// Updated role creation to include club name to avoid unique constraint violations
-// Updated destroy method to delete all related data including users, events, awards, invoices and their related data
-// [2024-12-19] Updated: Removed storeUser and checkUserEmail methods and related functionality
-// [2024-12-19] Updated: Fixed show method to use new UserClubRole pivot table structure instead of direct role_id relationship
-// [2024-12-19] Updated: Removed address field from Club model operations since address is now handled through Address model relationship
-// Fixed "Attempt to read property 'province_id' on string" error by ensuring address is always a relationship object
-
-// Added province and commune selection support with AJAX functionality for better address management
 
 namespace App\Http\Controllers;
 

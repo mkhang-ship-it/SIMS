@@ -1,4 +1,5 @@
 <?php
+// Updated: Added security_code field to lucky_draws table creation for public page protection
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -14,9 +15,9 @@ return new class extends Migration {
             $table->uuid('id')->primary();
             $table->uuid('club_id');
             $table->string('title');
-            $table->text('description')->nullable();
             $table->string('background_image')->nullable();
             $table->string('slug')->unique(); // For unique link
+            $table->string('security_code', 50)->nullable(); // Security code for public page access
             $table->json('participants')->nullable(); // Store participants as JSON
             $table->json('winners')->nullable(); // Store winners as JSON
             $table->datetime('start_date');

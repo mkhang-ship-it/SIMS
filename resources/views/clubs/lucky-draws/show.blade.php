@@ -1,4 +1,4 @@
-{{-- Lucky Draw show view - Updated: Added prize availability tracking and winner validation display with modern card layout and responsive design --}}
+{{-- Lucky Draw show view - Updated: Added security_code field display for lucky draw management --}}
 
 @extends('layouts.app')
 
@@ -31,9 +31,6 @@
                             <div class="col-lg-8">
                                 <div class="mb-4">
                                     <h3 class="fw-semibold text-primary mb-2">{{ $luckyDraw->title }}</h3>
-                                    @if ($luckyDraw->description)
-                                        <p class="text-muted lead">{{ $luckyDraw->description }}</p>
-                                    @endif
                                 </div>
 
                                 <!-- Time Information -->
@@ -64,9 +61,9 @@
                                     </div>
                                 </div>
 
-                                <!-- Public Link and Creator Info -->
+                                <!-- Public Link, Security Code and Creator Info -->
                                 <div class="row g-3">
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <div class="mb-3">
                                             <label class="form-label fw-semibold">
                                                 <i class="fas fa-link text-info me-1"></i>
@@ -78,7 +75,25 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold">
+                                                <i class="fas fa-shield-alt text-warning me-1"></i>
+                                                Mã Bảo Mật
+                                            </label>
+                                            <div class="input-group">
+                                                <input type="text" class="form-control" id="securityCode"
+                                                    value="{{ $luckyDraw->security_code ?? 'Chưa có' }}" readonly>
+                                                @if ($luckyDraw->security_code)
+                                                    <button class="btn btn-outline-secondary" type="button"
+                                                        onclick="copySecurityCode()">
+                                                        <i class="fas fa-copy"></i>
+                                                    </button>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
                                         <div class="d-flex align-items-center p-3 border rounded">
                                             <div class="flex-shrink-0">
                                                 <i class="fas fa-user text-secondary fs-4"></i>
@@ -312,5 +327,14 @@
                 });
             });
         });
+
+        function copySecurityCode() {
+            const code = document.getElementById('securityCode').value;
+            navigator.clipboard.writeText(code).then(function() {
+                toastr.success('Đã copy mã bảo mật vào clipboard!');
+            }, function() {
+                toastr.error('Không thể copy mã bảo mật!');
+            });
+        }
     </script>
 @endpush

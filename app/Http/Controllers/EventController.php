@@ -1,5 +1,4 @@
 <?php
-// Updated: Modified week options in timetable to display format "Tuần 1 (start-date - enddate)"
 
 namespace App\Http\Controllers;
 

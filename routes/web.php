@@ -33,10 +33,12 @@ use App\Http\Controllers\Club\SettingController as ClubSettingController;
 use App\Http\Controllers\Club\NotificationController as ClubNotificationController;
 use App\Http\Controllers\Club\LuckyDrawController as ClubLuckyDrawController;
 use App\Http\Controllers\Club\PrizeController as ClubPrizeController;
+use App\Http\Controllers\Club\FeatureRequestController as ClubFeatureRequestController;
 use App\Http\Controllers\LuckyDrawPublicController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SwitchClubController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\FeatureRequestController;
 
 Route::get('/', function () {
     if (!Auth::check()) {
@@ -167,6 +169,11 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/notifications', [NotificationController::class, 'store'])->name('notifications.store')->middleware('CheckPermission:notification_management,create,central');
         Route::put('/notifications/{notification}', [NotificationController::class, 'update'])->name('notifications.update')->middleware('CheckPermission:notification_management,edit,central');
         Route::delete('/notifications/{notification}', [NotificationController::class, 'destroy'])->name('notifications.destroy')->middleware('CheckPermission:notification_management,delete,central');
+
+        // Feature Requests routes
+        Route::get('/feature-requests', [FeatureRequestController::class, 'index'])->name('feature-requests.index')->middleware('CheckPermission:feature_request_management,view,central');
+        Route::put('/feature-requests/{featureRequest}', [FeatureRequestController::class, 'update'])->name('feature-requests.update')->middleware('CheckPermission:feature_request_management,edit,central');
+        Route::delete('/feature-requests/{featureRequest}', [FeatureRequestController::class, 'destroy'])->name('feature-requests.destroy')->middleware('CheckPermission:feature_request_management,delete,central');
     });
 });
 
@@ -332,6 +339,10 @@ Route::middleware(['auth'])->prefix('club')->group(function () {
         Route::post('/notifications/mark-all-as-read', [ClubNotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-as-read')->middleware('CheckPermission:notification_management,view,branch');
         Route::get('/notifications/unread-count', [ClubNotificationController::class, 'unreadCount'])->name('notifications.unread-count')->middleware('CheckPermission:notification_management,view,branch');
         Route::get('/notifications/recent', [ClubNotificationController::class, 'recent'])->name('notifications.recent')->middleware('CheckPermission:notification_management,view,branch');
+
+        // Feature Requests routes
+        Route::get('/feature-requests', [ClubFeatureRequestController::class, 'index'])->name('feature-requests.index')->middleware('CheckPermission:feature_request_management,view,branch');
+        Route::post('/feature-requests', [ClubFeatureRequestController::class, 'store'])->name('feature-requests.store')->middleware('CheckPermission:feature_request_management,create,branch');
 
         // Lucky Draw routes
         Route::get('/lucky-draws', [ClubLuckyDrawController::class, 'index'])->name('lucky-draws.index')->middleware('CheckPermission:lucky_draw_management,view,branch');

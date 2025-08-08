@@ -39,7 +39,27 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="row">
+                    @if ($luckyDraw->security_code)
+                        <div class="row mb-3 security-section">
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-shield-alt me-2"></i>
+                                    <strong>Mã bảo mật:</strong> Vui lòng nhập mã bảo mật để truy cập các tính năng cài
+                                    đặt.
+                                    <br><small class="text-muted">Phiên làm việc sẽ có hiệu lực trong 60 phút sau khi
+                                        xác thực thành công.</small>
+                                </div>
+                                <div class="input-group">
+                                    <input type="password" id="securityCodeInput" class="form-control"
+                                        placeholder="Nhập mã bảo mật">
+                                    <button class="btn btn-outline-secondary" type="button" id="verifySecurityCode">
+                                        <i class="fas fa-check"></i> Xác thực
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                    <div class="row settings-section">
                         <div class="col-12">
                             <div class="d-flex justify-content-between">
                                 <select id="prizeSelect" class="form-select">
@@ -48,7 +68,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="row my-3">
+                    <div class="row my-3 settings-section">
                         <p>Danh sách trúng thưởng
                             <a href="javascript:" id="clearResult" class="btn btn-sm btn-outline-primary">Xoá danh sách
                                 trúng thưởng</a>
@@ -67,7 +87,7 @@
                         </table>
                     </div>
                     <hr>
-                    <div class="row">
+                    <div class="row settings-section">
                         <div class="col-5 ">
                             <div class="p-2 border">
                                 <p class="d-flex justify-content-between align-items-end">
@@ -102,7 +122,8 @@
         aria-labelledby="spinModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content text-center justify-content-center align-items-center">
-                <button type="button" style="position: absolute;
+                <button type="button"
+                    style="position: absolute;
     top: -3px;
     right: -3px;
     box-shadow: none;"
@@ -211,11 +232,105 @@
         $('#settingModal').modal('show');
         if ($('#spinModal').hasClass('show'))
             $('#spinModal').modal('hide');
+
+        // Check if security verification is still valid
+        if ($('#securityCodeInput').length > 0) {
+            checkSecurityVerificationStatus();
+        }
     });
+
+    // Security code verification
+    let isSecurityVerified = false;
+
+    $('#verifySecurityCode').on('click', function() {
+        const securityCode = $('#securityCodeInput').val();
+        if (!securityCode) {
+            toastr.error('Vui lòng nhập mã bảo mật.');
+            return;
+        }
+
+        // Verify security code with server
+        $.ajax({
+            url: APP_URL,
+            method: 'POST',
+            data: {
+                action: 'verifySecurityCode',
+                security_code: securityCode
+            },
+            success: function(response) {
+                if (response.success) {
+                    // Store security code for API calls
+                    window.securityCode = securityCode;
+                    isSecurityVerified = true;
+
+                    // Hide security section and show settings
+                    $('.security-section').hide();
+                    $('.settings-section').show();
+
+                    toastr.success(
+                        'Mã bảo mật đã được xác thực. Phiên làm việc có hiệu lực trong 60 phút.'
+                    );
+                } else {
+                    toastr.error(response.error || 'Mã bảo mật không đúng.');
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                if (jqXHR.status === 403) {
+                    toastr.error('Mã bảo mật không đúng.');
+                } else {
+                    toastr.error('Có lỗi xảy ra khi xác thực mã bảo mật.');
+                }
+            }
+        });
+    });
+
+    // Function to check security verification status
+    function checkSecurityVerificationStatus() {
+        $.ajax({
+            url: APP_URL,
+            method: 'POST',
+            data: {
+                action: 'checkSecurityStatus'
+            },
+            success: function(response) {
+                if (response.verified) {
+                    // User is still verified, show settings
+                    isSecurityVerified = true;
+                    $('.security-section').hide();
+                    $('.settings-section').show();
+                } else {
+                    // User needs to verify again
+                    isSecurityVerified = false;
+                    window.securityCode = null;
+                    $('.security-section').show();
+                    $('.settings-section').hide();
+                    $('#securityCodeInput').val('');
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                // If error, require verification
+                isSecurityVerified = false;
+                window.securityCode = null;
+                $('.security-section').show();
+                $('.settings-section').hide();
+                $('#securityCodeInput').val('');
+            }
+        });
+    }
+
+    // Hide settings initially if security code is required
+    if ($('#securityCodeInput').length > 0) {
+        $('.settings-section').hide();
+    } else {
+        // If no security code is required, show settings immediately
+        $('.settings-section').show();
+    }
 
     $('#spinModal').on('hidden.bs.modal', function(event) {
         $('#settingModal').modal('show');
     });
+
+    // Note: Security verification is now kept for 60 minutes, no need to reset on modal close
 
     function loadPrizeSetting() {
         $.ajax({
@@ -237,7 +352,7 @@
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 console.error('Error loading prizes:', textStatus, errorThrown);
-                toastr.error("Có lỗi xảy ra khi tải danh sách giải thưởng");
+                toastr.error("Có lỗi xảy ra khi tải danh sách giải thưởng.");
             }
         });
     }
@@ -248,20 +363,26 @@
 
     function savePrizeSetting() {
         var prizeSetting = $('#prizeSetting').val().trim();
+        var data = {
+            action: 'savePrizeSetting',
+            prizeSetting: prizeSetting
+        };
+
         $.ajax({
             url: APP_URL,
             method: 'POST',
-            data: {
-                action: 'savePrizeSetting',
-                prizeSetting: prizeSetting
-            },
+            data: data,
             success: function(response) {
                 toastr.success("Đã cập nhật giải thưởng");
                 loadPrizeSetting();
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 console.error('Error saving the data:', textStatus, errorThrown);
-                toastr.error("Có lỗi xảy ra khi cập nhật giải thưởng");
+                if (jqXHR.status === 403) {
+                    toastr.error("Mã bảo mật không đúng.");
+                } else {
+                    toastr.error("Có lỗi xảy ra khi cập nhật giải thưởng.");
+                }
             }
         });
     }
@@ -282,7 +403,7 @@
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 console.error('Error loading participants:', textStatus, errorThrown);
-                toastr.error("Có lỗi xảy ra khi tải danh sách tham dự");
+                toastr.error("Có lỗi xảy ra khi tải danh sách tham dự.");
             }
         });
     }
@@ -293,20 +414,26 @@
 
     function saveParticipants() {
         var participants = $('#participantSetting').val().trim();
+        var data = {
+            action: 'saveParticipants',
+            participants: participants
+        };
+
         $.ajax({
             url: APP_URL,
             method: 'POST',
-            data: {
-                action: 'saveParticipants',
-                participants: participants
-            },
+            data: data,
             success: function(response) {
                 toastr.success("Đã cập nhật danh sách tham dự");
                 loadParticipants();
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 console.error('Error saving the data:', textStatus, errorThrown);
-                toastr.error("Có lỗi xảy ra khi cập nhật danh sách tham dự");
+                if (jqXHR.status === 403) {
+                    toastr.error("Mã bảo mật không đúng.");
+                } else {
+                    toastr.error("Có lỗi xảy ra khi cập nhật danh sách tham dự.");
+                }
             }
         });
     }
@@ -334,7 +461,7 @@
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 console.error('Error loading winners:', textStatus, errorThrown);
-                toastr.error("Có lỗi xảy ra khi tải danh sách trúng thưởng");
+                toastr.error("Có lỗi xảy ra khi tải danh sách trúng thưởng.");
             }
         });
     }
@@ -344,12 +471,14 @@
             return;
         }
 
+        var data = {
+            action: 'clearWinners'
+        };
+
         $.ajax({
             url: APP_URL,
             method: 'POST',
-            data: {
-                action: 'clearWinners'
-            },
+            data: data,
             success: function(response) {
                 toastr.success("Danh sách trúng thưởng đã được xoá");
                 $('#winnersTableBody').empty();
@@ -357,7 +486,11 @@
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 console.error('Error clearing the winners list:', textStatus, errorThrown);
-                toastr.error("Có lỗi xảy ra khi xóa danh sách");
+                if (jqXHR.status === 403) {
+                    toastr.error("Mã bảo mật không đúng.");
+                } else {
+                    toastr.error("Có lỗi xảy ra khi xóa danh sách.");
+                }
             }
         });
     });
@@ -369,7 +502,7 @@
 
         // Check if prize is selected and available
         if (selectedPrize === "") {
-            toastr.warning("Vui lòng chọn giải thưởng trước khi quay");
+            toastr.warning("Vui lòng chọn giải thưởng trước khi quay.");
             return;
         }
 
@@ -414,7 +547,7 @@
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     console.error('Error checking winners:', textStatus, errorThrown);
-                    toastr.error("Có lỗi xảy ra khi kiểm tra danh sách trúng thưởng");
+                    toastr.error("Có lỗi xảy ra khi kiểm tra danh sách trúng thưởng.");
                 }
             });
         });
@@ -486,7 +619,7 @@
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 console.error('Error loading winners for spin:', textStatus, errorThrown);
-                toastr.error("Có lỗi xảy ra khi tải danh sách trúng thưởng");
+                toastr.error("Có lỗi xảy ra khi tải danh sách trúng thưởng.");
                 $('#startSpin').removeClass('disabled');
                 $('button').removeClass('disabled')
             }
@@ -543,28 +676,32 @@
             prize: currentPrizeText
         };
 
+        var data = {
+            action: 'saveSpinResult',
+            result: JSON.stringify(result)
+        };
+
         $.ajax({
             url: APP_URL,
             method: 'POST',
-            data: {
-                action: 'saveSpinResult',
-                result: JSON.stringify(result)
-            },
+            data: data,
             success: function(response) {
                 if (response.success) {
                     loadWinners();
                     loadPrizeSetting(); // Refresh prize list to update availability
                     toastr.success("Kết quả đã được lưu thành công!");
                 } else {
-                    toastr.error(response.error || "Có lỗi xảy ra khi lưu kết quả");
+                    toastr.error(response.error || "Có lỗi xảy ra khi lưu kết quả.");
                 }
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 console.error('Error saving the result:', textStatus, errorThrown);
-                if (jqXHR.responseJSON && jqXHR.responseJSON.error) {
+                if (jqXHR.status === 403) {
+                    toastr.error("Mã bảo mật không đúng.");
+                } else if (jqXHR.responseJSON && jqXHR.responseJSON.error) {
                     toastr.error(jqXHR.responseJSON.error);
                 } else {
-                    toastr.error("Có lỗi xảy ra khi lưu kết quả");
+                    toastr.error("Có lỗi xảy ra khi lưu kết quả.");
                 }
             }
         });

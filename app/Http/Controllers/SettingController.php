@@ -1,8 +1,5 @@
 <?php
-// Admin Settings Controller - Email, General Configuration and Address Management
-// Handles system-wide email settings, general site information and address management for admin users
-// Supports SMTP and Microsoft Graph API (Outlook) configurations
-// Includes email testing functionality, general site settings (name, phone, email, logos) and address management
+
 
 namespace App\Http\Controllers;
 

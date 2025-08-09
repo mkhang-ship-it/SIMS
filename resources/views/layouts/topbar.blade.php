@@ -48,7 +48,7 @@
             @if (!session('club_id'))
                 <div class="header-element">
                     <div class="horizontal-logo">
-                        <a href="index.html" class="header-logo">
+                        <a href="{{ route('backend.dashboard') }}" class="header-logo">
                             <img src="{{ $logoLight }}" alt="logo" class="desktop-logo">
                             <img src="{{ $toggleLogoLight }}" alt="logo" class="toggle-logo">
                             <img src="{{ $logoDark }}" alt="logo" class="desktop-dark">
@@ -59,7 +59,7 @@
             @else
                 <div class="header-element">
                     <div class="horizontal-logo">
-                        <a href="index.html" class="header-logo">
+                        <a href="{{ route('backend.club.dashboard') }}" class="header-logo">
                             <img src="{{ $clubLogoLight }}" alt="logo" class="desktop-logo">
                             <img src="{{ $clubToggleLogoLight }}" alt="logo" class="toggle-logo">
                             <img src="{{ $clubLogoDark }}" alt="logo" class="desktop-dark">
@@ -79,28 +79,19 @@
                     <span></span>
                 </a>
                 <!-- User/Club Greeting -->
-                @php
-                    use Carbon\Carbon;
 
-                    $hour = Carbon::now()->format('H');
-
-                    if ($hour >= 5 && $hour < 11) {
-                        $greeting = '🌞 Chào buổi sáng rạng rỡ,';
-                    } elseif ($hour >= 11 && $hour < 13) {
-                        $greeting = '🍽️ Chúc bạn một buổi trưa an lành,';
-                    } elseif ($hour >= 13 && $hour < 17) {
-                        $greeting = '🌤️ Buổi chiều tốt lành,';
-                    } elseif ($hour >= 17 && $hour < 21) {
-                        $greeting = '🌇 Chúc bạn một buổi tối thư thái,';
-                    } else {
-                        $greeting = '🌙 Đêm yên bình nhé,';
-                    }
-                    $displayName = Auth::user()->name;
-                @endphp
-
-                <span class="fw-semibold d-none d-md-inline">
-                    {{ $greeting }} {{ $displayName }}!
-                </span>
+                @if (session('club_id'))
+                    @php
+                        $club = Club::find(session('club_id'));
+                    @endphp
+                    <span class="fw-semibold d-none d-md-inline">
+                        Xin chào, {{ $club->name }}!
+                    </span>
+                @else
+                    <span class="fw-semibold d-none d-md-inline">
+                        Xin chào, {{ Auth::user()->name }}!
+                    </span>
+                @endif
 
             </div>
             <!-- End::header-element -->
@@ -351,3 +342,5 @@
     @endif
 
 </header>
+
+

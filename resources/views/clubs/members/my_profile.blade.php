@@ -162,6 +162,14 @@
                                                     <i class="ri-map-pin-line me-1 align-middle d-inline-block"></i>Địa Chỉ
                                                 </button>
                                             </li>
+                                            <li class="nav-item" role="presentation">
+                                                <button class="nav-link" id="sessions-tab" data-bs-toggle="tab"
+                                                    data-bs-target="#sessions-tab-pane" type="button" role="tab"
+                                                    aria-controls="sessions-tab-pane" aria-selected="false">
+                                                    <i class="ri-device-line me-1 align-middle d-inline-block"></i>Quản Lý
+                                                    Phiên
+                                                </button>
+                                            </li>
                                         </ul>
                                     </div>
                                 </div>
@@ -377,6 +385,129 @@
                                                             {{ $address ? 'Cập Nhật' : 'Thêm' }} Địa Chỉ
                                                         </button>
                                                     </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="tab-pane fade p-0 border-0" id="sessions-tab-pane" role="tabpanel"
+                                            aria-labelledby="sessions-tab" tabindex="0">
+                                            {{-- Quản Lý Phiên --}}
+                                            <div class="mb-3">
+                                                @php
+                                                    $userSessions = DB::table('sessions')
+                                                        ->where('user_id', Auth::user()->id)
+                                                        ->orderBy('last_activity', 'desc')
+                                                        ->limit(5)
+                                                        ->get();
+
+                                                    $totalSessions = DB::table('sessions')
+                                                        ->where('user_id', Auth::user()->id)
+                                                        ->count();
+                                                    $activeSessions = DB::table('sessions')
+                                                        ->where('user_id', Auth::user()->id)
+                                                        ->where(
+                                                            'last_activity',
+                                                            '>=',
+                                                            time() - config('session.lifetime') * 60,
+                                                        )
+                                                        ->count();
+                                                @endphp
+
+                                                <!-- Thông tin đơn giản -->
+                                                <div class="alert alert-info">
+                                                    <div class="d-flex align-items-center">
+                                                        <i class="ti ti-device-laptop me-3 fs-4"></i>
+                                                        <div>
+                                                            <h6 class="mb-1">Phiên Đăng Nhập</h6>
+                                                            <p class="mb-0">Bạn đang có
+                                                                <strong>{{ $activeSessions }}</strong> phiên hoạt động
+                                                                trong tổng số <strong>{{ $totalSessions }}</strong> phiên
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Danh sách phiên gần đây -->
+                                                <div class="card">
+                                                    <div
+                                                        class="card-header d-flex justify-content-between align-items-center">
+                                                        <h6 class="mb-0">Phiên Gần Đây</h6>
+                                                        <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
+                                                            data-bs-target="#destroyAllSessionsModal">
+                                                            <i class="ti ti-trash me-1"></i>
+                                                            Đăng Xuất Tất Cả
+                                                        </button>
+                                                    </div>
+                                                    <div class="card-body p-0">
+                                                        @if ($userSessions->count() > 0)
+                                                            <div class="list-group list-group-flush">
+                                                                @foreach ($userSessions as $session)
+                                                                    @php
+                                                                        $isActive =
+                                                                            $session->last_activity >=
+                                                                            time() - config('session.lifetime') * 60;
+                                                                        $isCurrent =
+                                                                            $session->id === session()->getId();
+                                                                    @endphp
+                                                                    <div
+                                                                        class="list-group-item d-flex justify-content-between align-items-center">
+                                                                        <div class="d-flex align-items-center">
+                                                                            <div class="me-3">
+                                                                                @if ($isCurrent)
+                                                                                    <i
+                                                                                        class="ti ti-device-laptop text-primary fs-5"></i>
+                                                                                @else
+                                                                                    <i
+                                                                                        class="ti ti-device-mobile text-muted fs-5"></i>
+                                                                                @endif
+                                                                            </div>
+                                                                            <div>
+                                                                                <div class="fw-semibold">
+                                                                                    {{ $session->ip_address ?? 'N/A' }}
+                                                                                    @if ($isCurrent)
+                                                                                        <span
+                                                                                            class="badge bg-primary ms-2">Hiện
+                                                                                            tại</span>
+                                                                                    @endif
+                                                                                </div>
+                                                                                <small class="text-muted">
+                                                                                    {{ \Carbon\Carbon::createFromTimestamp($session->last_activity)->format('d/m/Y H:i') }}
+                                                                                    @if ($isActive)
+                                                                                        <span
+                                                                                            class="badge bg-success ms-1">Hoạt
+                                                                                            động</span>
+                                                                                    @else
+                                                                                        <span
+                                                                                            class="badge bg-warning ms-1">Hết
+                                                                                            hạn</span>
+                                                                                    @endif
+                                                                                </small>
+                                                                            </div>
+                                                                        </div>
+                                                                        @if (!$isCurrent)
+                                                                            <button class="btn btn-sm btn-outline-danger"
+                                                                                data-bs-toggle="modal"
+                                                                                data-bs-target="#destroySessionModal"
+                                                                                data-session-id="{{ $session->id }}">
+                                                                                <i class="ti ti-x"></i>
+                                                                            </button>
+                                                                        @endif
+                                                                    </div>
+                                                                @endforeach
+                                                            </div>
+                                                        @else
+                                                            <div class="text-center py-4">
+                                                                <i class="ti ti-users fs-1 text-muted mb-3"></i>
+                                                                <p class="text-muted">Không có phiên nào</p>
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                </div>
+
+                                                <div class="mt-3">
+                                                    <small class="text-muted">
+                                                        <i class="ti ti-info-circle me-1"></i>
+                                                        Xóa phiên sẽ đăng xuất bạn khỏi thiết bị đó
+                                                    </small>
                                                 </div>
                                             </div>
                                         </div>
@@ -700,6 +831,61 @@
     <!-- Bank Settings JavaScript -->
     <script src="{{ asset('assets/js/bank-settings.js') }}"></script>
 
+    {{-- Modal xóa phiên cụ thể --}}
+    <div class="modal fade" id="destroySessionModal" tabindex="-1" aria-labelledby="destroySessionModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="POST" id="destroySessionForm">
+                    @csrf
+                    @method('DELETE')
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="destroySessionModalLabel">Xác Nhận Xóa Phiên</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Bạn có chắc chắn muốn xóa phiên này?</p>
+                        <p class="text-muted">Hành động này sẽ đăng xuất bạn khỏi thiết bị này.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-danger">Xóa</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {{-- Modal xóa tất cả phiên --}}
+    <div class="modal fade" id="destroyAllSessionsModal" tabindex="-1" aria-labelledby="destroyAllSessionsModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="POST" action="{{ route('backend.club.my-profile.destroy-all-sessions') }}">
+                    @csrf
+                    @method('DELETE')
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="destroyAllSessionsModalLabel">Xác Nhận Xóa Tất Cả Phiên</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-warning">
+                            <i class="ti ti-alert-triangle me-2"></i>
+                            <strong>Cảnh báo!</strong> Hành động này sẽ đăng xuất bạn khỏi tất cả thiết bị.
+                        </div>
+                        <p>Bạn có chắc chắn muốn xóa tất cả phiên?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-danger">Xóa Tất Cả</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const tabKey = 'myProfileActiveTab';
@@ -711,7 +897,8 @@
                 'info-tab': 'Thông Tin Cá Nhân',
                 'security-tab': 'Bảo Mật',
                 'bank-tab': 'Thông Tin Ngân Hàng',
-                'address-tab': 'Địa Chỉ'
+                'address-tab': 'Địa Chỉ',
+                'sessions-tab': 'Quản Lý Phiên'
             };
 
             // Function to update tab title
@@ -786,6 +973,19 @@
                                 console.error('Error loading communes:', error);
                             });
                     }
+                });
+            }
+
+            // Xử lý modal xóa phiên cụ thể
+            const destroySessionModal = document.getElementById('destroySessionModal');
+            if (destroySessionModal) {
+                destroySessionModal.addEventListener('show.bs.modal', function(event) {
+                    const button = event.relatedTarget;
+                    const sessionId = button.getAttribute('data-session-id');
+                    const form = document.getElementById('destroySessionForm');
+                    form.action =
+                        `{{ route('backend.club.my-profile.destroy-session', ['sessionId' => ':sessionId']) }}`
+                        .replace(':sessionId', sessionId);
                 });
             }
         });

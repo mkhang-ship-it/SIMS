@@ -1,4 +1,4 @@
-{{-- Admin Settings Page - Email and General Configuration --}}
+{{-- Admin Settings Page - Email, General Configuration and Permission Management --}}
 @extends('layouts.app')
 
 @section('content')
@@ -22,6 +22,16 @@
                             @if (auth()->user()->hasPermissionForModuleCode('setting_management', 'mail', 'central'))
                                 <button class="list-group-item list-group-item-action" id="tab-mail-btn"
                                     data-bs-toggle="tab" data-bs-target="#tab-mail" type="button">Cấu Hình Email</button>
+                            @endif
+                            @if (auth()->user()->hasPermissionForModuleCode('setting_management', 'general', 'central'))
+                                <button class="list-group-item list-group-item-action" id="tab-permissions-btn"
+                                    data-bs-toggle="tab" data-bs-target="#tab-permissions" type="button">Quản Lý Phân
+                                    Quyền</button>
+                            @endif
+                            @if (auth()->user()->hasPermissionForModuleCode('setting_management', 'maintenance', 'central'))
+                                <button class="list-group-item list-group-item-action" id="tab-maintenance-btn"
+                                    data-bs-toggle="tab" data-bs-target="#tab-maintenance" type="button">Chế Độ Bảo
+                                    Trì</button>
                             @endif
                         </div>
                     </div>
@@ -48,6 +58,16 @@
                                     @include('settings.partials.mail')
                                 </div>
                             @endif
+                            @if (auth()->user()->hasPermissionForModuleCode('setting_management', 'general', 'central'))
+                                <div class="tab-pane fade" id="tab-permissions">
+                                    @include('settings.partials.permissions')
+                                </div>
+                            @endif
+                            @if (auth()->user()->hasPermissionForModuleCode('setting_management', 'maintenance', 'central'))
+                                <div class="tab-pane fade" id="tab-maintenance">
+                                    @include('settings.partials.maintenance')
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -66,6 +86,8 @@
             const tabTitles = {
                 'tab-general-btn': 'Thông Tin Chung',
                 'tab-mail-btn': 'Cấu Hình Email',
+                'tab-permissions-btn': 'Quản Lý Phân Quyền',
+                'tab-maintenance-btn': 'Chế Độ Bảo Trì',
             };
 
             // Function to update tab title

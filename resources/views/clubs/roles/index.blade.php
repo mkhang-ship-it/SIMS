@@ -1,4 +1,5 @@
 {{-- Roles Index Page - Updated to use separate pages for create and edit instead of modals --}}
+{{-- Updated: Allow editing of admin and default roles while preventing deletion --}}
 @extends('layouts.app')
 
 @section('content')
@@ -85,7 +86,7 @@
                                                 <div class="gap-2 fs-15">
 
                                                     @if (!$role->is_admin)
-                                                        {{-- Nếu không phải admin thì có thể xem xét sửa --}}
+                                                        {{-- Nếu không phải admin thì có thể sửa --}}
                                                         @if (auth()->user()->hasPermissionForModuleCode('role_management', 'edit', 'branch'))
                                                             <a href="{{ route('backend.club.roles.edit', $role->id) }}"
                                                                 class="btn btn-icon btn-sm btn-info-light"
@@ -93,16 +94,28 @@
                                                                 <i class="ri-edit-line"></i>
                                                             </a>
                                                         @endif
-
-                                                        {{-- Nếu không phải admin và không phải default thì mới được xóa --}}
-                                                        @if (!$role->is_default && auth()->user()->hasPermissionForModuleCode('role_management', 'delete', 'branch'))
-                                                            <button class="btn btn-icon btn-sm btn-danger-light"
-                                                                data-bs-toggle="modal"
-                                                                data-bs-target="#deleteRoleModal{{ $role->id }}"
-                                                                title="Xóa">
-                                                                <i class="ri-delete-bin-line"></i>
-                                                            </button>
+                                                    @else
+                                                        {{-- Nếu là admin role thì chỉ cho phép sửa (không cho xóa) --}}
+                                                        @if (auth()->user()->hasPermissionForModuleCode('role_management', 'edit', 'branch'))
+                                                            <a href="{{ route('backend.club.roles.edit', $role->id) }}"
+                                                                class="btn btn-icon btn-sm btn-info-light"
+                                                                title="Chỉnh sửa">
+                                                                <i class="ri-edit-line"></i>
+                                                            </a>
                                                         @endif
+                                                    @endif
+
+                                                    {{-- Chỉ cho phép xóa nếu không phải admin và không phải default --}}
+                                                    @if (
+                                                        !$role->is_admin &&
+                                                            !$role->is_default &&
+                                                            auth()->user()->hasPermissionForModuleCode('role_management', 'delete', 'branch'))
+                                                        <button class="btn btn-icon btn-sm btn-danger-light"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#deleteRoleModal{{ $role->id }}"
+                                                            title="Xóa">
+                                                            <i class="ri-delete-bin-line"></i>
+                                                        </button>
                                                     @endif
 
                                                 </div>

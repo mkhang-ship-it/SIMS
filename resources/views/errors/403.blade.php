@@ -1,3 +1,9 @@
+<?php
+
+use App\Models\Setting;
+
+$generalSettings = Setting::getMany(null, ['site_name', 'image_square_light']);
+?>
 <!DOCTYPE html>
 <html lang="en" dir="ltr" data-nav-layout="vertical" data-vertical-style="overlay" data-theme-mode="light"
     data-header-styles="light" data-menu-styles="light" data-toggled="close">
@@ -8,14 +14,13 @@
     <meta charset="UTF-8">
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title> YNEX - Bootstrap 5 Premium Admin & Dashboard Template </title>
-    <meta name="Description" content="Bootstrap Responsive Admin Web Dashboard HTML5 Template">
-    <meta name="Author" content="Spruko Technologies Private Limited">
-    <meta name="keywords"
-        content="admin,admin dashboard,admin panel,admin template,bootstrap,clean,dashboard,flat,jquery,modern,responsive,premium admin templates,responsive admin,ui,ui kit.">
+    <title> {{ $generalSettings['site_name'] ?? '-' }} </title>
+    <meta name="Description" content="{{ $generalSettings['site_name'] ?? '-' }}">
 
     <!-- Favicon -->
-    <link rel="icon" href="{{ asset('assets/images/brand-logos/favicon.ico') }}" type="image/x-icon">
+    <link rel="icon"
+        href="{{ !empty($generalSettings['image_square_light']) ? Storage::url($generalSettings['image_square_light']) : asset('favicon.ico') }}"
+        type="image/x-icon">
 
     <!-- Main Theme Js -->
     <script src="{{ asset('assets/js/authentication-main.js') }}"></script>
@@ -42,7 +47,7 @@
                     <div class="row align-items-center justify-content-center h-100">
                         <div class="col-xl-7">
                             <p class="error-text mb-sm-0 mb-2">403</p>
-                            <p class="fs-18 fw-semibold mb-3">Bạn không có quyền truy cập trang này.
+                            <p class="fs-18 fw-semibold mb-3">Forbidden
                             </p>
                             <div class="row justify-content-center mb-5">
                                 <div class="col-xl-6">

@@ -116,10 +116,6 @@ class ClubController extends Controller
                 'is_admin' => false
             ]);
 
-            // Assign all permissions to the "Chủ Nhiệm" role
-            // $allPermissions = Permission::all();
-            // $chuNhiemRole->permissions()->attach($allPermissions->pluck('id'));
-
             $branchModuleIds = Module::where('type', 'branch')->pluck('id');
             $branchPermissions = Permission::whereIn('module_id', $branchModuleIds)->pluck('id');
             $chuNhiemRole->permissions()->attach($branchPermissions);
@@ -129,11 +125,6 @@ class ClubController extends Controller
             return redirect()->route('backend.clubs.index')->with('success', 'Câu lạc bộ, các vai trò mặc định và quyền đã được tạo thành công!');
         } catch (\Exception $e) {
             DB::rollback();
-
-            // Delete uploaded image if exists
-            if (isset($imagePath)) {
-                Storage::disk('public')->delete($imagePath);
-            }
 
             return redirect()->back()->withInput()->with('error', 'Có lỗi xảy ra khi tạo câu lạc bộ: ' . $e->getMessage());
         }

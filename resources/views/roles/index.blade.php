@@ -1,4 +1,5 @@
 {{-- Roles Index Page - Updated to use separate pages for create and edit instead of modals --}}
+{{-- Updated: Allow editing of default roles while preventing deletion --}}
 @extends('layouts.app')
 
 @section('content')
@@ -84,22 +85,19 @@
                                             </td>
                                             <td class="text-center">
                                                 <div class="gap-2 fs-15">
-                                                    @if (!$role->is_default)
-                                                        @if (auth()->user()->hasPermissionForModuleCode('role_management', 'edit', 'central'))
-                                                            <a href="{{ route('backend.roles.edit', $role->id) }}"
-                                                                class="btn btn-icon btn-sm btn-info-light"
-                                                                title="Chỉnh sửa">
-                                                                <i class="ri-edit-line"></i>
-                                                            </a>
-                                                        @endif
-                                                        @if (auth()->user()->hasPermissionForModuleCode('role_management', 'delete', 'central'))
-                                                            <button class="btn btn-icon btn-sm btn-danger-light"
-                                                                data-bs-toggle="modal"
-                                                                data-bs-target="#deleteRoleModal{{ $role->id }}"
-                                                                title="Xóa">
-                                                                <i class="ri-delete-bin-line"></i>
-                                                            </button>
-                                                        @endif
+                                                    @if (auth()->user()->hasPermissionForModuleCode('role_management', 'edit', 'central'))
+                                                        <a href="{{ route('backend.roles.edit', $role->id) }}"
+                                                            class="btn btn-icon btn-sm btn-info-light" title="Chỉnh sửa">
+                                                            <i class="ri-edit-line"></i>
+                                                        </a>
+                                                    @endif
+                                                    @if (!$role->is_default && auth()->user()->hasPermissionForModuleCode('role_management', 'delete', 'central'))
+                                                        <button class="btn btn-icon btn-sm btn-danger-light"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#deleteRoleModal{{ $role->id }}"
+                                                            title="Xóa">
+                                                            <i class="ri-delete-bin-line"></i>
+                                                        </button>
                                                     @endif
                                                 </div>
                                             </td>

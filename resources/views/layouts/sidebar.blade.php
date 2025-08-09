@@ -49,7 +49,7 @@ Changes made:
     @endphp
     @if (!session('club_id'))
         <div class="main-sidebar-header">
-            <a href="index.html" class="header-logo">
+            <a href="{{ route('backend.dashboard') }}" class="header-logo">
                 <img src="{{ $logoLight }}" alt="logo" class="desktop-logo">
                 <img src="{{ $toggleLogoLight }}" alt="logo" class="toggle-logo">
                 <img src="{{ $logoDark }}" alt="logo" class="desktop-dark">
@@ -58,7 +58,7 @@ Changes made:
         </div>
     @else
         <div class="main-sidebar-header">
-            <a href="index.html" class="header-logo">
+            <a href="{{ route('backend.club.dashboard') }}" class="header-logo">
                 <img src="{{ $clubLogoLight }}" alt="logo" class="desktop-logo">
                 <img src="{{ $clubToggleLogoLight }}" alt="logo" class="toggle-logo">
                 <img src="{{ $clubLogoDark }}" alt="logo" class="desktop-dark">
@@ -128,6 +128,16 @@ Changes made:
                                 class="side-menu__item {{ request()->routeIs('backend.members.index') ? 'active' : '' }}">
                                 <i class="las la-user-friends side-menu__icon"></i>
                                 <span class="side-menu__label">Quản Lý Thành Viên</span>
+                            </a>
+                        </li>
+                    @endif
+
+                    @if (auth()->user()->hasPermissionForModuleCode('session_management', 'view', 'central'))
+                        <li class="slide {{ request()->routeIs('backend.sessions.index') ? 'active' : '' }}">
+                            <a href="{{ route('backend.sessions.index') }}"
+                                class="side-menu__item {{ request()->routeIs('backend.sessions.index') ? 'active' : '' }}">
+                                <i class="las la-desktop side-menu__icon"></i>
+                                <span class="side-menu__label">Quản Lý Phiên</span>
                             </a>
                         </li>
                     @endif
@@ -315,6 +325,18 @@ Changes made:
                             </a>
                         </li>
                     @endif
+
+                    @if (auth()->user()->hasPermissionForModuleCode('session_management', 'view', 'branch'))
+                        <li class="slide {{ request()->routeIs('backend.club.sessions.index') ? 'active' : '' }}">
+                            <a href="{{ route('backend.club.sessions.index') }}"
+                                class="side-menu__item {{ request()->routeIs('backend.club.sessions.index') ? 'active' : '' }}">
+                                <i class="las la-desktop side-menu__icon"></i>
+                                <span class="side-menu__label">Quản Lý Phiên</span>
+                            </a>
+                        </li>
+                    @endif
+
+
 
                     @if (auth()->user()->hasPermissionForModuleCode('award_management', 'view', 'branch'))
                         <li class="slide {{ request()->routeIs('backend.club.awards.index') ? 'active' : '' }}">

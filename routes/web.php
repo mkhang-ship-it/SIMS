@@ -39,6 +39,26 @@ use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SwitchClubController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\FeatureRequestController;
+use App\Http\Controllers\SessionController;
+use App\Http\Controllers\Club\SessionController as ClubSessionController;
+
+// Bypass route for maintenance mode - handled entirely by middleware
+Route::get('/bypass/{token}', function ($token) {
+    // This route is handled entirely by the maintenance middleware
+    // The middleware will validate the token and set session/cookie
+    // Then redirect based on authentication status
+    if (!Auth::check()) {
+        return redirect()->route('login');
+    }
+
+    $user = Auth::user();
+
+    if ($user->club_id) {
+        return redirect()->route('backend.club.dashboard');
+    } else {
+        return redirect()->route('backend.dashboard');
+    }
+})->where('token', '[a-zA-Z0-9_]+');
 
 Route::get('/', function () {
     if (!Auth::check()) {
@@ -70,6 +90,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/my-profile', [MyProfileController::class, 'index'])->name('my-profile.index')->middleware('CheckPermission:user_management,my_profile,central');
         Route::post('/my-profile/update', [MyProfileController::class, 'update'])->name('my-profile.update')->middleware('CheckPermission:user_management,my_profile,central');
         Route::post('/my-profile/update-password', [MyProfileController::class, 'updatePassword'])->name('my-profile.update-password')->middleware('CheckPermission:user_management,my_profile,central');
+        Route::delete('/my-profile/destroy-session/{sessionId}', [MyProfileController::class, 'destroySession'])->name('my-profile.destroy-session')->middleware('CheckPermission:user_management,my_profile,central');
+        Route::delete('/my-profile/destroy-all-sessions', [MyProfileController::class, 'destroyAllSessions'])->name('my-profile.destroy-all-sessions')->middleware('CheckPermission:user_management,my_profile,central');
+
 
         // Courses routes
         Route::get('/courses', [CourseController::class, 'index'])->name('courses.index')->middleware('CheckPermission:course_management,view,central');
@@ -163,6 +186,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/settings/get-communes', [SettingController::class, 'getCommunes'])->name('settings.get-communes')->middleware('CheckPermission:setting_management,general,central');
         Route::post('/settings/mail', [SettingController::class, 'updateMailSettings'])->name('settings.mail.update')->middleware('CheckPermission:setting_management,mail,central');
         Route::post('/settings/mail-test', [SettingController::class, 'testMail'])->name('settings.mail.test')->middleware('CheckPermission:setting_management,mail,central');
+        Route::post('/settings/refresh-permissions', [SettingController::class, 'refreshPermissions'])->name('settings.refresh-permissions')->middleware('CheckPermission:setting_management,general,central');
+        Route::post('/settings/maintenance', [SettingController::class, 'updateMaintenanceSettings'])->name('settings.maintenance.update')->middleware('CheckPermission:setting_management,maintenance,central');
 
         // Notifications routes
         Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index')->middleware('CheckPermission:notification_management,view,central');
@@ -174,6 +199,13 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/feature-requests', [FeatureRequestController::class, 'index'])->name('feature-requests.index')->middleware('CheckPermission:feature_request_management,view,central');
         Route::put('/feature-requests/{featureRequest}', [FeatureRequestController::class, 'update'])->name('feature-requests.update')->middleware('CheckPermission:feature_request_management,edit,central');
         Route::delete('/feature-requests/{featureRequest}', [FeatureRequestController::class, 'destroy'])->name('feature-requests.destroy')->middleware('CheckPermission:feature_request_management,delete,central');
+
+        // Sessions routes (Central Admin only)
+        Route::get('/sessions', [SessionController::class, 'index'])->name('sessions.index')->middleware('CheckPermission:session_management,view,central');
+        Route::delete('/sessions/{sessionId}', [SessionController::class, 'destroy'])->name('sessions.destroy')->middleware('CheckPermission:session_management,delete,central');
+        Route::delete('/sessions', [SessionController::class, 'destroyAll'])->name('sessions.destroy-all')->middleware('CheckPermission:session_management,delete,central');
+        Route::delete('/sessions/expired', [SessionController::class, 'destroyExpired'])->name('sessions.destroy-expired')->middleware('CheckPermission:session_management,delete,central');
+        Route::delete('/sessions/user/{userId}', [SessionController::class, 'destroyUserSessions'])->name('sessions.destroy-user')->middleware('CheckPermission:session_management,delete,central');
     });
 });
 
@@ -188,6 +220,16 @@ Route::middleware(['auth'])->prefix('club')->group(function () {
         Route::post('/my-profile/update-bank-account', [ClubMyProfileController::class, 'updateBankAccount'])->name('my-profile.update-bank-account')->middleware('CheckPermission:member_management,my_profile,branch');
         Route::post('/my-profile/update-address', [ClubMyProfileController::class, 'updateAddress'])->name('my-profile.update-address')->middleware('CheckPermission:member_management,my_profile,branch');
         Route::get('/my-profile/get-communes', [ClubMyProfileController::class, 'getCommunes'])->name('my-profile.get-communes')->middleware('CheckPermission:member_management,my_profile,branch');
+        Route::delete('/my-profile/destroy-session/{sessionId}', [ClubMyProfileController::class, 'destroySession'])->name('my-profile.destroy-session')->middleware('CheckPermission:member_management,my_profile,branch');
+        Route::delete('/my-profile/destroy-all-sessions', [ClubMyProfileController::class, 'destroyAllSessions'])->name('my-profile.destroy-all-sessions')->middleware('CheckPermission:member_management,my_profile,branch');
+
+
+        // Sessions routes
+        Route::get('/sessions', [ClubSessionController::class, 'index'])->name('sessions.index')->middleware('CheckPermission:session_management,view,branch');
+        Route::delete('/sessions/{sessionId}', [ClubSessionController::class, 'destroy'])->name('sessions.destroy')->middleware('CheckPermission:session_management,delete,branch');
+        Route::delete('/sessions', [ClubSessionController::class, 'destroyAll'])->name('sessions.destroy-all')->middleware('CheckPermission:session_management,delete,branch');
+        Route::delete('/sessions/expired', [ClubSessionController::class, 'destroyExpired'])->name('sessions.destroy-expired')->middleware('CheckPermission:session_management,delete,branch');
+        Route::delete('/sessions/user/{userId}', [ClubSessionController::class, 'destroyUserSessions'])->name('sessions.destroy-user')->middleware('CheckPermission:session_management,delete,branch');
 
         // Roles routes
         Route::get('/roles', [ClubRoleController::class, 'index'])->name('roles.index')->middleware('CheckPermission:role_management,view,branch');

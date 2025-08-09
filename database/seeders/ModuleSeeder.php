@@ -141,7 +141,8 @@ class ModuleSeeder extends Seeder
                 'permissions' => [
                     ['name' => 'view', 'display_name' => 'Xem'],
                     ['name' => 'mail', 'display_name' => 'Cấu hình Email'],
-                    ['name' => 'general', 'display_name' => 'Cấu hình Chung']
+                    ['name' => 'general', 'display_name' => 'Cấu hình Chung'],
+                    ['name' => 'maintenance', 'display_name' => 'Cấu hình Bảo Trì']
                 ]
             ],
             [
@@ -160,6 +161,14 @@ class ModuleSeeder extends Seeder
                 'permissions' => [
                     ['name' => 'view', 'display_name' => 'Xem'],
                     ['name' => 'edit', 'display_name' => 'Chỉnh sửa'],
+                    ['name' => 'delete', 'display_name' => 'Xóa'],
+                ]
+            ],
+            [
+                'module_code' => 'session_management',
+                'name' => 'Quản Lý Phiên',
+                'permissions' => [
+                    ['name' => 'view', 'display_name' => 'Xem'],
                     ['name' => 'delete', 'display_name' => 'Xóa'],
                 ]
             ]

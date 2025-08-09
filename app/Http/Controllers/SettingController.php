@@ -1,5 +1,7 @@
 <?php
-
+// SettingController - Updated to include permission refresh functionality
+// Added refreshPermissions method to handle permission refresh from web interface
+// Created: Method to run RefreshPermissions command via web interface
 
 namespace App\Http\Controllers;
 
@@ -11,6 +13,7 @@ use App\Models\Commune;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Artisan;
 
 class SettingController extends Controller
 {
@@ -40,13 +43,29 @@ class SettingController extends Controller
             'image_square_dark',
         ]);
 
+        $maintenanceSettings = Setting::getMany(null, [
+            'maintenance_mode',
+            'maintenance_bypass_token',
+            'maintenance_message',
+        ]);
+
+        // Auto-generate bypass token if not exists
+        if (empty($maintenanceSettings['maintenance_bypass_token'])) {
+            $newToken = \Illuminate\Support\Str::random(32);
+            Setting::updateOrCreate(
+                ['club_id' => null, 'key' => 'maintenance_bypass_token', 'is_admin' => 'central'],
+                ['value' => $newToken]
+            );
+            $maintenanceSettings['maintenance_bypass_token'] = $newToken;
+        }
+
         // Load admin address
         $adminAddress = Address::where('club_id', null)->where('user_id', null)->first();
 
         // Load provinces for address selection
         $provinces = Province::orderBy('name')->get();
 
-        return view('settings.index', compact('mailSettings', 'generalSettings', 'adminAddress', 'provinces'));
+        return view('settings.index', compact('mailSettings', 'generalSettings', 'maintenanceSettings', 'adminAddress', 'provinces'));
     }
 
     // Updated: Xóa ảnh cũ khi upload ảnh mới cho các trường logo trong updateGeneralSettings
@@ -150,6 +169,44 @@ class SettingController extends Controller
         return redirect()->back()->with('success', 'Cấu hình email đã được cập nhật thành công.');
     }
 
+    public function updateMaintenanceSettings(Request $request)
+    {
+        $validated = $request->validate([
+            'maintenance_mode' => 'nullable|in:1',
+            'maintenance_bypass_token' => 'nullable|string|max:255',
+            'maintenance_message' => 'nullable|string|max:1000',
+        ]);
+
+        // Convert checkbox to proper value
+        $newMaintenanceMode = $request->has('maintenance_mode') ? '1' : '0';
+
+        // Get current maintenance mode status
+        $currentMaintenanceMode = Setting::getValue(null, 'maintenance_mode') ?? '0';
+
+        // Generate new bypass token if maintenance mode is being toggled
+        if ($newMaintenanceMode !== $currentMaintenanceMode) {
+            $validated['maintenance_bypass_token'] = \Illuminate\Support\Str::random(32);
+        } else {
+            // Keep existing token if maintenance mode status hasn't changed
+            $validated['maintenance_bypass_token'] = $request->input('maintenance_bypass_token');
+        }
+
+        $validated['maintenance_mode'] = $newMaintenanceMode;
+
+        // Update or create settings
+        foreach ($validated as $key => $value) {
+            if ($value !== null) {
+                Setting::updateOrCreate(
+                    ['club_id' => null, 'key' => $key, 'is_admin' => 'central'],
+                    ['value' => $value]
+                );
+            }
+        }
+
+        $message = $newMaintenanceMode === '1' ? 'Chế độ bảo trì đã được bật với token mới.' : 'Chế độ bảo trì đã được tắt.';
+        return redirect()->back()->with('success', $message);
+    }
+
     public function testMail(Request $request)
     {
         $request->validate([
@@ -194,6 +251,30 @@ class SettingController extends Controller
             return redirect()->back()->with('success', 'Email test đã được gửi thành công đến ' . $request->to);
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Lỗi gửi email: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Refresh permissions for admin and club
+     */
+    public function refreshPermissions(Request $request)
+    {
+        $request->validate([
+            'type' => 'required|in:admin,club,all'
+        ]);
+
+        try {
+            $type = $request->type;
+            $command = "permissions:refresh --type={$type}";
+
+            // Run the command
+            Artisan::call($command);
+
+            $output = Artisan::output();
+
+            return redirect()->back()->with('success', "Đã chạy lại phân quyền thành công cho {$type}!");
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Lỗi khi chạy lại phân quyền: ' . $e->getMessage());
         }
     }
 }

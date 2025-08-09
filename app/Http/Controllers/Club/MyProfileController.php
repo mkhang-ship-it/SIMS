@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 use App\Models\Major;
 use App\Models\Course;
 use App\Models\Role;
@@ -152,5 +153,36 @@ class MyProfileController extends Controller
         $user->password = Hash::make($request->password);
         $user->save();
         return back()->with('success', 'Đổi mật khẩu thành công!');
+    }
+
+    // Xóa phiên cụ thể
+    public function destroySession($sessionId)
+    {
+        $user = Auth::user();
+
+        // Chỉ cho phép xóa phiên của chính mình
+        $session = DB::table('sessions')
+            ->where('id', $sessionId)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$session) {
+            return back()->with('error', 'Không tìm thấy phiên hoặc không có quyền xóa!');
+        }
+
+        DB::table('sessions')->where('id', $sessionId)->delete();
+
+        return back()->with('success', 'Đã xóa phiên thành công!');
+    }
+
+    // Xóa tất cả phiên
+    public function destroyAllSessions()
+    {
+        $user = Auth::user();
+
+        // Xóa tất cả phiên của user hiện tại
+        DB::table('sessions')->where('user_id', $user->id)->delete();
+
+        return back()->with('success', 'Đã xóa tất cả phiên thành công!');
     }
 }

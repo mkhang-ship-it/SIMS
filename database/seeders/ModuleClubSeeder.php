@@ -156,6 +156,14 @@ class ModuleClubSeeder extends Seeder
                     ['name' => 'view', 'display_name' => 'Xem'],
                     ['name' => 'create', 'display_name' => 'Tạo mới'],
                 ]
+            ],
+            [
+                'module_code' => 'session_management',
+                'name' => 'Quản Lý Phiên',
+                'permissions' => [
+                    ['name' => 'view', 'display_name' => 'Xem'],
+                    ['name' => 'delete', 'display_name' => 'Xóa'],
+                ]
             ]
         ];
 

@@ -4,7 +4,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\CheckPermission;
-use App\Http\Middleware\ApiKeyAuthentication;
+use App\Http\Middleware\MaintenanceMode;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -16,8 +16,11 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'CheckPermission' => CheckPermission::class,
-            'api.key' => ApiKeyAuthentication::class,
+            'maintenance' => MaintenanceMode::class,
         ]);
+
+        // Apply maintenance middleware globally to all routes
+        $middleware->append(MaintenanceMode::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

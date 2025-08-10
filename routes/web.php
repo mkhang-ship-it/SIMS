@@ -1,6 +1,5 @@
 <?php
 
-
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
@@ -41,9 +40,11 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\FeatureRequestController;
 use App\Http\Controllers\SessionController;
 use App\Http\Controllers\Club\SessionController as ClubSessionController;
+use App\Http\Controllers\ImpersonationController;
+use App\Http\Controllers\LogController;
 
 // Bypass route for maintenance mode - handled entirely by middleware
-Route::get('/bypass/{token}', function ($token) {
+Route::middleware('logsystem')->get('/bypass/{token}', function ($token) {
     // This route is handled entirely by the maintenance middleware
     // The middleware will validate the token and set session/cookie
     // Then redirect based on authentication status
@@ -60,7 +61,7 @@ Route::get('/bypass/{token}', function ($token) {
     }
 })->where('token', '[a-zA-Z0-9_]+');
 
-Route::get('/', function () {
+Route::middleware('logsystem')->get('/', function () {
     if (!Auth::check()) {
         return redirect()->route('login');
     }
@@ -76,15 +77,18 @@ Route::get('/', function () {
 
 
 // Authentication routes
-Route::middleware(['guest'])->group(function () {
+Route::middleware(['guest', 'logsystem'])->group(function () {
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [LoginController::class, 'login']);
 });
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'logsystem'])->group(function () {
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
     Route::name('backend.')->group(function () {
+        // Impersonation routes
+        Route::post('/impersonate/{user}', [ImpersonationController::class, 'start'])->name('impersonate.start');
+        Route::post('/impersonate/stop/end', [ImpersonationController::class, 'stop'])->name('impersonate.stop');
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard')->middleware('CheckPermission:dashboard,view,central');
 
         Route::get('/my-profile', [MyProfileController::class, 'index'])->name('my-profile.index')->middleware('CheckPermission:user_management,my_profile,central');
@@ -180,6 +184,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/members/get-club-roles', [MemberController::class, 'getClubRoles'])->name('members.get-club-roles')->middleware('CheckPermission:member_management,view,central');
         Route::get('/members/check-email', [MemberController::class, 'checkUserEmail'])->name('members.check-email')->middleware('CheckPermission:member_management,view,central');
 
+
+
         // Admin Settings routes
         Route::get('/settings', [SettingController::class, 'index'])->name('settings.index')->middleware('CheckPermission:setting_management,view,central');
         Route::post('/settings/general', [SettingController::class, 'updateGeneralSettings'])->name('settings.general.update')->middleware('CheckPermission:setting_management,general,central');
@@ -188,6 +194,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/settings/mail-test', [SettingController::class, 'testMail'])->name('settings.mail.test')->middleware('CheckPermission:setting_management,mail,central');
         Route::post('/settings/refresh-permissions', [SettingController::class, 'refreshPermissions'])->name('settings.refresh-permissions')->middleware('CheckPermission:setting_management,general,central');
         Route::post('/settings/maintenance', [SettingController::class, 'updateMaintenanceSettings'])->name('settings.maintenance.update')->middleware('CheckPermission:setting_management,maintenance,central');
+        Route::post('/settings/theme', [SettingController::class, 'updateThemeSettings'])->name('settings.theme.update')->middleware('CheckPermission:setting_management,general,central');
 
         // Notifications routes
         Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index')->middleware('CheckPermission:notification_management,view,central');
@@ -206,11 +213,18 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/sessions', [SessionController::class, 'destroyAll'])->name('sessions.destroy-all')->middleware('CheckPermission:session_management,delete,central');
         Route::delete('/sessions/expired', [SessionController::class, 'destroyExpired'])->name('sessions.destroy-expired')->middleware('CheckPermission:session_management,delete,central');
         Route::delete('/sessions/user/{userId}', [SessionController::class, 'destroyUserSessions'])->name('sessions.destroy-user')->middleware('CheckPermission:session_management,delete,central');
+
+        // System Logs routes (Central Admin only)
+        Route::get('/logs', [LogController::class, 'index'])->name('logs.index')->middleware('CheckPermission:log_management,view,central');
+        Route::delete('/logs/{log}', [LogController::class, 'destroy'])->name('logs.destroy')->middleware('CheckPermission:log_management,delete,central');
+        Route::delete('/logs', [LogController::class, 'destroyAll'])->name('logs.destroy-all')->middleware('CheckPermission:log_management,delete,central');
+        Route::delete('/logs/destroy/old', [LogController::class, 'destroyOld'])->name('logs.destroy-old')->middleware('CheckPermission:log_management,delete,central');
+        Route::get('/logs/export', [LogController::class, 'export'])->name('logs.export')->middleware('CheckPermission:log_management,export,central');
     });
 });
 
 
-Route::middleware(['auth'])->prefix('club')->group(function () {
+Route::middleware(['auth', 'logsystem'])->prefix('club')->group(function () {
     Route::name('backend.club.')->group(function () {
         Route::get('/dashboard', [ClubDashboardController::class, 'index'])->name('dashboard')->middleware('CheckPermission:dashboard,view,branch');
 
@@ -405,12 +419,12 @@ Route::middleware(['auth'])->prefix('club')->group(function () {
     });
 });
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'logsystem'])->group(function () {
     Route::post('/switch-default-club', [SwitchClubController::class, 'switch'])->name('switch.default.club')->middleware('auth');
 });
 
 // Public Lucky Draw routes (no authentication required)
-Route::prefix('lucky-draw')->name('lucky-draw.')->group(function () {
+Route::prefix('lucky-draw')->name('lucky-draw.')->middleware('logsystem')->group(function () {
     Route::get('/{slug}', [LuckyDrawPublicController::class, 'show'])->name('show');
     Route::get('/{slug}/prizes', [LuckyDrawPublicController::class, 'getPrizes'])->name('prizes');
     Route::get('/{slug}/prizes-details', [LuckyDrawPublicController::class, 'getPrizesWithDetails'])->name('prizes.details');

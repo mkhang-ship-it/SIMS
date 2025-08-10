@@ -19,8 +19,6 @@
                                     Bật Chế Độ Bảo Trì
                                 </label>
                             </div>
-                            <small class="text-muted">Khi bật, tất cả người dùng sẽ thấy trang bảo trì trừ khi có token
-                                bypass hoặc là admin.</small>
                         </div>
                     </div>
 
@@ -41,25 +39,34 @@
                         <div class="col-12">
                             <h6 class="fw-semibold mb-3">Token Bypass</h6>
                             <div class="row">
-                                <div class="col-md-8">
+                                <div class="col-md-6 mb-2 mb-md-0">
                                     <div class="input-group">
                                         <input type="text" class="form-control" id="bypass_token_display"
                                             value="{{ $maintenanceSettings['maintenance_bypass_token'] ?? '' }}"
                                             readonly>
                                         <button class="btn btn-outline-secondary" type="button" id="copy_token">
-                                            <i class="ri-file-copy-line"></i> Sao Chép
+                                            <i class="ri-file-copy-line"></i> Copy
                                         </button>
                                     </div>
-                                    <input type="hidden" name="maintenance_bypass_token" id="bypass_token_input"
-                                        value="{{ $maintenanceSettings['maintenance_bypass_token'] ?? '' }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="bypass_link_display"
+                                            value="{{ url('/') }}/bypass/{{ $maintenanceSettings['maintenance_bypass_token'] ?? '' }}"
+                                            readonly>
+                                        <button class="btn btn-outline-primary" type="button" id="copy_link">
+                                            <i class="ri-link"></i> Copy
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                            <small class="text-muted">
-                                Token này được tạo tự động mỗi khi bật/tắt chế độ bảo trì và cho phép truy cập vào hệ
-                                thống khi đang bảo trì. Token sẽ hết hạn sau 10 phút không hoạt động.
-                                Sử dụng: <code>{{ url('/') }}/bypass/TOKEN</code>
-                            </small>
+                            <input type="hidden" name="maintenance_bypass_token" id="bypass_token_input"
+                                value="{{ $maintenanceSettings['maintenance_bypass_token'] ?? '' }}">
                         </div>
+                        <span class="text-danger pt-2">
+                            Token này được tạo tự động mỗi khi bật/tắt chế độ bảo trì và cho phép truy cập vào hệ
+                            thống khi đang bảo trì. <br> Token sẽ hết hạn sau 10 phút không hoạt động.
+                        </span>
                     </div>
 
                     <!-- Maintenance Message -->
@@ -67,8 +74,7 @@
                         <div class="col-12">
                             <label for="maintenance_message" class="form-label fw-semibold">Thông Báo Bảo Trì</label>
                             <textarea class="form-control" id="maintenance_message" name="maintenance_message" rows="3"
-                                placeholder="Nhập thông báo bảo trì tùy chỉnh...">{{ $maintenanceSettings['maintenance_message'] ?? '' }}</textarea>
-                            <small class="text-muted">Để trống để sử dụng thông báo mặc định.</small>
+                                placeholder="Để trống để sử dụng thông báo mặc định.">{{ $maintenanceSettings['maintenance_message'] ?? '' }}</textarea>
                         </div>
                     </div>
 
@@ -105,6 +111,27 @@
                     btn.innerHTML = originalText;
                     btn.classList.remove('btn-success');
                     btn.classList.add('btn-outline-secondary');
+                }, 2000);
+            });
+        });
+
+        // Copy bypass link
+        document.getElementById('copy_link').addEventListener('click', function() {
+            const linkDisplay = document.getElementById('bypass_link_display');
+            linkDisplay.select();
+            linkDisplay.setSelectionRange(0, 99999); // For mobile devices
+            navigator.clipboard.writeText(linkDisplay.value).then(function() {
+                // Show success message
+                const btn = document.getElementById('copy_link');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="ri-check-line"></i> Đã Sao Chép';
+                btn.classList.remove('btn-outline-primary');
+                btn.classList.add('btn-success');
+
+                setTimeout(function() {
+                    btn.innerHTML = originalText;
+                    btn.classList.remove('btn-success');
+                    btn.classList.add('btn-outline-primary');
                 }, 2000);
             });
         });

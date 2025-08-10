@@ -1,0 +1,11 @@
+/* Theme Background Images */
+
+
+/* bgimg5 */
+[data-bg-img='bgimg5'] .app-sidebar {
+    background-image: url('/storage/theme/backgrounds/bgimg5.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+/* end bgimg5 */

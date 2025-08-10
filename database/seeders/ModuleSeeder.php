@@ -171,6 +171,15 @@ class ModuleSeeder extends Seeder
                     ['name' => 'view', 'display_name' => 'Xem'],
                     ['name' => 'delete', 'display_name' => 'Xóa'],
                 ]
+            ],
+            [
+                'module_code' => 'log_management',
+                'name' => 'Quản Lý Log',
+                'permissions' => [
+                    ['name' => 'view', 'display_name' => 'Xem'],
+                    ['name' => 'delete', 'display_name' => 'Xóa'],
+                    ['name' => 'export', 'display_name' => 'Xuất Excel']
+                ]
             ]
         ];
 

@@ -23,22 +23,29 @@ class CourseSeeder extends Seeder
             [
                 'id' => Str::uuid(),
                 'name' => 'Khóa 6',
-                'start_date' => '2024-09-01',
-                'end_date' => '2024-12-31',
+                'start_date' => '2022-08-01',
+                'end_date' => '2025-04-30',
                 'status' => 'active'
             ],
             [
                 'id' => Str::uuid(),
                 'name' => 'Khóa 7',
-                'start_date' => '2024-09-01',
-                'end_date' => '2025-01-31',
+                'start_date' => '2023-08-01',
+                'end_date' => '2026-04-30',
                 'status' => 'active'
             ],
             [
                 'id' => Str::uuid(),
                 'name' => 'Khóa 8',
-                'start_date' => '2025-02-01',
-                'end_date' => '2025-06-30',
+                'start_date' => '2024-08-01',
+                'end_date' => '2027-04-30',
+                'status' => 'active'
+            ],
+            [
+                'id' => Str::uuid(),
+                'name' => 'Khóa 9',
+                'start_date' => '2025-08-01',
+                'end_date' => '2028-04-30',
                 'status' => 'active'
             ],
         ];

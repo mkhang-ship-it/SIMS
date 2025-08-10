@@ -1,6 +1,7 @@
 <?php
-// SettingController - Updated to include permission refresh functionality
+// SettingController - Updated to include permission refresh functionality and image dimension validation
 // Added refreshPermissions method to handle permission refresh from web interface
+// Added custom validation for background images to ensure 360x1000px dimensions
 // Created: Method to run RefreshPermissions command via web interface
 
 namespace App\Http\Controllers;
@@ -10,6 +11,7 @@ use App\Models\Setting;
 use App\Models\Address;
 use App\Models\Province;
 use App\Models\Commune;
+use App\Models\ThemeSetting;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -65,7 +67,10 @@ class SettingController extends Controller
         // Load provinces for address selection
         $provinces = Province::orderBy('name')->get();
 
-        return view('settings.index', compact('mailSettings', 'generalSettings', 'maintenanceSettings', 'adminAddress', 'provinces'));
+        // Load theme settings
+        $themeSettings = ThemeSetting::getActiveTheme();
+
+        return view('settings.index', compact('mailSettings', 'generalSettings', 'maintenanceSettings', 'adminAddress', 'provinces', 'themeSettings'));
     }
 
     // Updated: Xóa ảnh cũ khi upload ảnh mới cho các trường logo trong updateGeneralSettings
@@ -275,6 +280,144 @@ class SettingController extends Controller
             return redirect()->back()->with('success', "Đã chạy lại phân quyền thành công cho {$type}!");
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Lỗi khi chạy lại phân quyền: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Update theme settings
+     */
+    public function updateThemeSettings(Request $request)
+    {
+        $validated = $request->validate([
+            'theme_mode' => 'required|in:light,dark',
+            'direction' => 'required|in:ltr,rtl',
+            'navigation_style' => 'required|in:vertical,horizontal',
+            'navigation_menu_style' => 'nullable|in:menu-click,menu-hover,icon-click,icon-hover',
+            'sidemenu_layout' => 'required|in:default,closed,icontext,overlay,detached,doublemenu',
+            'page_style' => 'required|in:regular,classic,modern',
+            'layout_width' => 'required|in:fullwidth,boxed',
+            'menu_position' => 'required|in:fixed,scrollable',
+            'header_position' => 'required|in:fixed,scrollable',
+            'menu_color' => 'required|in:light,dark,color,gradient,transparent',
+            'header_color' => 'required|in:light,dark,color,gradient,transparent',
+            'primary_color' => 'nullable|string|max:20',
+            'background_color' => 'nullable|string|max:20',
+            'background_light_color' => 'nullable|string|max:20',
+            'background_image' => 'nullable|in:bgimg1,bgimg2,bgimg3,bgimg4,bgimg5',
+            'bg_image_1' => 'nullable|image|mimes:jpeg,png,jpg,gif',
+            'bg_image_2' => 'nullable|image|mimes:jpeg,png,jpg,gif',
+            'bg_image_3' => 'nullable|image|mimes:jpeg,png,jpg,gif',
+            'bg_image_4' => 'nullable|image|mimes:jpeg,png,jpg,gif',
+            'bg_image_5' => 'nullable|image|mimes:jpeg,png,jpg,gif',
+        ]);
+
+        // Custom validation for image dimensions
+        $backgroundImageFields = ['bg_image_1', 'bg_image_2', 'bg_image_3', 'bg_image_4', 'bg_image_5'];
+        foreach ($backgroundImageFields as $field) {
+            if ($request->hasFile($field)) {
+                $file = $request->file($field);
+                $imageInfo = getimagesize($file->getPathname());
+
+                if ($imageInfo === false) {
+                    return redirect()->back()->with('error', 'Không thể đọc thông tin ảnh.');
+                }
+
+                $width = $imageInfo[0];
+                $height = $imageInfo[1];
+
+                if ($width !== 360 || $height !== 1000) {
+                    return redirect()->back()->with('error', "Ảnh {$field} phải có kích thước 360x1000px. Ảnh hiện tại: {$width}x{$height}px");
+                }
+            }
+        }
+
+        try {
+            // Handle background image uploads
+            $backgroundImageFields = ['bg_image_1', 'bg_image_2', 'bg_image_3', 'bg_image_4', 'bg_image_5'];
+            $uploadedImages = [];
+
+            foreach ($backgroundImageFields as $field) {
+                if ($request->hasFile($field)) {
+                    // Extract the number from field name (bg_image_1 -> 1)
+                    $imageNumber = substr($field, -1);
+
+                    // Delete old background image if exists
+                    $backgroundDir = 'theme/backgrounds';
+                    $extensions = ['jpg', 'jpeg', 'png', 'gif'];
+
+                    foreach ($extensions as $ext) {
+                        $oldImagePath = "{$backgroundDir}/bgimg{$imageNumber}.{$ext}";
+                        if (Storage::disk('public')->exists($oldImagePath)) {
+                            Storage::disk('public')->delete($oldImagePath);
+                        }
+                    }
+
+                    // Store new background image
+                    $file = $request->file($field);
+                    $extension = $file->getClientOriginalExtension();
+                    $filename = "bgimg{$imageNumber}.{$extension}";
+                    $path = $file->storeAs('theme/backgrounds', $filename, 'public');
+
+                    // Update CSS file to include new background image
+                    $this->updateBackgroundImageCSS($imageNumber, $path);
+
+                    // Mark this image as uploaded
+                    $uploadedImages[] = "bgimg{$imageNumber}";
+                }
+            }
+
+            // If new images were uploaded and no background_image was selected, auto-select the first uploaded image
+            if (!empty($uploadedImages) && empty($validated['background_image'])) {
+                $validated['background_image'] = $uploadedImages[0];
+            }
+
+            // Remove background image uploads from validated data before saving to theme settings
+            $themeData = array_diff_key($validated, array_flip($backgroundImageFields));
+
+            // Update theme settings
+            ThemeSetting::updateTheme($themeData);
+
+            return redirect()->back()->with('success', 'Cài đặt giao diện đã được cập nhật thành công.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Lỗi khi cập nhật cài đặt giao diện: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Update CSS file with new background image
+     */
+    private function updateBackgroundImageCSS($imageNumber, $imagePath)
+    {
+        $cssFile = public_path('assets/css/theme-backgrounds.css');
+
+        // Create CSS file if it doesn't exist
+        if (!file_exists($cssFile)) {
+            file_put_contents($cssFile, "/* Theme Background Images */\n");
+        }
+
+        $cssContent = file_get_contents($cssFile);
+
+        // Remove existing CSS for this background image
+        $pattern = "/\/\* bgimg{$imageNumber} \*\/.*?\/\* end bgimg{$imageNumber} \*\/\s*/s";
+        $cssContent = preg_replace($pattern, '', $cssContent);
+
+        // Add new CSS for this background image
+        $newCSS = "\n/* bgimg{$imageNumber} */\n";
+        $newCSS .= "[data-bg-img='bgimg{$imageNumber}'] .app-sidebar {\n";
+        $newCSS .= "    background-image: url('" . Storage::url($imagePath) . "');\n";
+        $newCSS .= "    background-size: cover;\n";
+        $newCSS .= "    background-position: center;\n";
+        $newCSS .= "    background-repeat: no-repeat;\n";
+        $newCSS .= "}\n";
+        $newCSS .= "/* end bgimg{$imageNumber} */\n";
+
+        $cssContent .= $newCSS;
+
+        file_put_contents($cssFile, $cssContent);
+
+        // Clear any CSS cache
+        if (function_exists('opcache_invalidate')) {
+            opcache_invalidate($cssFile, true);
         }
     }
 }

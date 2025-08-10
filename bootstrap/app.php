@@ -5,6 +5,8 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\CheckPermission;
 use App\Http\Middleware\MaintenanceMode;
+use App\Http\Middleware\ImpersonationMiddleware;
+use App\Http\Middleware\LogSystemActivity;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -17,10 +19,17 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'CheckPermission' => CheckPermission::class,
             'maintenance' => MaintenanceMode::class,
+            'impersonation' => ImpersonationMiddleware::class,
+            'logsystem' => LogSystemActivity::class,
         ]);
 
         // Apply maintenance middleware globally to all routes
         $middleware->append(MaintenanceMode::class);
+
+        // Apply impersonation middleware to web routes
+        $middleware->web(append: [
+            ImpersonationMiddleware::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

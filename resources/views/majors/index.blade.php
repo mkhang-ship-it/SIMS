@@ -46,6 +46,9 @@
                             Cấu Trúc Cây Chuyên Ngành
                         </div>
                     </div>
+                    <!--
+                        Đã bỏ hiển thị status, chuyên ngành nào bị disable (inactive) thì tên sẽ có màu đỏ.
+                    -->
                     <div class="card-body">
                         <div class="tree-view">
                             @php
@@ -66,14 +69,9 @@
                                         echo '<i class="ti ti-file tree-icon text-info me-2"></i>';
                                     }
 
-                                    echo '<span class="tree-label">' . $major->name . '</span>';
-
-                                    // Status badge
-                                    if ($major->status === 'active') {
-                                        echo '<span class="badge bg-success ms-2">Hoạt động</span>';
-                                    } else {
-                                        echo '<span class="badge bg-warning ms-2">Tạm ngưng</span>';
-                                    }
+                                    // Nếu status là inactive thì cho tên màu đỏ, ngược lại giữ mặc định
+                                    $labelClass = $major->status === 'inactive' ? 'tree-label text-danger fw-bold' : 'tree-label';
+                                    echo '<span class="' . $labelClass . '">' . $major->name . '</span>';
 
                                     echo '</div>';
                                     echo '</div>';

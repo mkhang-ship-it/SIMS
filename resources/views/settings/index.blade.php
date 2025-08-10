@@ -33,6 +33,11 @@
                                     data-bs-toggle="tab" data-bs-target="#tab-maintenance" type="button">Chế Độ Bảo
                                     Trì</button>
                             @endif
+                            @if (auth()->user()->hasPermissionForModuleCode('setting_management', 'general', 'central'))
+                                <button class="list-group-item list-group-item-action" id="tab-theme-btn"
+                                    data-bs-toggle="tab" data-bs-target="#tab-theme" type="button">Cài Đặt Giao
+                                    Diện</button>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -68,6 +73,11 @@
                                     @include('settings.partials.maintenance')
                                 </div>
                             @endif
+                            @if (auth()->user()->hasPermissionForModuleCode('setting_management', 'general', 'central'))
+                                <div class="tab-pane fade" id="tab-theme">
+                                    @include('settings.partials.theme')
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -88,6 +98,7 @@
                 'tab-mail-btn': 'Cấu Hình Email',
                 'tab-permissions-btn': 'Quản Lý Phân Quyền',
                 'tab-maintenance-btn': 'Chế Độ Bảo Trì',
+                'tab-theme-btn': 'Cài Đặt Giao Diện',
             };
 
             // Function to update tab title

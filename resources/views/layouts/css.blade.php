@@ -1,6 +1,11 @@
-
-<!-- Bootstrap Css -->
-<link id="style" href="{{ asset('assets/libs/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+<!-- Bootstrap Css - Dynamic based on theme direction -->
+@php
+    $themeSettings = \App\Models\ThemeSetting::getActiveTheme();
+    $isRtl =
+        (is_object($themeSettings) && $themeSettings->direction === 'rtl') || (!is_object($themeSettings) && false);
+    $bootstrapCss = $isRtl ? 'bootstrap.rtl.min.css' : 'bootstrap.min.css';
+@endphp
+<link id="style" href="{{ asset('assets/libs/bootstrap/css/' . $bootstrapCss) }}" rel="stylesheet">
 
 <!-- Style Css -->
 <link href="{{ asset('assets/css/styles.min.css') }}" rel="stylesheet">
@@ -14,9 +19,8 @@
 <!-- Simplebar Css -->
 <link href="{{ asset('assets/libs/simplebar/simplebar.min.css') }}" rel="stylesheet">
 
-<!-- Color Picker Css -->
-<link rel="stylesheet" href="{{ asset('assets/libs/flatpickr/flatpickr.min.css') }}">
-<link rel="stylesheet" href="{{ asset('assets/libs/@simonwep/pickr/themes/nano.min.css') }}">
+<!-- Pickr CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/nano.min.css" />
 
 <!-- Choices Css -->
 <link rel="stylesheet" href="{{ asset('assets/libs/choices.js/public/assets/styles/choices.min.css') }}">
@@ -26,6 +30,11 @@
 <!-- Flasher CSS -->
 <link rel="stylesheet" href="{{ asset('vendor/flasher/flasher.min.css') }}">
 <link rel="stylesheet" href="{{ asset('assets/libs/glightbox/css/glightbox.min.css') }}">
+
+<!-- Theme Background Images CSS -->
+@if (file_exists(public_path('assets/css/theme-backgrounds.css')))
+    <link href="{{ asset('assets/css/theme-backgrounds.css') }}" rel="stylesheet">
+@endif
 
 <!-- Custom CSS for Flasher z-index fix -->
 <style>

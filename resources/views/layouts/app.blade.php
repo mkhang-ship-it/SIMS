@@ -1,12 +1,47 @@
 <?php
 
 use App\Models\Setting;
+use App\Models\ThemeSetting;
 
 $generalSettings = Setting::getMany(null, ['site_name', 'image_square_light']);
+$themeSettings = ThemeSetting::getActiveTheme();
+
+// Get HTML attributes from theme settings
+$htmlAttributes = [];
+if (is_object($themeSettings) && method_exists($themeSettings, 'getHtmlAttributes')) {
+    $htmlAttributes = $themeSettings->getHtmlAttributes();
+} else {
+    // Default attributes if no theme settings
+    $htmlAttributes = [
+        'data-nav-layout' => 'vertical',
+        'data-theme-mode' => 'light',
+        'data-header-styles' => 'light',
+        'data-menu-styles' => 'dark',
+        'data-toggled' => 'close',
+        'dir' => 'ltr',
+    ];
+}
+
+// Build HTML attributes string
+$htmlAttributesString = '';
+foreach ($htmlAttributes as $key => $value) {
+    $htmlAttributesString .= ' ' . $key . '="' . $value . '"';
+}
+
+// Get CSS custom properties from theme settings
+$cssProperties = [];
+if (is_object($themeSettings) && method_exists($themeSettings, 'getCssProperties')) {
+    $cssProperties = $themeSettings->getCssProperties();
+}
+
+// Build CSS style string
+$cssStyleString = '';
+foreach ($cssProperties as $property => $value) {
+    $cssStyleString .= $property . ': ' . $value . '; ';
+}
 ?>
 <!DOCTYPE html>
-<html lang="en" dir="ltr" data-nav-layout="vertical" data-theme-mode="light" data-header-styles="light"
-    data-menu-styles="dark" data-toggled="close">
+<html lang="en"<?php echo $htmlAttributesString; ?><?php echo $cssStyleString ? ' style="' . trim($cssStyleString) . '"' : ''; ?>>
 
 <head>
 

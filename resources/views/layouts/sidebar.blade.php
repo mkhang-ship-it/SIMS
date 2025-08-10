@@ -142,6 +142,16 @@ Changes made:
                         </li>
                     @endif
 
+                    @if (auth()->user()->hasPermissionForModuleCode('log_management', 'view', 'central'))
+                        <li class="slide {{ request()->routeIs('backend.logs.*') ? 'active' : '' }}">
+                            <a href="{{ route('backend.logs.index') }}"
+                                class="side-menu__item {{ request()->routeIs('backend.logs.*') ? 'active' : '' }}">
+                                <i class="las la-file-alt side-menu__icon"></i>
+                                <span class="side-menu__label">Quản Lý Log</span>
+                            </a>
+                        </li>
+                    @endif
+
                     <!-- Start::slide__category -->
                     <li class="slide__category"><span class="category-name">Quản Lý Học Tập</span></li>
                     <!-- End::slide__category -->

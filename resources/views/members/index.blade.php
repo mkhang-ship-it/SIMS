@@ -136,6 +136,21 @@
                                                             <i class="ri-edit-line"></i>
                                                         </button>
                                                     @endif
+
+                                                    @php
+                                                        $canImpersonate =
+                                                            !\App\Http\Controllers\ImpersonationController::isImpersonating() &&
+                                                            $member->id !== auth()->user()->id;
+                                                    @endphp
+
+                                                    @if ($canImpersonate && auth()->user()->type === 'central')
+                                                        <button class="btn btn-icon btn-sm btn-warning-light"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#impersonateModal{{ $member->id }}"
+                                                            title="Đăng nhập mạo danh">
+                                                            <i class="ri-user-shared-line"></i>
+                                                        </button>
+                                                    @endif
                                                     @if ($member->userClubRoles->count() > 0)
                                                         <!-- Dropdown for club actions -->
                                                         <div class="dropdown">
@@ -191,8 +206,8 @@
 
                                         <!-- Edit Member Modal -->
                                         @if (auth()->user()->hasPermissionForModuleCode('member_management', 'edit', 'central'))
-                                            <div class="modal fade" id="editMemberModal{{ $member->id }}" tabindex="-1"
-                                                aria-labelledby="editMemberModalLabel{{ $member->id }}"
+                                            <div class="modal fade" id="editMemberModal{{ $member->id }}"
+                                                tabindex="-1" aria-labelledby="editMemberModalLabel{{ $member->id }}"
                                                 aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
                                                 <div class="modal-dialog modal-dialog-centered modal-lg">
                                                     <div class="modal-content">
@@ -531,6 +546,68 @@
                                                 </div>
                                             </div>
                                         @endforeach
+
+                                        <!-- Impersonate Modal -->
+                                        @php
+                                            $canImpersonate =
+                                                !\App\Http\Controllers\ImpersonationController::isImpersonating() &&
+                                                $member->id !== auth()->user()->id;
+                                        @endphp
+
+                                        @if ($canImpersonate && auth()->user()->type === 'central')
+                                            <div class="modal fade" id="impersonateModal{{ $member->id }}"
+                                                tabindex="-1" aria-labelledby="impersonateModalLabel{{ $member->id }}"
+                                                aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+                                                <div class="modal-dialog modal-dialog-centered">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title text-warning"
+                                                                id="impersonateModalLabel{{ $member->id }}">
+                                                                <i class="ri-user-shared-line me-2"></i>
+                                                                Xác Nhận Mạo Danh
+                                                            </h5>
+                                                            <button type="button" class="btn-close"
+                                                                data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <div class="text-center">
+                                                                <div
+                                                                    class="avatar avatar-xl avatar-rounded bg-warning-transparent mb-3">
+                                                                    <i class="ri-user-shared-line fs-2"></i>
+                                                                </div>
+                                                                <h6 class="mb-2">Đăng nhập mạo danh</h6>
+                                                                <p class="mb-2">
+                                                                    Bạn có chắc chắn muốn đăng nhập với tài khoản của
+                                                                    <strong>{{ $member->name }}</strong>?
+                                                                </p>
+                                                                <p class="text-muted small mb-2">Email:
+                                                                    {{ $member->email }}</p>
+                                                                <div class="alert alert-warning mt-3">
+                                                                    <i class="ri-information-line me-2"></i>
+                                                                    <strong>Lưu ý:</strong> Bạn sẽ được chuyển đến phiên làm
+                                                                    việc của người dùng này.
+                                                                    Để quay lại tài khoản của mình, hãy sử dụng nút "Thoát
+                                                                    mạo danh" trên thanh công cụ.
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary"
+                                                                data-bs-dismiss="modal">Hủy</button>
+                                                            <form
+                                                                action="{{ route('backend.impersonate.start', $member->id) }}"
+                                                                method="POST" style="display: inline;">
+                                                                @csrf
+                                                                <button type="submit" class="btn btn-warning">
+                                                                    <i class="ri-user-shared-line me-2"></i>
+                                                                    Bắt đầu mạo danh
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endif
                                     @endforeach
                                 </tbody>
                             </table>
@@ -716,7 +793,8 @@
                                 <select class="form-select" id="assign_user_id" name="user_id" required>
                                     <option value="">Chọn thành viên</option>
                                     @foreach ($members as $member)
-                                        <option value="{{ $member->id }}">{{ $member->name }} ({{ $member->email }})
+                                        <option value="{{ $member->id }}">{{ $member->name }}
+                                            ({{ $member->email }})
                                         </option>
                                     @endforeach
                                 </select>

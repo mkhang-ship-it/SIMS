@@ -108,6 +108,26 @@
                 $clubs = $user->clubs ?? collect();
             @endphp
 
+            <!-- Impersonation Alert -->
+            @php
+                $isImpersonating = \App\Http\Controllers\ImpersonationController::isImpersonating();
+                $impersonator = \App\Http\Controllers\ImpersonationController::getImpersonator();
+            @endphp
+
+            @if ($isImpersonating)
+                <!-- Start::header-element -->
+                <div class="header-element">
+                    <!-- Start::header-link -->
+                    <a href="javascript:void(0);" class="header-link" data-bs-toggle="offcanvas"
+                        data-bs-target="#impersonationOffcanvas" aria-controls="impersonationOffcanvas">
+                        <i class="bx bx-user-check header-link-icon text-warning"></i>
+                        <span class="badge bg-warning rounded-pill header-icon-badge pulse pulse-warning">!</span>
+                    </a>
+                    <!-- End::header-link -->
+                </div>
+                <!-- End::header-element -->
+            @endif
+
             @if ($clubs->count() > 1)
                 <!-- Start::header-element -->
                 <div class="header-element club-selector">
@@ -341,6 +361,88 @@
         </div>
     @endif
 
+    <!-- Impersonation Offcanvas -->
+    @if ($isImpersonating)
+        <div class="offcanvas offcanvas-end" tabindex="-1" id="impersonationOffcanvas"
+            aria-labelledby="impersonationOffcanvasLabel">
+            <div class="offcanvas-header">
+                <h5 class="offcanvas-title" id="impersonationOffcanvasLabel">
+                    <i class="bx bx-user-check me-2 text-warning"></i>
+                    Đang Mạo Danh
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body">
+                <div class="alert alert-warning">
+                    <div class="d-flex align-items-center">
+                        <i class="bx bx-info-circle me-2 fs-4"></i>
+                        <div>
+                            <h6 class="alert-heading mb-1">Phiên Mạo Danh Đang Hoạt Động</h6>
+                            <p class="mb-0">Bạn đang đăng nhập với tài khoản của người khác.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 bg-light">
+                    <div class="card-body">
+                        <h6 class="card-title mb-3">
+                            <i class="bx bx-user me-2"></i>
+                            Thông Tin Mạo Danh
+                        </h6>
+
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label text-muted small">Đang mạo danh:</label>
+                                <div class="d-flex align-items-center">
+                                    <img src="{{ !empty(Auth::user()->avatar) ? asset('storage/' . Auth::user()->avatar) : asset('assets/images/avatar_example.png') }}"
+                                        alt="avatar" class="avatar avatar-sm rounded-circle me-2">
+                                    <div>
+                                        <div class="fw-semibold">{{ Auth::user()->name }}</div>
+                                        <small class="text-muted">{{ Auth::user()->email }}</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label text-muted small">Được mạo danh bởi:</label>
+                                <div class="fw-semibold">{{ $impersonator['name'] }}</div>
+                                <small class="text-muted">
+                                    @if ($impersonator['type'] === 'central')
+                                        Admin Trung Tâm
+                                    @elseif($impersonator['type'] === 'branch')
+                                        Admin Câu Lạc Bộ
+                                    @else
+                                        {{ ucfirst($impersonator['type']) }}
+                                    @endif
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <div class="alert alert-info">
+                        <i class="bx bx-info-circle me-2"></i>
+                        <strong>Lưu ý:</strong> Tất cả hành động bạn thực hiện sẽ được ghi nhận dưới tên của tài khoản
+                        được mạo danh.
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2 mt-4">
+                    <form action="{{ route('backend.impersonate.stop') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="btn btn-danger w-100">
+                            <i class="bx bx-log-out me-2"></i>
+                            Thoát Mạo Danh
+                        </button>
+                    </form>
+                    <button type="button" class="btn btn-outline-secondary w-100" data-bs-dismiss="offcanvas">
+                        <i class="bx bx-x me-2"></i>
+                        Đóng
+                    </button>
+                </div>
+            </div>
+        </div>
+    @endif
+
 </header>
-
-

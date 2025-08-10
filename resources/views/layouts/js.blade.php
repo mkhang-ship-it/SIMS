@@ -31,14 +31,12 @@ Updated: Added Flasher JS integration
 <script src="{{ asset('assets/libs/simplebar/simplebar.min.js') }}"></script>
 <script src="{{ asset('assets/js/simplebar.js') }}"></script>
 
-<!-- Color Picker JS -->
-<script src="{{ asset('assets/libs/@simonwep/pickr/pickr.es5.min.js') }}"></script>
-
-<!-- Custom-Switcher JS -->
+<!-- custom switcher -->
 {{-- <script src="{{ asset('assets/js/custom-switcher.min.js') }}"></script> --}}
 
-<!-- Custom JS -->
-{{-- <script src="{{ asset('assets/js/custom.js') }}"></script> --}}
+<!-- Pickr JS -->
+<script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
+
 
 <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
 <script src="https://cdn.datatables.net/2.3.2/js/dataTables.js"></script>
@@ -49,6 +47,9 @@ Updated: Added Flasher JS integration
 <script src="{{ asset('assets/libs/glightbox/js/glightbox.min.js') }}"></script>
 <script src="{{ asset('assets/js/gallery.js') }}"></script>
 <script src="{{ asset('assets/libs/apexcharts/apexcharts.min.js') }}"></script>
+
+<!-- Chart.js -->
+<script src="{{ asset('assets/libs/chart.js/chart.min.js') }}"></script>
 
 
 

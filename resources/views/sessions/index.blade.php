@@ -130,7 +130,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse($sessions as $index => $session)
+                                    @foreach($sessions as $index => $session)
                                         <tr>
                                             <td class="text-center">{{ $index + 1 }}</td>
                                             <td>
@@ -201,16 +201,7 @@
                                                 </div>
                                             </td>
                                         </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="7" class="text-center py-4">
-                                                <div class="text-muted">
-                                                    <i class="ti ti-users fs-1 mb-3"></i>
-                                                    <p>Không có phiên nào</p>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    @endforelse
+                                    @endforeach
                                 </tbody>
                             </table>
                         </div>

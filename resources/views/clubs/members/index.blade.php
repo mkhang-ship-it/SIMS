@@ -129,6 +129,31 @@
                                                             <i class="ri-edit-line"></i>
                                                         </button>
                                                     @endif
+
+                                                    @php
+                                                        $canImpersonate =
+                                                            !\App\Http\Controllers\ImpersonationController::isImpersonating() &&
+                                                            $member->user->id !== auth()->user()->id;
+                                                        $currentUserRole = auth()
+                                                            ->user()
+                                                            ->userClubRoles()
+                                                            ->where('club_id', session('club_id'))
+                                                            ->with('role')
+                                                            ->first();
+                                                        $isClubAdmin =
+                                                            $currentUserRole &&
+                                                            $currentUserRole->role &&
+                                                            $currentUserRole->role->is_admin;
+                                                    @endphp
+
+                                                    @if ($canImpersonate && $isClubAdmin && $member->role && !$member->role->is_admin)
+                                                        <button class="btn btn-icon btn-sm btn-warning-light"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#impersonateModal{{ $member->user->id }}"
+                                                            title="Đăng nhập mạo danh">
+                                                            <i class="ri-user-shared-line"></i>
+                                                        </button>
+                                                    @endif
                                                     @if ($member->role && $member->role->is_admin == false)
                                                         @if (auth()->user()->hasPermissionForModuleCode('member_management', 'delete', 'branch'))
                                                             <button class="btn btn-icon btn-sm btn-danger-light"
@@ -444,6 +469,79 @@
                                                                 <button type="submit" class="btn btn-danger">Xóa</button>
                                                             </div>
                                                         </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endif
+
+                                        <!-- Impersonate Modal -->
+                                        @php
+                                            $canImpersonate =
+                                                !\App\Http\Controllers\ImpersonationController::isImpersonating() &&
+                                                $member->user->id !== auth()->user()->id;
+                                            $currentUserRole = auth()
+                                                ->user()
+                                                ->userClubRoles()
+                                                ->where('club_id', session('club_id'))
+                                                ->with('role')
+                                                ->first();
+                                            $isClubAdmin =
+                                                $currentUserRole &&
+                                                $currentUserRole->role &&
+                                                $currentUserRole->role->is_admin;
+                                        @endphp
+
+                                        @if ($canImpersonate && $isClubAdmin && $member->role && !$member->role->is_admin)
+                                            <div class="modal fade" id="impersonateModal{{ $member->user->id }}"
+                                                tabindex="-1"
+                                                aria-labelledby="impersonateModalLabel{{ $member->user->id }}"
+                                                aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+                                                <div class="modal-dialog modal-dialog-centered">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title text-warning"
+                                                                id="impersonateModalLabel{{ $member->user->id }}">
+                                                                <i class="ri-user-shared-line me-2"></i>
+                                                                Xác Nhận Mạo Danh
+                                                            </h5>
+                                                            <button type="button" class="btn-close"
+                                                                data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <div class="text-center">
+                                                                <div
+                                                                    class="avatar avatar-xl avatar-rounded bg-warning-transparent mb-3">
+                                                                    <i class="ri-user-shared-line fs-2"></i>
+                                                                </div>
+                                                                <h6 class="mb-2">Đăng nhập mạo danh</h6>
+                                                                <p class="mb-2">
+                                                                    Bạn có chắc chắn muốn đăng nhập với tài khoản của
+                                                                    <strong>{{ $member->user->name }}</strong>?
+                                                                </p>
+                                                                <p class="text-muted small mb-2">Email:
+                                                                    {{ $member->user->email }}</p>
+                                                                <div class="alert alert-warning mt-3">
+                                                                    <i class="ri-information-line me-2"></i>
+                                                                    <strong>Lưu ý:</strong> Bạn sẽ được chuyển đến phiên làm
+                                                                    việc của thành viên này.
+                                                                    Để quay lại tài khoản của mình, hãy sử dụng nút "Thoát
+                                                                    mạo danh" trên thanh công cụ.
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary"
+                                                                data-bs-dismiss="modal">Hủy</button>
+                                                            <form
+                                                                action="{{ route('backend.impersonate.start', $member->user->id) }}"
+                                                                method="POST" style="display: inline;">
+                                                                @csrf
+                                                                <button type="submit" class="btn btn-warning">
+                                                                    <i class="ri-user-shared-line me-2"></i>
+                                                                    Bắt đầu mạo danh
+                                                                </button>
+                                                            </form>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>

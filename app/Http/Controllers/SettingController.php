@@ -1,8 +1,10 @@
 <?php
-// SettingController - Updated to include permission refresh functionality and image dimension validation
+// SettingController - Updated to include permission refresh functionality, image dimension validation, and OAuth settings
 // Added refreshPermissions method to handle permission refresh from web interface
 // Added custom validation for background images to ensure 360x1000px dimensions
+// Added OAuth settings management for GitHub authentication with enable/disable functionality
 // Created: Method to run RefreshPermissions command via web interface
+// Created: updateOAuthSettings method to handle GitHub OAuth configuration
 
 namespace App\Http\Controllers;
 
@@ -70,7 +72,14 @@ class SettingController extends Controller
         // Load theme settings
         $themeSettings = ThemeSetting::getActiveTheme();
 
-        return view('settings.index', compact('mailSettings', 'generalSettings', 'maintenanceSettings', 'adminAddress', 'provinces', 'themeSettings'));
+        // Load OAuth settings
+        $oauthSettings = Setting::getMany(null, [
+            'github_oauth_enabled',
+            'github_client_id',
+            'github_client_secret',
+        ]);
+
+        return view('settings.index', compact('mailSettings', 'generalSettings', 'maintenanceSettings', 'adminAddress', 'provinces', 'themeSettings', 'oauthSettings'));
     }
 
     // Updated: Xóa ảnh cũ khi upload ảnh mới cho các trường logo trong updateGeneralSettings
@@ -419,5 +428,68 @@ class SettingController extends Controller
         if (function_exists('opcache_invalidate')) {
             opcache_invalidate($cssFile, true);
         }
+    }
+
+    /**
+     * Update OAuth settings - preserves saved credentials when disabled
+     */
+    public function updateOAuthSettings(Request $request)
+    {
+        $validated = $request->validate([
+            'github_oauth_enabled' => 'nullable|in:1',
+            'github_client_id' => 'nullable|string|max:255',
+            'github_client_secret' => 'nullable|string|max:255',
+        ]);
+
+        // Custom validation: if OAuth is being enabled, check if credentials exist
+        $githubOAuthEnabled = $request->has('github_oauth_enabled') ? '1' : '0';
+        if ($githubOAuthEnabled === '1') {
+            $existingClientId = Setting::getValue(null, 'github_client_id');
+            $existingClientSecret = Setting::getValue(null, 'github_client_secret');
+
+            // If enabling OAuth and no existing credentials, require them
+            if ((empty($existingClientId) && empty($validated['github_client_id'])) ||
+                (empty($existingClientSecret) && empty($validated['github_client_secret']))) {
+                return redirect()->back()->withErrors([
+                    'github_client_id' => empty($validated['github_client_id']) && empty($existingClientId)
+                        ? 'Client ID là bắt buộc khi bật OAuth GitHub.' : null,
+                    'github_client_secret' => empty($validated['github_client_secret']) && empty($existingClientSecret)
+                        ? 'Client Secret là bắt buộc khi bật OAuth GitHub.' : null,
+                ])->withInput();
+            }
+        }
+
+        // Convert checkbox to proper value
+        $validated['github_oauth_enabled'] = $request->has('github_oauth_enabled') ? '1' : '0';
+
+        // Update enabled/disabled status
+        Setting::updateOrCreate(
+            ['club_id' => null, 'key' => 'github_oauth_enabled', 'is_admin' => 'central'],
+            ['value' => $validated['github_oauth_enabled']]
+        );
+
+        // Only update client credentials if OAuth is enabled and credentials are provided
+        if ($validated['github_oauth_enabled'] === '1') {
+            if (!empty($validated['github_client_id'])) {
+                Setting::updateOrCreate(
+                    ['club_id' => null, 'key' => 'github_client_id', 'is_admin' => 'central'],
+                    ['value' => $validated['github_client_id']]
+                );
+            }
+
+            if (!empty($validated['github_client_secret'])) {
+                Setting::updateOrCreate(
+                    ['club_id' => null, 'key' => 'github_client_secret', 'is_admin' => 'central'],
+                    ['value' => $validated['github_client_secret']]
+                );
+            }
+        }
+        // If disabled, keep existing credentials untouched for future use
+
+        $message = $validated['github_oauth_enabled'] === '1'
+            ? 'Cấu hình OAuth GitHub đã được bật thành công.'
+            : 'Cấu hình OAuth GitHub đã được tắt.';
+
+        return redirect()->back()->with('success', $message);
     }
 }

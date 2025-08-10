@@ -3,6 +3,7 @@
 use App\Models\Setting;
 
 $generalSettings = Setting::getMany(null, ['image_horizontal_light', 'image_horizontal_dark', 'image_square_light', 'image_square_dark', 'site_name']);
+$oauthSettings = Setting::getMany(null, ['github_oauth_enabled', 'github_client_id', 'github_client_secret']);
 ?>
 <!DOCTYPE html>
 <html lang="en" dir="ltr" data-nav-layout="vertical" data-vertical-style="overlay" data-theme-mode="light"
@@ -42,16 +43,12 @@ $generalSettings = Setting::getMany(null, ['image_horizontal_light', 'image_hori
     <div class="container">
         <div class="row justify-content-center align-items-center authentication authentication-basic h-100">
             <div class="col-xxl-4 col-xl-5 col-lg-5 col-md-6 col-sm-8 col-12">
-                <div class="my-5 d-flex justify-content-center">
-                    <a href="{{ url('/') }}">
-                        <img src="{{ Storage::url($generalSettings['image_horizontal_light'] ?? '') }}" alt="logo"
-                            class="desktop-logo">
-                        <img src="{{ Storage::url($generalSettings['image_horizontal_dark'] ?? '') }}" alt="logo"
-                            class="desktop-dark">
-                    </a>
-                </div>
                 <div class="card custom-card">
                     <div class="card-body p-5">
+                        <div class="text-center">
+                            <img src="{{ Storage::url($generalSettings['image_horizontal_light'] ?? '') }}"
+                                width="70%" alt="">
+                        </div>
                         <p class="h5 fw-semibold mb-2 text-center">Đăng Nhập</p>
                         <p class="mb-4 text-muted op-7 fw-normal text-center">Hệ Thống Quản Lý Câu Lạc Bộ</p>
 
@@ -93,20 +90,24 @@ $generalSettings = Setting::getMany(null, ['image_horizontal_light', 'image_hori
                             <p class="fs-12 text-muted mt-3">Không có tài khoản? <a href=""
                                     class="text-primary">Đăng Ký</a></p>
                         </div>
-                        <div class="text-center my-3 authentication-barrier">
-                            <span>OR</span>
-                        </div>
-                        <div class="btn-list text-center">
-                            <button class="btn btn-icon btn-light">
-                                <i class="ri-facebook-line fw-bold text-dark op-7"></i>
-                            </button>
-                            <button class="btn btn-icon btn-light">
-                                <i class="ri-google-line fw-bold text-dark op-7"></i>
-                            </button>
-                            <button class="btn btn-icon btn-light">
-                                <i class="ri-twitter-line fw-bold text-dark op-7"></i>
-                            </button>
-                        </div>
+                        @if (
+                            ($oauthSettings['github_oauth_enabled'] ?? '0') === '1' &&
+                                !empty($oauthSettings['github_client_id']) &&
+                                !empty($oauthSettings['github_client_secret']))
+                            <div class="text-center my-3 authentication-barrier">
+                                <span>HOẶC</span>
+                            </div>
+                            <!-- GitHub OAuth Login -->
+                            <div class="text-center">
+                                <a href="{{ route('auth.github') }}"
+                                    class="d-block mb-2 mx-auto d-flex align-items-center justify-content-center"
+                                    style="width: 220px; background-color: #24292f; color: #fff; border-radius: 6px; padding: 8px 12px; text-decoration: none; font-weight: 500; display: flex; align-items: center; justify-content: center; transition: background-color 0.2s;">
+                                    <i class="ri-github-line fw-bold me-2" style="color: #fff; font-size: 18px;"></i>
+                                    <span>Đăng nhập với GitHub</span>
+                                </a>
+                            </div>
+                        @endif
+
                     </div>
                 </div>
             </div>

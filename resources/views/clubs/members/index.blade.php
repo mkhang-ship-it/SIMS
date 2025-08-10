@@ -1,5 +1,6 @@
 {{-- Club Members Index - Updated: Added email checking functionality for adding new members --}}
 {{-- [2024-12-19] Updated: Added real-time email validation with AJAX, form field disabling when email exists --}}
+{{-- [2024-12-19] Updated: Made all fields required in both edit and add member forms (gender, birthday, identity_card_code, phone, student_code, major_id, course_id) --}}
 @extends('layouts.app')
 
 @section('content')
@@ -224,10 +225,11 @@
                                                                         <div class="mb-3">
                                                                             <label
                                                                                 for="edit_gender{{ $member->user->id }}"
-                                                                                class="form-label">Giới Tính</label>
+                                                                                class="form-label">Giới Tính <span
+                                                                                    class="text-danger">*</span></label>
                                                                             <select class="form-select"
                                                                                 id="edit_gender{{ $member->user->id }}"
-                                                                                name="gender">
+                                                                                name="gender" required>
                                                                                 <option value="">Chọn giới tính
                                                                                 </option>
                                                                                 <option value="male"
@@ -243,11 +245,12 @@
                                                                         <div class="mb-3">
                                                                             <label
                                                                                 for="edit_birthday{{ $member->user->id }}"
-                                                                                class="form-label">Ngày Sinh</label>
+                                                                                class="form-label">Ngày Sinh <span
+                                                                                    class="text-danger">*</span></label>
                                                                             <input type="date" class="form-control"
                                                                                 id="edit_birthday{{ $member->user->id }}"
                                                                                 name="birthday"
-                                                                                value="{{ $member->user->birthday }}">
+                                                                                value="{{ $member->user->birthday }}" required>
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -256,21 +259,23 @@
                                                                         <div class="mb-3">
                                                                             <label
                                                                                 for="edit_identity_card_code{{ $member->user->id }}"
-                                                                                class="form-label">CCCD/CMND</label>
+                                                                                class="form-label">CCCD/CMND <span
+                                                                                    class="text-danger">*</span></label>
                                                                             <input type="text" class="form-control"
                                                                                 id="edit_identity_card_code{{ $member->user->id }}"
                                                                                 name="identity_card_code"
-                                                                                value="{{ $member->user->identity_card_code }}">
+                                                                                value="{{ $member->user->identity_card_code }}" required>
                                                                         </div>
                                                                     </div>
                                                                     <div class="col-md-6">
                                                                         <div class="mb-3">
                                                                             <label for="edit_phone{{ $member->user->id }}"
-                                                                                class="form-label">Số Điện Thoại</label>
+                                                                                class="form-label">Số Điện Thoại <span
+                                                                                    class="text-danger">*</span></label>
                                                                             <input type="text" class="form-control"
                                                                                 id="edit_phone{{ $member->user->id }}"
                                                                                 name="phone"
-                                                                                value="{{ $member->user->phone }}">
+                                                                                value="{{ $member->user->phone }}" required>
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -280,21 +285,23 @@
                                                                         <div class="mb-3">
                                                                             <label
                                                                                 for="edit_student_code{{ $member->user->id }}"
-                                                                                class="form-label">Mã Sinh Viên</label>
+                                                                                class="form-label">Mã Sinh Viên <span
+                                                                                    class="text-danger">*</span></label>
                                                                             <input type="text" class="form-control"
                                                                                 id="edit_student_code{{ $member->user->id }}"
                                                                                 name="student_code"
-                                                                                value="{{ $member->user->student_code }}">
+                                                                                value="{{ $member->user->student_code }}" required>
                                                                         </div>
                                                                     </div>
                                                                     <div class="col-md-6">
                                                                         <div class="mb-3">
                                                                             <label
                                                                                 for="edit_major_id{{ $member->user->id }}"
-                                                                                class="form-label">Chuyên Ngành</label>
+                                                                                class="form-label">Chuyên Ngành <span
+                                                                                    class="text-danger">*</span></label>
                                                                             <select class="form-select"
                                                                                 id="edit_major_id{{ $member->user->id }}"
-                                                                                name="major_id">
+                                                                                name="major_id" required>
                                                                                 <option value="">Chọn chuyên ngành
                                                                                 </option>
                                                                                 @foreach ($majors as $major)
@@ -312,10 +319,11 @@
                                                                         <div class="mb-3">
                                                                             <label
                                                                                 for="edit_course_id{{ $member->user->id }}"
-                                                                                class="form-label">Khóa Học</label>
+                                                                                class="form-label">Khóa Học <span
+                                                                                    class="text-danger">*</span></label>
                                                                             <select class="form-select"
                                                                                 id="edit_course_id{{ $member->user->id }}"
-                                                                                name="course_id">
+                                                                                name="course_id" required>
                                                                                 <option value="">Chọn khóa học
                                                                                 </option>
                                                                                 @foreach ($courses as $course)
@@ -604,8 +612,9 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label for="add_gender" class="form-label">Giới Tính</label>
-                                        <select class="form-select" id="add_gender" name="gender" disabled>
+                                        <label for="add_gender" class="form-label">Giới Tính <span
+                                                class="text-danger">*</span></label>
+                                        <select class="form-select" id="add_gender" name="gender" required disabled>
                                             <option value="">Chọn giới tính</option>
                                             <option value="male" {{ old('gender') == 'male' ? 'selected' : '' }}>Nam
                                             </option>
@@ -619,9 +628,10 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label for="add_birthday" class="form-label">Ngày Sinh</label>
+                                        <label for="add_birthday" class="form-label">Ngày Sinh <span
+                                                class="text-danger">*</span></label>
                                         <input type="date" class="form-control" id="add_birthday" name="birthday"
-                                            value="{{ old('birthday') }}" disabled>
+                                            value="{{ old('birthday') }}" required disabled>
                                         @error('birthday')
                                             <div class="text-danger small">{{ $message }}</div>
                                         @enderror
@@ -631,9 +641,10 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label for="add_identity_card_code" class="form-label">CCCD/CMND</label>
+                                        <label for="add_identity_card_code" class="form-label">CCCD/CMND <span
+                                                class="text-danger">*</span></label>
                                         <input type="text" class="form-control" id="add_identity_card_code"
-                                            name="identity_card_code" value="{{ old('identity_card_code') }}" disabled>
+                                            name="identity_card_code" value="{{ old('identity_card_code') }}" required disabled>
                                         @error('identity_card_code')
                                             <div class="text-danger small">{{ $message }}</div>
                                         @enderror
@@ -641,9 +652,10 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label for="add_phone" class="form-label">Số Điện Thoại</label>
+                                        <label for="add_phone" class="form-label">Số Điện Thoại <span
+                                                class="text-danger">*</span></label>
                                         <input type="text" class="form-control" id="add_phone" name="phone"
-                                            value="{{ old('phone') }}" disabled>
+                                            value="{{ old('phone') }}" required disabled>
                                         @error('phone')
                                             <div class="text-danger small">{{ $message }}</div>
                                         @enderror
@@ -654,9 +666,10 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label for="add_student_code" class="form-label">Mã Sinh Viên</label>
+                                        <label for="add_student_code" class="form-label">Mã Sinh Viên <span
+                                                class="text-danger">*</span></label>
                                         <input type="text" class="form-control" id="add_student_code"
-                                            name="student_code" value="{{ old('student_code') }}" disabled>
+                                            name="student_code" value="{{ old('student_code') }}" required disabled>
                                         @error('student_code')
                                             <div class="text-danger small">{{ $message }}</div>
                                         @enderror
@@ -664,8 +677,9 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label for="add_major_id" class="form-label">Chuyên Ngành</label>
-                                        <select class="form-select" id="add_major_id" name="major_id" disabled>
+                                        <label for="add_major_id" class="form-label">Chuyên Ngành <span
+                                                class="text-danger">*</span></label>
+                                        <select class="form-select" id="add_major_id" name="major_id" required disabled>
                                             <option value="">Chọn chuyên ngành</option>
                                             @foreach ($majors as $major)
                                                 <option value="{{ $major->id }}"
@@ -683,8 +697,9 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label for="add_course_id" class="form-label">Khóa Học</label>
-                                        <select class="form-select" id="add_course_id" name="course_id" disabled>
+                                        <label for="add_course_id" class="form-label">Khóa Học <span
+                                                class="text-danger">*</span></label>
+                                        <select class="form-select" id="add_course_id" name="course_id" required disabled>
                                             <option value="">Chọn khóa học</option>
                                             @foreach ($courses as $course)
                                                 <option value="{{ $course->id }}"

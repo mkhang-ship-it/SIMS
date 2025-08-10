@@ -95,9 +95,9 @@ foreach ($cssProperties as $property => $value) {
         <span class="arrow"><i class="ri-arrow-up-s-fill fs-20"></i></span>
     </div>
     <div id="responsive-overlay"></div>
-
+{{-- 
     <!-- Chatbot Widget -->
-    @include('partials.chatbot')
+    @include('partials.chatbot') --}}
 
     @include('layouts.js')
     @yield('scripts')

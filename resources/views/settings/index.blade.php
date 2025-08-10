@@ -23,6 +23,10 @@
                                 <button class="list-group-item list-group-item-action" id="tab-mail-btn"
                                     data-bs-toggle="tab" data-bs-target="#tab-mail" type="button">Cấu Hình Email</button>
                             @endif
+                            @if (auth()->user()->hasPermissionForModuleCode('setting_management', 'oauth', 'central'))
+                                <button class="list-group-item list-group-item-action" id="tab-oauth-btn"
+                                    data-bs-toggle="tab" data-bs-target="#tab-oauth" type="button">Cấu Hình OAuth</button>
+                            @endif
                             @if (auth()->user()->hasPermissionForModuleCode('setting_management', 'general', 'central'))
                                 <button class="list-group-item list-group-item-action" id="tab-permissions-btn"
                                     data-bs-toggle="tab" data-bs-target="#tab-permissions" type="button">Quản Lý Phân
@@ -63,6 +67,11 @@
                                     @include('settings.partials.mail')
                                 </div>
                             @endif
+                            @if (auth()->user()->hasPermissionForModuleCode('setting_management', 'oauth', 'central'))
+                                <div class="tab-pane fade" id="tab-oauth">
+                                    @include('settings.partials.oauth')
+                                </div>
+                            @endif
                             @if (auth()->user()->hasPermissionForModuleCode('setting_management', 'general', 'central'))
                                 <div class="tab-pane fade" id="tab-permissions">
                                     @include('settings.partials.permissions')
@@ -96,6 +105,7 @@
             const tabTitles = {
                 'tab-general-btn': 'Thông Tin Chung',
                 'tab-mail-btn': 'Cấu Hình Email',
+                'tab-oauth-btn': 'Cấu Hình OAuth',
                 'tab-permissions-btn': 'Quản Lý Phân Quyền',
                 'tab-maintenance-btn': 'Chế Độ Bảo Trì',
                 'tab-theme-btn': 'Cài Đặt Giao Diện',

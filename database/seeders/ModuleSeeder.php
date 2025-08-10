@@ -142,7 +142,8 @@ class ModuleSeeder extends Seeder
                     ['name' => 'view', 'display_name' => 'Xem'],
                     ['name' => 'mail', 'display_name' => 'Cấu hình Email'],
                     ['name' => 'general', 'display_name' => 'Cấu hình Chung'],
-                    ['name' => 'maintenance', 'display_name' => 'Cấu hình Bảo Trì']
+                    ['name' => 'maintenance', 'display_name' => 'Cấu hình Bảo Trì'],
+                    ['name' => 'oauth', 'display_name' => 'Cấu hình OAuth']
                 ]
             ],
             [

@@ -80,6 +80,10 @@ Route::middleware('logsystem')->get('/', function () {
 Route::middleware(['guest', 'logsystem'])->group(function () {
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [LoginController::class, 'login']);
+
+    // GitHub OAuth routes
+    Route::get('/auth/github', [LoginController::class, 'redirectToGitHub'])->name('auth.github');
+    Route::get('/auth/github/callback', [LoginController::class, 'handleGitHubCallback'])->name('auth.github.callback');
 });
 
 Route::middleware(['auth', 'logsystem'])->group(function () {
@@ -195,6 +199,7 @@ Route::middleware(['auth', 'logsystem'])->group(function () {
         Route::post('/settings/refresh-permissions', [SettingController::class, 'refreshPermissions'])->name('settings.refresh-permissions')->middleware('CheckPermission:setting_management,general,central');
         Route::post('/settings/maintenance', [SettingController::class, 'updateMaintenanceSettings'])->name('settings.maintenance.update')->middleware('CheckPermission:setting_management,maintenance,central');
         Route::post('/settings/theme', [SettingController::class, 'updateThemeSettings'])->name('settings.theme.update')->middleware('CheckPermission:setting_management,general,central');
+        Route::post('/settings/oauth', [SettingController::class, 'updateOAuthSettings'])->name('settings.update-oauth-settings')->middleware('CheckPermission:setting_management,oauth,central');
 
         // Notifications routes
         Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index')->middleware('CheckPermission:notification_management,view,central');

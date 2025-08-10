@@ -1,18 +1,22 @@
 <?php
 
-// LoginController.php - Updated to provide specific error messages and account status checking
+// LoginController.php - Updated to provide specific error messages, account status checking, and GitHub OAuth
 // Methods: showLoginForm(), login(), logout() for handling user authentication
 // Added specific error messages for email not found vs wrong password, removed remember functionality
 // Added account status validation to prevent inactive users from logging in
+// Added GitHub OAuth methods: redirectToGitHub(), handleGitHubCallback() for social authentication
 
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Laravel\Socialite\Facades\Socialite;
+use Illuminate\Support\Facades\Log;
 
 class LoginController extends Controller
 {
@@ -85,5 +89,103 @@ class LoginController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('login');
+    }
+
+    /**
+     * Redirect the user to GitHub authentication page
+     */
+    public function redirectToGitHub()
+    {
+        // Check if GitHub OAuth is enabled
+        $githubOAuthEnabled = Setting::getValue(null, 'github_oauth_enabled');
+        if ($githubOAuthEnabled !== '1') {
+            return redirect()->route('login')->with('error', 'Đăng nhập GitHub không khả dụng.');
+        }
+
+        // Get GitHub OAuth settings
+        $githubClientId = Setting::getValue(null, 'github_client_id');
+        $githubClientSecret = Setting::getValue(null, 'github_client_secret');
+
+        if (empty($githubClientId) || empty($githubClientSecret)) {
+            return redirect()->route('login')->with('error', 'Cấu hình GitHub OAuth không hợp lệ.');
+        }
+
+        // Configure Socialite with dynamic settings
+        config([
+            'services.github.client_id' => $githubClientId,
+            'services.github.client_secret' => $githubClientSecret,
+            'services.github.redirect' => route('auth.github.callback'),
+        ]);
+
+        return Socialite::driver('github')->redirect();
+    }
+
+    /**
+     * Handle GitHub OAuth callback
+     */
+    public function handleGitHubCallback(Request $request)
+    {
+        try {
+            // Check if GitHub OAuth is enabled
+            $githubOAuthEnabled = Setting::getValue(null, 'github_oauth_enabled');
+            if ($githubOAuthEnabled !== '1') {
+                return redirect()->route('login')->with('error', 'Đăng nhập GitHub không khả dụng.');
+            }
+
+            // Get GitHub OAuth settings
+            $githubClientId = Setting::getValue(null, 'github_client_id');
+            $githubClientSecret = Setting::getValue(null, 'github_client_secret');
+
+            if (empty($githubClientId) || empty($githubClientSecret)) {
+                return redirect()->route('login')->with('error', 'Cấu hình GitHub OAuth không hợp lệ.');
+            }
+
+            // Configure Socialite with dynamic settings
+            config([
+                'services.github.client_id' => $githubClientId,
+                'services.github.client_secret' => $githubClientSecret,
+                'services.github.redirect' => route('auth.github.callback'),
+            ]);
+
+            $githubUser = Socialite::driver('github')->user();
+
+            // Check if user exists with this GitHub ID
+            $user = User::where('github_id', $githubUser->id)->first();
+
+            if (!$user) {
+                // Check if user exists with this email
+                $user = User::where('email', $githubUser->email)->first();
+
+                if (!$user) {
+                    // User doesn't exist, redirect to login with error
+                    return redirect()->route('login')->with('error', 'Không tìm thấy tài khoản với email GitHub này. Vui lòng liên hệ quản trị viên để được tạo tài khoản.');
+                }
+
+                // Link GitHub ID to existing user
+                $user->update(['github_id' => $githubUser->id]);
+            }
+
+            // Check if account is active
+            if ($user->status !== 'active') {
+                return redirect()->route('login')->with('error', 'Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ ban chủ nhiệm câu lạc bộ hoặc Phòng Công tác Sinh viên để được hỗ trợ.');
+            }
+
+            // Authentication successful
+            Auth::login($user);
+            $request->session()->regenerate();
+
+            // Redirect based on user's default club
+            if ($user->default_club_id) {
+                $request->session()->put('club_id', $user->default_club_id);
+                return redirect()->intended(route('backend.club.dashboard'))->with('success', 'Đăng nhập GitHub thành công!');
+            } else {
+                $request->session()->forget('club_id');
+                return redirect()->intended(route('backend.dashboard'))->with('success', 'Đăng nhập GitHub thành công!');
+            }
+
+        } catch (\Exception $e) {
+            Log::error('GitHub OAuth callback error: ' . $e->getMessage());
+            return redirect()->route('login')->with('error', 'Có lỗi xảy ra trong quá trình đăng nhập GitHub. Vui lòng thử lại.');
+        }
     }
 }

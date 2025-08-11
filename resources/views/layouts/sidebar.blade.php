@@ -385,9 +385,9 @@ Changes made:
 
                     @if (auth()->user()->hasPermissionForModuleCode('discipline_record_management', 'view', 'branch'))
                         <li
-                            class="slide {{ request()->routeIs('backend.club.discipline-records.*') ? 'active' : '' }}">
+                            class="slide {{ request()->routeIs('backend.club.discipline-records.index') ? 'active' : '' }}">
                             <a href="{{ route('backend.club.discipline-records.index') }}"
-                                class="side-menu__item {{ request()->routeIs('backend.club.discipline-records.*') ? 'active' : '' }}">
+                                class="side-menu__item {{ request()->routeIs('backend.club.discipline-records.index') ? 'active' : '' }}">
                                 <i class="las la-clipboard-list side-menu__icon"></i>
                                 <span class="side-menu__label">Quản Lý Điểm</span>
                             </a>

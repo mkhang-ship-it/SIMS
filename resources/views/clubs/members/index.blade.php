@@ -276,7 +276,7 @@
                                                                             <input type="date" class="form-control"
                                                                                 id="edit_birthday{{ $member->user->id }}"
                                                                                 name="birthday"
-                                                                                value="{{ $member->user->birthday }}"
+                                                                                value="{{ $member->user->birthday ? $member->user->birthday->format('Y-m-d') : '' }}"
                                                                                 required>
                                                                         </div>
                                                                     </div>

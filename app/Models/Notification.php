@@ -3,6 +3,7 @@
 // Added relationships with User (sender) and Club (targets)
 // Added methods for managing notification reads and target clubs
 // Updated: Added image_path and files_path fields for image and file attachments
+// Updated: Fixed getUnreadForClub method to properly handle 'all_clubs' target type when target_club_ids is null
 
 namespace App\Models;
 
@@ -87,7 +88,10 @@ class Notification extends Model
     {
         return static::where(function ($query) use ($clubId) {
             $query->where('target_type', 'all_clubs')
-                ->orWhereJsonContains('target_club_ids', $clubId);
+                ->orWhere(function ($subQuery) use ($clubId) {
+                    $subQuery->where('target_type', 'specific_clubs')
+                        ->whereJsonContains('target_club_ids', $clubId);
+                });
         })
             ->where('status', 'active')
             ->whereDoesntHave('reads', function ($query) use ($clubId) {

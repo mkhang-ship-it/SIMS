@@ -103,6 +103,11 @@ class MemberImport implements ToCollection, WithValidation, WithStartRow
                             'status' => $validData['status']
                         ]);
 
+                        // Update default_club_id if this is the first club for the user
+                        if (!$validData['existing_user']->default_club_id) {
+                            $validData['existing_user']->update(['default_club_id' => $this->clubId]);
+                        }
+
                         $this->addedToClubCount++;
                     }
                 } else {
@@ -124,6 +129,11 @@ class MemberImport implements ToCollection, WithValidation, WithStartRow
                                 'joined_at' => now(),
                                 'status' => $validData['status']
                             ]);
+
+                            // Update default_club_id if this is the first club for the user
+                            if (!$existingUser->default_club_id) {
+                                $existingUser->update(['default_club_id' => $this->clubId]);
+                            }
 
                             $this->addedToClubCount++;
                         }
@@ -147,6 +157,9 @@ class MemberImport implements ToCollection, WithValidation, WithStartRow
                                 'joined_at' => now(),
                                 'status' => $validData['status']
                             ]);
+
+                            // Set default_club_id for new user
+                            $newUser->update(['default_club_id' => $this->clubId]);
 
                             // Check if this user was actually created (not found)
                             if ($newUser->wasRecentlyCreated) {

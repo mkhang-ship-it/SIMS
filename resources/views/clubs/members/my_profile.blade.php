@@ -572,7 +572,7 @@
                             <div class="col-md-6 mb-3">
                                 <label for="birthday" class="form-label">Ngày Sinh</label>
                                 <input type="date" class="form-control" id="birthday" name="birthday"
-                                    value="{{ $user->birthday }}">
+                                    value="{{ $user->birthday ? \Carbon\Carbon::parse($user->birthday)->format('Y-m-d') : '' }}">
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="identity_card_code" class="form-label">CCCD/CMND</label>
@@ -833,8 +833,8 @@
 
     {{-- Modal xóa phiên cụ thể --}}
     <div class="modal fade" id="destroySessionModal" tabindex="-1" aria-labelledby="destroySessionModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog">
+        aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <form method="POST" id="destroySessionForm">
                     @csrf

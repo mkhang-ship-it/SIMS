@@ -447,19 +447,13 @@ Latest Changes: Bổ sung modal thu hồi và xóa
                                                                 @csrf
                                                                 @method('DELETE')
                                                                 <div class="mt-3">
-                                                                    <label class="form-label">Lý do xóa <span
-                                                                            class="text-danger">*</span></label>
-                                                                    <textarea class="form-control" name="delete_reason" rows="3" placeholder="Nhập lý do xóa điểm này..."
-                                                                        required></textarea>
-                                                                </div>
-                                                                <div class="mt-3">
                                                                     <div class="form-check">
                                                                         <input class="form-check-input" type="checkbox"
                                                                             id="confirmDelete{{ $record->id }}"
                                                                             required>
                                                                         <label class="form-check-label text-danger"
                                                                             for="confirmDelete{{ $record->id }}">
-                                                                            Tôi hiểu rằng hành động này không thể hoàn tác
+                                                                            Tôi hiểu rằng hành động này không thể hoàn tác.
                                                                         </label>
                                                                     </div>
                                                                 </div>

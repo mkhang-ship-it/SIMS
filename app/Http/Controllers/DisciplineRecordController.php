@@ -102,6 +102,11 @@ class DisciplineRecordController extends Controller
                 ->first();
         }
 
+        // Check if semester exists, if not return error
+        if (!$selectedSemester) {
+            return redirect()->back()->with('error', 'Không tìm thấy học kỳ nào để xem tổng hợp.');
+        }
+
         $membersSummary = [];
 
         if ($selectedClub) {
@@ -231,6 +236,11 @@ class DisciplineRecordController extends Controller
             $selectedSemester = Semester::where('status', 'active')
                 ->orderBy('start_date', 'desc')
                 ->first();
+        }
+
+        // Check if semester exists, if not return error
+        if (!$selectedSemester) {
+            return redirect()->back()->with('error', 'Không tìm thấy học kỳ nào để xuất dữ liệu.');
         }
 
         if ($selectedClub) {

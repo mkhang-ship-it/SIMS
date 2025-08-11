@@ -4,6 +4,13 @@ Updated: Added Flasher JS integration
 - Fixed: Moved JavaScript files from CSS include and proper loading order
 - Updated: Modified notification dropdown JavaScript to use real data with new design, including proper styling, icons, and mark-as-read functionality
 - Updated: Modified to only display unread notifications in dropdown with improved empty state message
+- Fixed: Replaced hardcode URLs with Laravel route helpers to fix notification loading issues
+- Fixed: Added better error handling and console logging for debugging
+- Fixed: Resolved duplicate function names by renaming modal-specific functions
+- Fixed: Corrected route ordering to prevent {notification} parameter conflict with API endpoints
+- Fixed: Modal notification now only runs for club users with proper permissions
+- Fixed: Enhanced modal notification marking as read with improved event handling and debug logging
+- Fixed: Added backup method to mark notification as read when close button is clicked
 --}}
 
 <!-- Popper JS -->
@@ -121,7 +128,7 @@ Updated: Added Flasher JS integration
 
             // Function to load recent notifications
             function loadRecentNotifications() {
-                $.get('/club/notifications/recent', function(response) {
+                $.get('{{ route('backend.club.notifications.recent') }}', function(response) {
                     if (response.success) {
                         const container = $('#recentNotifications');
                         container.empty();
@@ -192,11 +199,13 @@ Updated: Added Flasher JS integration
                             `);
                         }
                     }
-                }).fail(function() {
+                }).fail(function(xhr, status, error) {
+                    console.error('Error loading recent notifications:', error, xhr.responseText);
                     $('#recentNotifications').html(`
                         <li class="dropdown-item">
                             <div class="text-center py-3">
                                 <p class="text-muted mb-0">Không thể tải thông báo</p>
+                                <small class="text-danger">Lỗi: ${error}</small>
                             </div>
                         </li>
                     `);
@@ -205,7 +214,7 @@ Updated: Added Flasher JS integration
 
             // Function to update unread count
             function updateUnreadCount() {
-                $.get('/club/notifications/unread-count', function(response) {
+                $.get('{{ route('backend.club.notifications.unread-count') }}', function(response) {
                     if (response.success) {
                         const badges = $('.notification-badge');
                         const notificationData = $('#notifiation-data');
@@ -225,12 +234,16 @@ Updated: Added Flasher JS integration
                             notificationData.text('0 Chưa đọc');
                         }
                     }
+                }).fail(function(xhr, status, error) {
+                    console.error('Error updating unread count:', error, xhr.responseText);
                 });
             }
 
             // Function to mark notification as read
             function markNotificationAsRead(notificationId) {
-                $.post(`/club/notifications/${notificationId}/mark-as-read`, {
+                const url = '{{ route('backend.club.notifications.mark-as-read', ':id') }}'.replace(':id',
+                    notificationId);
+                $.post(url, {
                     _token: '{{ csrf_token() }}'
                 }, function(response) {
                     if (response.success) {
@@ -238,6 +251,8 @@ Updated: Added Flasher JS integration
                         loadRecentNotifications();
                         updateUnreadCount();
                     }
+                }).fail(function(xhr, status, error) {
+                    console.error('Error marking notification as read:', error, xhr.responseText);
                 });
             }
 
@@ -262,4 +277,177 @@ Updated: Added Flasher JS integration
             }
         @endif
     });
+
+    // Notification Modal Functionality
+    @if (session('club_id') && auth()->user()->hasPermissionForModuleCode('notification_management', 'view', 'branch'))
+        // Check for latest unread notification on page load
+        checkLatestNotification();
+
+        function checkLatestNotification() {
+            $.ajax({
+                url: "{{ route('backend.club.notifications.latest') }}",
+                type: 'GET',
+                success: function(response) {
+                    if (response.success && response.data) {
+                        showNotificationModal(response.data);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error checking latest notification:', error, xhr.responseText);
+                }
+            });
+        }
+
+        function showNotificationModal(notification) {
+            console.log('Showing notification modal for ID:', notification.id);
+
+            // Populate modal with notification data
+            $('#notificationModalTitle').text(notification.title);
+            $('#notificationModalContent').html(notification.content);
+            $('#notificationModalDate').text(notification.formatted_date);
+            $('#notificationModalSender').text(notification.sender_name);
+
+            // Handle image
+            if (notification.image_path) {
+                $('#notificationModalImage').attr('src', "{{ asset('storage/') }}/" + notification.image_path).show();
+            } else {
+                $('#notificationModalImage').hide();
+            }
+
+            // Handle files
+            const filesContainer = $('#notificationModalFiles');
+            filesContainer.empty();
+
+            if (notification.files_path && notification.files_path.length > 0) {
+                filesContainer.show();
+                notification.files_path.forEach(function(file) {
+                    const fileSize = formatFileSize(file.size);
+                    const fileHtml = `
+                        <div class="d-flex align-items-center justify-content-between p-2 border rounded mb-2">
+                            <div class="d-flex align-items-center">
+                                <i class="ri-file-line me-2 text-primary"></i>
+                                <div>
+                                    <div class="fw-medium">${file.name}</div>
+                                    <small class="text-muted">${fileSize}</small>
+                                </div>
+                            </div>
+                            <a href="{{ asset('storage/') }}/${file.path}"
+                               class="btn btn-sm btn-outline-primary"
+                               download="${file.name}"
+                               target="_blank">
+                                <i class="ri-download-line me-1"></i>Tải xuống
+                            </a>
+                        </div>
+                    `;
+                    filesContainer.append(fileHtml);
+                });
+            } else {
+                filesContainer.hide();
+            }
+
+            // Store notification ID for marking as read
+            $('#notificationModal').data('notification-id', notification.id);
+            console.log('Stored notification ID in modal data:', notification.id);
+
+            // Show modal
+            $('#notificationModal').modal('show');
+
+            // Mark as read immediately when modal is shown (consistent with dropdown behavior)
+            markNotificationAsReadModal(notification.id);
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Modal close event handler for cleanup (notification already marked as read when shown)
+        $('#notificationModal').on('hidden.bs.modal', function() {
+            console.log('Modal hidden.bs.modal event fired - cleaning up');
+            // Clear the stored notification ID
+            $(this).removeData('notification-id');
+            console.log('Modal data cleared');
+        });
+
+        function markNotificationAsReadModal(notificationId) {
+            console.log('markNotificationAsReadModal called with ID:', notificationId);
+            const url = "{{ route('backend.club.notifications.mark-as-read', ':id') }}".replace(':id', notificationId);
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: {
+                    _token: "{{ csrf_token() }}"
+                },
+                success: function(response) {
+                    console.log('Modal notification marked as read successfully:', response);
+                    // Update UI after marking as read
+                    updateUnreadCount();
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error marking modal notification as read:', error, xhr.responseText);
+                    console.error('Response status:', xhr.status);
+                    console.error('Response text:', xhr.responseText);
+                }
+            });
+        }
+    @endif
 </script>
+
+<!-- Notification Modal -->
+<div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="notificationModalLabel">
+                    <i class="ri-notification-line me-2"></i>Thông Báo Mới
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Notification Image -->
+                <div class="text-center mb-3">
+                    <img id="notificationModalImage" src="" alt="Notification Image"
+                        class="img-fluid rounded shadow-sm" style="max-height: 300px; display: none;">
+                </div>
+
+                <!-- Notification Header -->
+                <div class="mb-3">
+                    <h4 id="notificationModalTitle" class="text-primary mb-2"></h4>
+                    <div class="d-flex justify-content-between text-muted small">
+                        <span>
+                            <i class="ri-user-line me-1"></i>
+                            Người gửi: <span id="notificationModalSender"></span>
+                        </span>
+                        <span>
+                            <i class="ri-time-line me-1"></i>
+                            <span id="notificationModalDate"></span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Notification Content -->
+                <div class="mb-4">
+                    <div id="notificationModalContent" class="text-dark lh-lg"></div>
+                </div>
+
+                <!-- Files Section -->
+                <div id="notificationModalFiles" style="display: none;">
+                    <h6 class="text-primary mb-2">
+                        <i class="ri-attachment-line me-2"></i>File đính kèm
+                    </h6>
+                    <!-- Files will be populated here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="ri-close-line me-1"></i>Đóng
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

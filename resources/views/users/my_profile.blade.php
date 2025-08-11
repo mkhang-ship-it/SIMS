@@ -434,7 +434,7 @@
                         <div class="mb-3">
                             <label for="birthday" class="form-label">Ngày Sinh</label>
                             <input type="date" class="form-control" id="birthday" name="birthday"
-                                value="{{ $user->birthday }}">
+                                value="{{ $user->birthday ? $user->birthday->format('Y-m-d') : '' }}">
                         </div>
                         <div class="mb-3">
                             <label for="identity_card_code" class="form-label">CCCD/CMND</label>

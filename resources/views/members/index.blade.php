@@ -307,7 +307,8 @@
                                                                             <input type="date" class="form-control"
                                                                                 id="edit_birthday{{ $member->id }}"
                                                                                 name="birthday"
-                                                                                value="{{ $member->birthday }}" required>
+                                                                                value="{{ $member->birthday ? $member->birthday->format('Y-m-d') : '' }}"
+                                                                                required>
                                                                         </div>
                                                                     </div>
                                                                     <div class="col-md-6">
@@ -400,11 +401,10 @@
                                                                 </div>
                                                                 <div class="mb-3">
                                                                     <label for="edit_avatar{{ $member->id }}"
-                                                                        class="form-label">Ảnh Đại Diện <span
-                                                                            class="text-danger">*</span></label>
+                                                                        class="form-label">Ảnh Đại Diện</label>
                                                                     <input type="file" class="form-control"
                                                                         id="edit_avatar{{ $member->id }}"
-                                                                        name="avatar" accept="image/*" required>
+                                                                        name="avatar" accept="image/*">
                                                                     @if ($member->avatar)
                                                                         <small class="text-muted">Ảnh hiện tại:</small>
                                                                         <br>
@@ -791,10 +791,9 @@
                                 </div>
                             </div>
                             <div class="mb-3">
-                                <label for="avatar" class="form-label">Ảnh Đại Diện <span
-                                        class="text-danger">*</span></label>
+                                <label for="avatar" class="form-label">Ảnh Đại Diện</label>
                                 <input type="file" class="form-control" id="avatar" name="avatar"
-                                    accept="image/*" disabled required>
+                                    accept="image/*" disabled>
                             </div>
                         </div>
                         <div class="modal-footer">

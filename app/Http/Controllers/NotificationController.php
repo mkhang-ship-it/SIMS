@@ -1,5 +1,6 @@
 <?php
 // Updated: Changed validation in store() and update() methods to use simple $request->validate() instead of Validator::make()
+// Updated: Fixed file naming to sanitize filenames by removing spaces and special characters to prevent 403 errors
 
 namespace App\Http\Controllers;
 
@@ -45,7 +46,11 @@ class NotificationController extends Controller
         $imagePath = null;
         if ($request->hasFile('image')) {
             $image = $request->file('image');
-            $imageName = time() . '_' . $image->getClientOriginalName();
+            $originalName = pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME);
+            $extension = $image->getClientOriginalExtension();
+            // Sanitize filename: remove spaces and special characters
+            $sanitizedName = preg_replace('/[^a-zA-Z0-9_-]/', '_', $originalName);
+            $imageName = time() . '_' . $sanitizedName . '.' . $extension;
             $imagePath = $image->storeAs('notifications/images', $imageName, 'public');
         }
 
@@ -53,7 +58,11 @@ class NotificationController extends Controller
         $filesPath = [];
         if ($request->hasFile('files')) {
             foreach ($request->file('files') as $file) {
-                $fileName = time() . '_' . $file->getClientOriginalName();
+                $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                $extension = $file->getClientOriginalExtension();
+                // Sanitize filename: remove spaces and special characters
+                $sanitizedName = preg_replace('/[^a-zA-Z0-9_-]/', '_', $originalName);
+                $fileName = time() . '_' . $sanitizedName . '.' . $extension;
                 $filePath = $file->storeAs('notifications/files', $fileName, 'public');
                 $filesPath[] = [
                     'name' => $file->getClientOriginalName(),
@@ -111,7 +120,11 @@ class NotificationController extends Controller
             }
 
             $image = $request->file('image');
-            $imageName = time() . '_' . $image->getClientOriginalName();
+            $originalName = pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME);
+            $extension = $image->getClientOriginalExtension();
+            // Sanitize filename: remove spaces and special characters
+            $sanitizedName = preg_replace('/[^a-zA-Z0-9_-]/', '_', $originalName);
+            $imageName = time() . '_' . $sanitizedName . '.' . $extension;
             $imagePath = $image->storeAs('notifications/images', $imageName, 'public');
         }
 
@@ -119,7 +132,11 @@ class NotificationController extends Controller
         $filesPath = $notification->files_path ?? [];
         if ($request->hasFile('files')) {
             foreach ($request->file('files') as $file) {
-                $fileName = time() . '_' . $file->getClientOriginalName();
+                $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                $extension = $file->getClientOriginalExtension();
+                // Sanitize filename: remove spaces and special characters
+                $sanitizedName = preg_replace('/[^a-zA-Z0-9_-]/', '_', $originalName);
+                $fileName = time() . '_' . $sanitizedName . '.' . $extension;
                 $filePath = $file->storeAs('notifications/files', $fileName, 'public');
                 $filesPath[] = [
                     'name' => $file->getClientOriginalName(),

@@ -106,6 +106,11 @@ class MemberController extends Controller
                 'joined_at' => now(),
             ]);
 
+            // Update default_club_id if this is the first club for the user
+            if (!$existingUser->default_club_id) {
+                $existingUser->update(['default_club_id' => $clubId]);
+            }
+
             return redirect()->route('backend.club.members.index')
                 ->with('success', 'Thành viên đã tồn tại trong hệ thống và đã được thêm vào câu lạc bộ thành công.');
         }
@@ -130,6 +135,9 @@ class MemberController extends Controller
                 'status' => $validatedData['status'],
                 'joined_at' => now(),
             ]);
+
+            // Set default_club_id for new user
+            $newUser->update(['default_club_id' => $clubId]);
 
             return redirect()->route('backend.club.members.index')
                 ->with('success', 'Thành viên mới đã được tạo và thêm vào câu lạc bộ thành công.');
@@ -320,6 +328,12 @@ class MemberController extends Controller
                 'status' => 'active',
                 'joined_at' => now(),
             ]);
+
+            // Update default_club_id if this is the first club for the user
+            $user = User::find($request->user_id);
+            if ($user && !$user->default_club_id) {
+                $user->update(['default_club_id' => $clubId]);
+            }
 
             return redirect()->route('backend.club.members.index')->with('success', 'Thành viên đã được gán vào câu lạc bộ thành công!');
         } catch (\Exception $e) {

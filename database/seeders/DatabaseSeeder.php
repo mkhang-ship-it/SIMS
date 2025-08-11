@@ -52,6 +52,7 @@ class DatabaseSeeder extends Seeder
             QuoteSeeder::class,
             ProvinceSeeder::class,
             CommuneSeeder::class,
+            CourseSeeder::class,
         ]);
 
         // Create roles first

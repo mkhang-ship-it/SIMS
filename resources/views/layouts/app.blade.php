@@ -51,7 +51,6 @@ foreach ($cssProperties as $property => $value) {
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title> {{ $generalSettings['site_name'] ?? '-' }} </title>
     <meta name="Description" content="{{ $generalSettings['site_name'] ?? '-' }}">
-    <meta name="Author" content="YNEX">
     <meta name="keywords" content="{{ $generalSettings['site_name'] ?? '-' }}">
 
     <!-- CSRF Token -->
@@ -95,7 +94,7 @@ foreach ($cssProperties as $property => $value) {
         <span class="arrow"><i class="ri-arrow-up-s-fill fs-20"></i></span>
     </div>
     <div id="responsive-overlay"></div>
-{{-- 
+    {{--
     <!-- Chatbot Widget -->
     @include('partials.chatbot') --}}
 

@@ -103,7 +103,7 @@ Updated: Thay đổi thống kê từ đếm thành viên sang tổng điểm v�
                             <i class="ti ti-minus fs-1"></i>
                         </div>
                         <h4 class="fw-semibold mb-2">
-                            {{ collect($membersSummary)->filter(fn($member) => $member['total_points'] < 0)->sum('total_points') }}
+                            {{ $totalPenaltyPoints ?? 0 }}
                         </h4>
                         <p class="text-muted mb-0">Tổng Điểm Trừ</p>
                     </div>
@@ -116,7 +116,7 @@ Updated: Thay đổi thống kê từ đếm thành viên sang tổng điểm v�
                             <i class="ti ti-plus fs-1"></i>
                         </div>
                         <h4 class="fw-semibold mb-2">
-                            {{ collect($membersSummary)->filter(fn($member) => $member['total_points'] > 0)->sum('total_points') }}
+                            {{ $totalBonusPoints ?? 0 }}
                         </h4>
                         <p class="text-muted mb-0">Tổng Điểm Cộng</p>
                     </div>
@@ -129,7 +129,7 @@ Updated: Thay đổi thống kê từ đếm thành viên sang tổng điểm v�
                             <i class="ti ti-sum fs-1"></i>
                         </div>
                         <h4 class="fw-semibold mb-2">
-                            {{ collect($membersSummary)->sum('total_points') }}
+                            {{ ($totalBonusPoints ?? 0) - ($totalPenaltyPoints ?? 0) }}
                         </h4>
                         <p class="text-muted mb-0">Tổng Điểm</p>
                     </div>
@@ -199,7 +199,7 @@ Updated: Thay đổi thống kê từ đếm thành viên sang tổng điểm v�
                                             </td>
                                             <td class="text-center">
                                                 <span class="badge bg-info fs-6">
-                                                    {{ number_format($memberData['school_points'], 1) }}
+                                                    {{ number_format($memberData['school_points'], 0) }}
                                                 </span>
                                             </td>
                                             <td class="text-center">
@@ -231,7 +231,7 @@ Updated: Thay đổi thống kê từ đếm thành viên sang tổng điểm v�
                                             </td>
                                             <td>
                                                 @if ($recentRecords->count() > 0)
-                                                    @foreach ($recentRecords->take(2) as $record)
+                                                    @foreach ($recentRecords as $record)
                                                         <div class="mb-1">
                                                             <small
                                                                 class="text-muted">{{ $record->applied_date->format('d/m') }}:</small>
@@ -239,10 +239,6 @@ Updated: Thay đổi thống kê từ đếm thành viên sang tổng điểm v�
                                                                 class="badge {{ $record->discipline->discipline_points > 0 ? 'bg-success-transparent' : 'bg-danger-transparent' }}">{{ $record->discipline->name }}</span>
                                                         </div>
                                                     @endforeach
-                                                    @if ($recentRecords->count() > 2)
-                                                        <small class="text-muted">và {{ $recentRecords->count() - 2 }} điểm
-                                                            khác...</small>
-                                                    @endif
                                                 @else
                                                     <span class="text-muted">-</span>
                                                 @endif

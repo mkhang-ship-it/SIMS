@@ -267,6 +267,12 @@ class MemberController extends Controller
                 'joined_at' => now(),
             ]);
 
+            // Update default_club_id if this is the first club for the user
+            $user = User::find($request->user_id);
+            if ($user && !$user->default_club_id) {
+                $user->update(['default_club_id' => $request->club_id]);
+            }
+
             return redirect()->route('backend.members.index')->with('success', 'Thành viên đã được gán vào câu lạc bộ thành công!');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Có lỗi xảy ra khi gán thành viên: ' . $e->getMessage());

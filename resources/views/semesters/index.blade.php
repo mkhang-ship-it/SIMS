@@ -139,7 +139,7 @@
                                                                             <input type="date" class="form-control"
                                                                                 id="edit_start_date{{ $semester->id }}"
                                                                                 name="start_date"
-                                                                                value="{{ $semester->start_date }}"
+                                                                                value="{{ $semester->start_date ? $semester->start_date->format('Y-m-d') : '' }}"
                                                                                 required>
                                                                         </div>
                                                                     </div>
@@ -152,7 +152,7 @@
                                                                             <input type="date" class="form-control"
                                                                                 id="edit_end_date{{ $semester->id }}"
                                                                                 name="end_date"
-                                                                                value="{{ $semester->end_date }}"
+                                                                                value="{{ $semester->end_date ? $semester->end_date->format('Y-m-d') : '' }}"
                                                                                 required>
                                                                         </div>
                                                                     </div>

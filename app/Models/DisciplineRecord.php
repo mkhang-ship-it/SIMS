@@ -26,7 +26,7 @@ class DisciplineRecord extends Model
     ];
 
     /**
-     * Get the user who received the discipline (người bị kỷ luật)
+     * Get the user who received the discipline (người được ghi nhận điểm)
      */
     public function user(): BelongsTo
     {
@@ -34,7 +34,7 @@ class DisciplineRecord extends Model
     }
 
     /**
-     * Get the user who applied the discipline (người áp dụng kỷ luật)
+     * Get the user who applied the discipline (người ghi nhận điểm)
      */
     public function appliedBy(): BelongsTo
     {

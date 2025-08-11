@@ -1,4 +1,5 @@
 <?php
+// Updated: Fixed notification query logic to properly handle 'all_clubs' target type when target_club_ids is null
 
 namespace App\Http\Controllers\Club;
 
@@ -19,9 +20,12 @@ class NotificationController extends Controller
         $clubId = session('club_id');
 
         $notifications = Notification::where(function ($query) use ($clubId) {
-                $query->where('target_type', 'all_clubs')
-                    ->orWhereJsonContains('target_club_ids', $clubId);
-            })
+            $query->where('target_type', 'all_clubs')
+                ->orWhere(function ($subQuery) use ($clubId) {
+                    $subQuery->where('target_type', 'specific_clubs')
+                        ->whereJsonContains('target_club_ids', $clubId);
+                });
+        })
             ->where('status', 'active')
             ->with(['sender', 'reads' => function ($query) use ($clubId) {
                 $query->where('club_id', $clubId);
@@ -71,7 +75,10 @@ class NotificationController extends Controller
 
         $notifications = Notification::where(function ($query) use ($clubId) {
             $query->where('target_type', 'all_clubs')
-                ->orWhereJsonContains('target_club_ids', $clubId);
+                ->orWhere(function ($subQuery) use ($clubId) {
+                    $subQuery->where('target_type', 'specific_clubs')
+                        ->whereJsonContains('target_club_ids', $clubId);
+                });
         })
             ->where('status', 'active')
             ->whereDoesntHave('reads', function ($query) use ($clubId) {
@@ -99,7 +106,10 @@ class NotificationController extends Controller
 
         $count = Notification::where(function ($query) use ($clubId) {
             $query->where('target_type', 'all_clubs')
-                ->orWhereJsonContains('target_club_ids', $clubId);
+                ->orWhere(function ($subQuery) use ($clubId) {
+                    $subQuery->where('target_type', 'specific_clubs')
+                        ->whereJsonContains('target_club_ids', $clubId);
+                });
         })
             ->where('status', 'active')
             ->whereDoesntHave('reads', function ($query) use ($clubId) {
@@ -123,7 +133,10 @@ class NotificationController extends Controller
 
         $notifications = Notification::where(function ($query) use ($clubId) {
             $query->where('target_type', 'all_clubs')
-                ->orWhereJsonContains('target_club_ids', $clubId);
+                ->orWhere(function ($subQuery) use ($clubId) {
+                    $subQuery->where('target_type', 'specific_clubs')
+                        ->whereJsonContains('target_club_ids', $clubId);
+                });
         })
             ->where('status', 'active')
             ->whereDoesntHave('reads', function ($query) use ($clubId) {
@@ -144,6 +157,77 @@ class NotificationController extends Controller
         return response()->json([
             'success' => true,
             'data' => $notifications
+        ]);
+    }
+
+    /**
+     * Get latest unread notification for modal display
+     */
+    public function latest()
+    {
+        $clubId = session('club_id');
+
+        $notification = Notification::where(function ($query) use ($clubId) {
+            $query->where('target_type', 'all_clubs')
+                ->orWhere(function ($subQuery) use ($clubId) {
+                    $subQuery->where('target_type', 'specific_clubs')
+                        ->whereJsonContains('target_club_ids', $clubId);
+                });
+        })
+            ->where('status', 'active')
+            ->whereDoesntHave('reads', function ($query) use ($clubId) {
+                $query->where('club_id', $clubId)->whereNotNull('read_at');
+            })
+            ->with(['sender'])
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        if (!$notification) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không có thông báo mới'
+            ]);
+        }
+
+        // Add formatted dates and file information
+        $notification->formatted_date = $notification->created_at->format('d/m/Y H:i');
+        $notification->sender_name = $notification->sender ? $notification->sender->name : 'System';
+
+        return response()->json([
+            'success' => true,
+            'data' => $notification
+        ]);
+    }
+
+    /**
+     * Show specific notification details
+     */
+    public function show(Notification $notification)
+    {
+        $clubId = session('club_id');
+
+        // Check if this notification is for the current club
+        if (
+            $notification->target_type !== 'all_clubs' &&
+            !in_array($clubId, $notification->target_club_ids ?? [])
+        ) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn không có quyền xem thông báo này'
+            ], 403);
+        }
+
+        // Load sender relationship
+        $notification->load('sender');
+
+        // Add formatted dates and file information
+        $notification->formatted_date = $notification->created_at->format('d/m/Y H:i');
+        $notification->sender_name = $notification->sender ? $notification->sender->name : 'System';
+        $notification->is_read_by_club = $notification->isReadByClub($clubId);
+
+        return response()->json([
+            'success' => true,
+            'data' => $notification
         ]);
     }
 }

@@ -18,6 +18,7 @@ use App\Http\Controllers\Club\MemberController as ClubMemberController;
 use App\Http\Controllers\Club\AwardController as ClubAwardController;
 use App\Http\Controllers\Club\DisciplineController as ClubDisciplineController;
 use App\Http\Controllers\Club\DisciplineRecordController as ClubDisciplineRecordController;
+use App\Http\Controllers\Club\MyPointsController as ClubMyPointsController;
 use App\Http\Controllers\DisciplineRecordController;
 use App\Http\Controllers\Club\EventController as ClubEventController;
 use App\Http\Controllers\Club\EventPlanController as ClubEventPlanController;
@@ -305,7 +306,7 @@ Route::middleware(['auth', 'logsystem'])->prefix('club')->group(function () {
         Route::delete('/discipline-records/{disciplineRecord}', [ClubDisciplineRecordController::class, 'destroy'])->name('discipline-records.destroy')->middleware('CheckPermission:discipline_record_management,delete,branch');
         Route::get('/discipline-records/summary', [ClubDisciplineRecordController::class, 'summary'])->name('discipline-records.summary')->middleware('CheckPermission:discipline_record_management,view_summary,branch');
         Route::get('/discipline-records/summary/export', [ClubDisciplineRecordController::class, 'exportSummary'])->name('discipline-records.summary.export')->middleware('CheckPermission:discipline_record_management,view_summary,branch');
-        Route::get('/discipline-records/mypoints', [ClubDisciplineRecordController::class, 'myPoints'])->name('discipline-records.my-points')->middleware('CheckPermission:discipline_record_management,my_points,branch');
+        Route::get('/discipline-records/mypoints', [ClubMyPointsController::class, 'index'])->name('discipline-records.my-points')->middleware('CheckPermission:discipline_record_management,my_points,branch');
         // Events routes
         Route::get('/events', [ClubEventController::class, 'index'])->name('events.index')->middleware('CheckPermission:event_management,view,branch');
         Route::post('/events', [ClubEventController::class, 'store'])->name('events.store')->middleware('CheckPermission:event_management,create,branch');
@@ -423,12 +424,14 @@ Route::middleware(['auth', 'logsystem'])->prefix('club')->group(function () {
         // Test gửi mail
         Route::post('/settings/mail-test', [ClubSettingController::class, 'testMail'])->name('settings.mail.test')->middleware('CheckPermission:setting_management,mail,branch');
 
-        // Notifications routes
+        // Notifications routes - API endpoints first to avoid conflict with {notification} route
         Route::get('/notifications', [ClubNotificationController::class, 'index'])->name('notifications.index')->middleware('CheckPermission:notification_management,view,branch');
-        Route::post('/notifications/{notification}/mark-as-read', [ClubNotificationController::class, 'markAsRead'])->name('notifications.mark-as-read')->middleware('CheckPermission:notification_management,view,branch');
-        Route::post('/notifications/mark-all-as-read', [ClubNotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-as-read')->middleware('CheckPermission:notification_management,view,branch');
-        Route::get('/notifications/unread-count', [ClubNotificationController::class, 'unreadCount'])->name('notifications.unread-count')->middleware('CheckPermission:notification_management,view,branch');
+        Route::get('/notifications/unread-count/get', [ClubNotificationController::class, 'unreadCount'])->name('notifications.unread-count')->middleware('CheckPermission:notification_management,view,branch');
         Route::get('/notifications/recent', [ClubNotificationController::class, 'recent'])->name('notifications.recent')->middleware('CheckPermission:notification_management,view,branch');
+        Route::get('/notifications/latest', [ClubNotificationController::class, 'latest'])->name('notifications.latest')->middleware('CheckPermission:notification_management,view,branch');
+        Route::post('/notifications/mark-all-as-read', [ClubNotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-as-read')->middleware('CheckPermission:notification_management,view,branch');
+        Route::get('/notifications/{notification}', [ClubNotificationController::class, 'show'])->name('notifications.show')->middleware('CheckPermission:notification_management,view,branch');
+        Route::post('/notifications/{notification}/mark-as-read', [ClubNotificationController::class, 'markAsRead'])->name('notifications.mark-as-read')->middleware('CheckPermission:notification_management,view,branch');
 
         // Feature Requests routes
         Route::get('/feature-requests', [ClubFeatureRequestController::class, 'index'])->name('feature-requests.index')->middleware('CheckPermission:feature_request_management,view,branch');

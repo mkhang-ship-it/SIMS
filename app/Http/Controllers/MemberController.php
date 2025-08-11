@@ -4,6 +4,7 @@
 // Supports assigning existing users to clubs, updating member information, and removing members from clubs
 // When removing a member from a club, all related data (awards, invoices, checkins) for that club are also deleted
 // [2024-12-19] Updated: Admin destroy method completely deletes user from system (all clubs and related data)
+// [2024-12-19] Fixed: Award recipient deletion to use user_club_role_id instead of user_id column
 
 namespace App\Http\Controllers;
 
@@ -20,6 +21,9 @@ use Illuminate\Support\Facades\DB;
 use App\Models\AwardRecipient;
 use App\Models\Invoice;
 use App\Models\EventCheckin;
+use App\Models\Semester;
+use App\Exports\CentralMemberExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class MemberController extends Controller
 {
@@ -185,10 +189,7 @@ class MemberController extends Controller
                 $clubId = $userClubRole->club_id;
 
                 // Delete award recipients for this user in this club
-                AwardRecipient::where('user_id', $member->id)
-                    ->whereHas('award', function ($query) use ($clubId) {
-                        $query->where('club_id', $clubId);
-                    })
+                AwardRecipient::where('user_club_role_id', $userClubRole->id)
                     ->delete();
 
                 // Delete invoices and their transactions for this user in this club
@@ -286,10 +287,7 @@ class MemberController extends Controller
             $clubId = $userClubRole->club_id;
 
             // Delete award recipients for this user in this club
-            AwardRecipient::where('user_id', $userId)
-                ->whereHas('award', function ($query) use ($clubId) {
-                    $query->where('club_id', $clubId);
-                })
+            AwardRecipient::where('user_club_role_id', $userClubRole->id)
                 ->delete();
 
             // Delete invoices and their transactions for this user in this club
@@ -368,5 +366,21 @@ class MemberController extends Controller
         $email = $request->query('email');
         $exists = User::where('email', $email)->exists();
         return response()->json(['exists' => $exists]);
+    }
+
+    /**
+     * Export members data to Excel
+     */
+    public function exportMembersExcel(Request $request)
+    {
+        $clubId = $request->query('club_id');
+        $semesterId = $request->query('semester_id') ?? Semester::getCurrentSemester()?->id;
+
+        $filename = 'Danh Sách Thành Viên.xlsx';
+
+        return Excel::download(
+            new CentralMemberExport($clubId, $semesterId),
+            $filename
+        );
     }
 }

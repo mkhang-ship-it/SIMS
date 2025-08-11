@@ -1,12 +1,4 @@
 <?php
-// Updated: Hiển thị thành viên theo bảng UserClubRole dựa vào session('club_id'), eager load user, major, course, role
-// Features: Full CRUD for members với file upload avatar, hiển thị thành viên theo club qua bảng user_club_roles
-// Update: Khi chỉnh sửa thành viên, cập nhật đồng thời bảng users và user_club_roles (role, status)
-// Fields: name, email, password, avatar (file upload), gender, birthday, identity_card_code, phone, student_code, major_id, course_id, role_id, status
-// Modified: Chỉ hiển thị chuyên ngành con trong dropdown, thêm xử lý file upload, lấy thành viên qua UserClubRole
-// [2024-12-19] Updated: Modified destroy method to only remove member from club (delete UserClubRole) instead of deleting user completely from system
-// [2024-12-19] Updated: Modified logic to match admin system - uses unique email validation and creates new users only, with email checking for UX
-// [2024-12-19] Updated: Added assignToClub functionality to assign existing users to club
 
 namespace App\Http\Controllers\Club;
 
@@ -21,6 +13,12 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use App\Imports\MemberImport;
+use App\Exports\MemberTemplateExport;
+use App\Exports\MemberExport;
+use App\Models\Semester;
+use App\Models\Club;
+use Maatwebsite\Excel\Facades\Excel;
 
 class MemberController extends Controller
 {
@@ -248,10 +246,7 @@ class MemberController extends Controller
         try {
             // Delete related data for this user in this specific club
             // Delete award recipients for this user in this club
-            \App\Models\AwardRecipient::where('user_id', $member->id)
-                ->whereHas('award', function ($query) use ($clubId) {
-                    $query->where('club_id', $clubId);
-                })
+            \App\Models\AwardRecipient::where('user_club_role_id', $userClubRole->id)
                 ->delete();
 
             // Delete invoices and their transactions for this user in this club
@@ -329,6 +324,112 @@ class MemberController extends Controller
             return redirect()->route('backend.club.members.index')->with('success', 'Thành viên đã được gán vào câu lạc bộ thành công!');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Có lỗi xảy ra khi gán thành viên: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Import members from Excel file
+     */
+    public function import(Request $request)
+    {
+        $user = Auth::user();
+        $clubId = session('club_id');
+
+        $validatedData = $request->validate([
+            'import_file' => 'required|file|mimes:xlsx,xls,csv'
+        ], [
+            'import_file.required' => 'Vui lòng chọn file để import.',
+            'import_file.file' => 'File upload không hợp lệ.',
+            'import_file.mimes' => 'File phải có định dạng Excel (.xlsx, .xls) hoặc CSV.'
+        ]);
+
+        try {
+            $import = new MemberImport($clubId);
+            Excel::import($import, $request->file('import_file'));
+
+            $importedCount = $import->getImportedCount();
+            $addedToClubCount = $import->getAddedToClubCount();
+            $errors = $import->getErrors();
+
+            $message = "";
+            if ($importedCount > 0) {
+                $message .= "Tạo mới thành công {$importedCount} tài khoản! ";
+            }
+            if ($addedToClubCount > 0) {
+                $message .= "Thêm vào câu lạc bộ thành công {$addedToClubCount} thành viên! ";
+            }
+
+            if (empty($message)) {
+                $message = "Không có thành viên nào được import.";
+            }
+
+            if (!empty($errors)) {
+                $errorMessage = implode("<br>", $errors);
+                $message .= " Một số lỗi xảy ra:<br>" . $errorMessage;
+
+                return redirect()->route('backend.club.members.index')
+                    ->with('warning', $message);
+            }
+
+            return redirect()->route('backend.club.members.index')
+                ->with('success', $message);
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            $failures = $e->failures();
+            $errorMessages = [];
+
+            foreach ($failures as $failure) {
+                $errorMessages[] = "Dòng {$failure->row()}: " . implode(', ', $failure->errors());
+            }
+
+            return redirect()->back()
+                ->with('error', 'Lỗi validation khi import:\n' . implode('\n', $errorMessages));
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Có lỗi xảy ra khi import file: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Export member import template
+     */
+    public function exportTemplate()
+    {
+        $user = Auth::user();
+        $clubId = session('club_id');
+
+        try {
+            return Excel::download(
+                new MemberTemplateExport($clubId),
+                'File Mẫu Import Thành Viên.xlsx'
+            );
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Có lỗi xảy ra khi tải file mẫu: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Export members data to Excel
+     */
+    public function exportMembersExcel(Request $request)
+    {
+        $clubId = session('club_id');
+        $semesterId = $request->query('semester_id') ?? Semester::getCurrentSemester()?->id;
+
+        // Get club name for filename
+        $club = Club::find($clubId);
+        $clubName = $club ? $club->name : 'CLB';
+
+        $filename = 'Danh Sách Thành Viên - ' . $clubName . '.xlsx';
+
+        try {
+            return Excel::download(
+                new MemberExport($clubId, $semesterId, $clubName),
+                $filename
+            );
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Có lỗi xảy ra khi xuất dữ liệu: ' . $e->getMessage());
         }
     }
 }

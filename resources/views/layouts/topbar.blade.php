@@ -265,10 +265,10 @@
                     aria-labelledby="mainHeaderProfile">
                     <li><a class="dropdown-item d-flex"
                             href="@if (session('club_id')) {{ route('backend.club.my-profile.index') }}@else{{ route('backend.my-profile.index') }} @endif"><i
-                                class="ti ti-user-circle fs-18 me-2 op-7"></i>Thông tin cá nhân</a></li>
+                                class="ti ti-user-circle fs-18 me-2 op-7"></i>Thông Tin Cá Nhân</a></li>
                     <li><a class="dropdown-item d-flex text-danger"
                             onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
-                            style="cursor: pointer;"><i class="ti ti-logout fs-18 me-2 op-7"></i>Đăng xuất</a></li>
+                            style="cursor: pointer;"><i class="ti ti-logout fs-18 me-2 op-7"></i>Đăng Xuất</a></li>
                     <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                         @csrf
                     </form>

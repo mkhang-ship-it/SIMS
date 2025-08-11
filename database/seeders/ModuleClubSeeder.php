@@ -164,6 +164,29 @@ class ModuleClubSeeder extends Seeder
                     ['name' => 'view', 'display_name' => 'Xem'],
                     ['name' => 'delete', 'display_name' => 'Xóa'],
                 ]
+            ],
+            [
+                'module_code' => 'discipline_management',
+                'name' => 'Quản Lý Kỷ Luật',
+                'permissions' => [
+                    ['name' => 'view', 'display_name' => 'Xem'],
+                    ['name' => 'create', 'display_name' => 'Tạo mới'],
+                    ['name' => 'edit', 'display_name' => 'Chỉnh sửa'],
+                    ['name' => 'delete', 'display_name' => 'Xóa']
+                ]
+            ],
+            [
+                'module_code' => 'discipline_record_management',
+                'name' => 'Quản Lý Điểm Thành Viên',
+                'permissions' => [
+                    ['name' => 'view', 'display_name' => 'Xem'],
+                    ['name' => 'create', 'display_name' => 'Tạo mới'],
+                    ['name' => 'edit', 'display_name' => 'Chỉnh sửa'],
+                    ['name' => 'delete', 'display_name' => 'Xóa'],
+                    ['name' => 'view_summary', 'display_name' => 'Xem tổng hợp'],
+                    ['name' => 'revoke', 'display_name' => 'Thu hồi'],
+                    ['name' => 'my_points', 'display_name' => 'Điểm của tôi']
+                ]
             ]
         ];
 

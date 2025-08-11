@@ -858,8 +858,8 @@
 
     {{-- Modal xóa tất cả phiên --}}
     <div class="modal fade" id="destroyAllSessionsModal" tabindex="-1" aria-labelledby="destroyAllSessionsModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog">
+        aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <form method="POST" action="{{ route('backend.club.my-profile.destroy-all-sessions') }}">
                     @csrf

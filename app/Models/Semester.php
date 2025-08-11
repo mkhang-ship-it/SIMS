@@ -26,4 +26,16 @@ class Semester extends Model
         'start_date' => 'date',
         'end_date' => 'date',
     ];
+
+    /**
+     * Get the current active semester (most recent by start_date)
+     *
+     * @return Semester|null
+     */
+    public static function getCurrentSemester()
+    {
+        return self::where('status', 'active')
+            ->orderBy('start_date', 'desc')
+            ->first();
+    }
 }

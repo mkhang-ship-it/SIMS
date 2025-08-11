@@ -136,6 +136,14 @@ class ModuleSeeder extends Seeder
                 ]
             ],
             [
+                'module_code' => 'discipline_record_management',
+                'name' => 'Quản Lý Điểm Thành Viên',
+                'permissions' => [
+                    ['name' => 'view', 'display_name' => 'Xem'],
+                    ['name' => 'view_summary', 'display_name' => 'Xem tổng hợp'],
+                ]
+            ],
+            [
                 'module_code' => 'setting_management',
                 'name' => 'Quản Lý Cài Đặt',
                 'permissions' => [

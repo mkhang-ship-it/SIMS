@@ -15,9 +15,15 @@
             <h1 class="page-title fw-semibold fs-18 mb-2 mb-md-0">Quản Lý Thành Viên</h1>
 
             <!-- Nút trên desktop -->
-            @if (auth()->user()->hasPermissionForModuleCode('member_management', 'create', 'central'))
-                <div class="d-none d-md-block">
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMemberModal">
+            <div class="d-none d-md-block">
+                @if (auth()->user()->hasPermissionForModuleCode('member_management', 'view', 'central'))
+                    <button class="btn btn-info me-2" onclick="exportMembers()">
+                        <i class="ti ti-download"></i>
+                        Xuất Excel
+                    </button>
+                @endif
+                @if (auth()->user()->hasPermissionForModuleCode('member_management', 'create', 'central'))
+                    <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#addMemberModal">
                         <i class="ti ti-plus"></i>
                         Thêm Thành Viên
                     </button>
@@ -25,8 +31,8 @@
                         <i class="ti ti-user-plus"></i>
                         Thêm Thành Viên Vào Câu Lạc Bộ
                     </button>
-                </div>
-            @endif
+                @endif
+            </div>
             <!-- Dropdown trên mobile -->
             <div class="dropdown d-md-none">
                 <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown"
@@ -34,6 +40,16 @@
                     Hành động
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
+                    @if (auth()->user()->hasPermissionForModuleCode('member_management', 'view', 'central'))
+                        <li>
+                            <a class="dropdown-item" href="#" onclick="exportMembers()">
+                                <i class="ti ti-download"></i> Xuất Excel
+                            </a>
+                        </li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                    @endif
                     @if (auth()->user()->hasPermissionForModuleCode('member_management', 'create', 'central'))
                         <li>
                             <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#addMemberModal">
@@ -303,7 +319,8 @@
                                                                             <input type="text" class="form-control"
                                                                                 id="edit_identity_card_code{{ $member->id }}"
                                                                                 name="identity_card_code"
-                                                                                value="{{ $member->identity_card_code }}" required>
+                                                                                value="{{ $member->identity_card_code }}"
+                                                                                required>
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -317,7 +334,8 @@
                                                                             <input type="text" class="form-control"
                                                                                 id="edit_student_code{{ $member->id }}"
                                                                                 name="student_code"
-                                                                                value="{{ $member->student_code }}" required>
+                                                                                value="{{ $member->student_code }}"
+                                                                                required>
                                                                         </div>
                                                                     </div>
                                                                     <div class="col-md-6">
@@ -894,5 +912,17 @@
                 $('#email-exists-alert').addClass('d-none');
             }
         });
+
+        // Export members function
+        function exportMembers() {
+            const clubId = $('#clubFilter').val();
+            let url = '{{ route('backend.members.export') }}';
+
+            if (clubId) {
+                url += '?club_id=' + clubId;
+            }
+
+            window.open(url, '_self');
+        }
     </script>
 @endsection

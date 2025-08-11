@@ -16,6 +16,9 @@ use App\Http\Controllers\Club\RoleController as ClubRoleController;
 use App\Http\Controllers\Club\DashboardController as ClubDashboardController;
 use App\Http\Controllers\Club\MemberController as ClubMemberController;
 use App\Http\Controllers\Club\AwardController as ClubAwardController;
+use App\Http\Controllers\Club\DisciplineController as ClubDisciplineController;
+use App\Http\Controllers\Club\DisciplineRecordController as ClubDisciplineRecordController;
+use App\Http\Controllers\DisciplineRecordController;
 use App\Http\Controllers\Club\EventController as ClubEventController;
 use App\Http\Controllers\Club\EventPlanController as ClubEventPlanController;
 use App\Http\Controllers\Club\CheckinController as ClubCheckinController;
@@ -177,6 +180,11 @@ Route::middleware(['auth', 'logsystem'])->group(function () {
         Route::put('/quotes/{quote}', [QuoteController::class, 'update'])->name('quotes.update')->middleware('CheckPermission:quote_management,edit,central');
         Route::delete('/quotes/{quote}', [QuoteController::class, 'destroy'])->name('quotes.destroy')->middleware('CheckPermission:quote_management,delete,central');
 
+        // Discipline Records Management Routes (Central)
+        Route::get('/discipline-records', [DisciplineRecordController::class, 'index'])->name('discipline-records.index')->middleware('CheckPermission:discipline_record_management,view,central');
+        Route::get('/discipline-records/summary', [DisciplineRecordController::class, 'summary'])->name('discipline-records.summary')->middleware('CheckPermission:discipline_record_management,view_summary,central');
+        Route::get('/discipline-records/summary/export', [DisciplineRecordController::class, 'exportSummary'])->name('discipline-records.summary.export')->middleware('CheckPermission:discipline_record_management,view_summary,central');
+
         // Members routes
         Route::get('/members', [MemberController::class, 'index'])->name('members.index')->middleware('CheckPermission:member_management,view,central');
         Route::post('/members', [MemberController::class, 'store'])->name('members.store')->middleware('CheckPermission:member_management,create,central');
@@ -187,8 +195,7 @@ Route::middleware(['auth', 'logsystem'])->group(function () {
         Route::post('/members/update-club-role', [MemberController::class, 'updateClubRole'])->name('members.update-club-role')->middleware('CheckPermission:member_management,edit,central');
         Route::get('/members/get-club-roles', [MemberController::class, 'getClubRoles'])->name('members.get-club-roles')->middleware('CheckPermission:member_management,view,central');
         Route::get('/members/check-email', [MemberController::class, 'checkUserEmail'])->name('members.check-email')->middleware('CheckPermission:member_management,view,central');
-
-
+        Route::get('/members/export/excel', [MemberController::class, 'exportMembersExcel'])->name('members.export')->middleware('CheckPermission:member_management,view,central');
 
         // Admin Settings routes
         Route::get('/settings', [SettingController::class, 'index'])->name('settings.index')->middleware('CheckPermission:setting_management,view,central');
@@ -266,6 +273,9 @@ Route::middleware(['auth', 'logsystem'])->prefix('club')->group(function () {
         Route::delete('/members/{member}', [ClubMemberController::class, 'destroy'])->name('members.destroy')->middleware('CheckPermission:member_management,delete,branch');
         Route::get('/members/check/email', [ClubMemberController::class, 'checkUserEmail'])->name('members.check-email')->middleware('CheckPermission:member_management,view,branch');
         Route::post('/members/assign/to-club', [ClubMemberController::class, 'assignToClub'])->name('members.assign-to-club')->middleware('CheckPermission:member_management,create,branch');
+        Route::post('/members/import/excel', [ClubMemberController::class, 'import'])->name('members.import')->middleware('CheckPermission:member_management,create,branch');
+        Route::get('/members/export/template', [ClubMemberController::class, 'exportTemplate'])->name('members.export-template')->middleware('CheckPermission:member_management,view,branch');
+        Route::get('/members/export/excel', [ClubMemberController::class, 'exportMembersExcel'])->name('members.export')->middleware('CheckPermission:member_management,view,branch');
 
         // Awards routes
         Route::get('/awards', [ClubAwardController::class, 'index'])->name('awards.index')->middleware('CheckPermission:award_management,view,branch');
@@ -279,6 +289,23 @@ Route::middleware(['auth', 'logsystem'])->prefix('club')->group(function () {
         Route::put('/awards/{award}/recipients/{recipient}', [ClubAwardController::class, 'updateRecipient'])->name('awards.recipients.update')->middleware('CheckPermission:award_management,edit,branch');
         Route::delete('/awards/{award}/recipients/{recipient}', [ClubAwardController::class, 'destroyRecipient'])->name('awards.recipients.destroy')->middleware('CheckPermission:award_management,delete,branch');
 
+        // Disciplines routes
+        Route::get('/disciplines', [ClubDisciplineController::class, 'index'])->name('disciplines.index')->middleware('CheckPermission:discipline_management,view,branch');
+        Route::post('/disciplines', [ClubDisciplineController::class, 'store'])->name('disciplines.store')->middleware('CheckPermission:discipline_management,create,branch');
+        Route::put('/disciplines/{discipline}', [ClubDisciplineController::class, 'update'])->name('disciplines.update')->middleware('CheckPermission:discipline_management,edit,branch');
+        Route::delete('/disciplines/{discipline}', [ClubDisciplineController::class, 'destroy'])->name('disciplines.destroy')->middleware('CheckPermission:discipline_management,delete,branch');
+        Route::post('/disciplines/import', [ClubDisciplineController::class, 'import'])->name('disciplines.import')->middleware('CheckPermission:discipline_management,create,branch');
+        Route::get('/disciplines/export-template', [ClubDisciplineController::class, 'exportTemplate'])->name('disciplines.export-template')->middleware('CheckPermission:discipline_management,view,branch');
+
+        // Discipline Records routes
+        Route::get('/discipline-records', [ClubDisciplineRecordController::class, 'index'])->name('discipline-records.index')->middleware('CheckPermission:discipline_record_management,view,branch');
+        Route::post('/discipline-records', [ClubDisciplineRecordController::class, 'store'])->name('discipline-records.store')->middleware('CheckPermission:discipline_record_management,create,branch');
+        Route::put('/discipline-records/{disciplineRecord}', [ClubDisciplineRecordController::class, 'update'])->name('discipline-records.update')->middleware('CheckPermission:discipline_record_management,edit,branch');
+        Route::patch('/discipline-records/{disciplineRecord}/revoke', [ClubDisciplineRecordController::class, 'revoke'])->name('discipline-records.revoke')->middleware('CheckPermission:discipline_record_management,revoke,branch');
+        Route::delete('/discipline-records/{disciplineRecord}', [ClubDisciplineRecordController::class, 'destroy'])->name('discipline-records.destroy')->middleware('CheckPermission:discipline_record_management,delete,branch');
+        Route::get('/discipline-records/summary', [ClubDisciplineRecordController::class, 'summary'])->name('discipline-records.summary')->middleware('CheckPermission:discipline_record_management,view_summary,branch');
+        Route::get('/discipline-records/summary/export', [ClubDisciplineRecordController::class, 'exportSummary'])->name('discipline-records.summary.export')->middleware('CheckPermission:discipline_record_management,view_summary,branch');
+        Route::get('/discipline-records/mypoints', [ClubDisciplineRecordController::class, 'myPoints'])->name('discipline-records.my-points')->middleware('CheckPermission:discipline_record_management,my_points,branch');
         // Events routes
         Route::get('/events', [ClubEventController::class, 'index'])->name('events.index')->middleware('CheckPermission:event_management,view,branch');
         Route::post('/events', [ClubEventController::class, 'store'])->name('events.store')->middleware('CheckPermission:event_management,create,branch');
@@ -356,6 +383,8 @@ Route::middleware(['auth', 'logsystem'])->prefix('club')->group(function () {
 
         // My Invoices route for members
         Route::get('/my-invoices', [ClubInvoiceController::class, 'myInvoices'])->name('invoices.my-invoices')->middleware('CheckPermission:invoice_management,my_invoices,branch');
+
+
 
         // Expenses routes
         Route::get('/expenses', [ClubExpenseController::class, 'index'])->name('expenses.index')->middleware('CheckPermission:expense_management,view,branch');

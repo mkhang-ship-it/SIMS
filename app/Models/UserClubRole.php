@@ -44,4 +44,12 @@ class UserClubRole extends Model
     {
         return $this->belongsTo(Role::class);
     }
+
+    /**
+     * Scope to get user club roles by club
+     */
+    public function scopeByClub($query, $clubId)
+    {
+        return $query->where('club_id', $clubId);
+    }
 }

@@ -93,7 +93,17 @@ Changes made:
                             <a href="{{ route('backend.dashboard') }}"
                                 class="side-menu__item {{ request()->routeIs('backend.dashboard') ? 'active' : '' }}">
                                 <i class="bx bx-home side-menu__icon"></i>
-                                <span class="side-menu__label">Dashboard</span>
+                                <span class="side-menu__label">Tổng Quan</span>
+                            </a>
+                        </li>
+                    @endif
+
+                    @if (auth()->user()->hasPermissionForModuleCode('notification_management', 'view', 'central'))
+                        <li class="slide {{ request()->routeIs('backend.notifications.index') ? 'active' : '' }}">
+                            <a href="{{ route('backend.notifications.index') }}"
+                                class="side-menu__item {{ request()->routeIs('backend.notifications.index') ? 'active' : '' }}">
+                                <i class="las la-bell side-menu__icon"></i>
+                                <span class="side-menu__label">Quản Lý Thông Báo</span>
                             </a>
                         </li>
                     @endif
@@ -132,22 +142,12 @@ Changes made:
                         </li>
                     @endif
 
-                    @if (auth()->user()->hasPermissionForModuleCode('session_management', 'view', 'central'))
-                        <li class="slide {{ request()->routeIs('backend.sessions.index') ? 'active' : '' }}">
-                            <a href="{{ route('backend.sessions.index') }}"
-                                class="side-menu__item {{ request()->routeIs('backend.sessions.index') ? 'active' : '' }}">
-                                <i class="las la-desktop side-menu__icon"></i>
-                                <span class="side-menu__label">Quản Lý Phiên</span>
-                            </a>
-                        </li>
-                    @endif
-
-                    @if (auth()->user()->hasPermissionForModuleCode('log_management', 'view', 'central'))
-                        <li class="slide {{ request()->routeIs('backend.logs.*') ? 'active' : '' }}">
-                            <a href="{{ route('backend.logs.index') }}"
-                                class="side-menu__item {{ request()->routeIs('backend.logs.*') ? 'active' : '' }}">
-                                <i class="las la-file-alt side-menu__icon"></i>
-                                <span class="side-menu__label">Quản Lý Log</span>
+                    @if (auth()->user()->hasPermissionForModuleCode('discipline_record_management', 'view', 'central'))
+                        <li class="slide {{ request()->routeIs('backend.discipline-records.*') ? 'active' : '' }}">
+                            <a href="{{ route('backend.discipline-records.index') }}"
+                                class="side-menu__item {{ request()->routeIs('backend.discipline-records.*') ? 'active' : '' }}">
+                                <i class="las la-chart-line side-menu__icon"></i>
+                                <span class="side-menu__label">Quản Lý Điểm</span>
                             </a>
                         </li>
                     @endif
@@ -276,15 +276,26 @@ Changes made:
                         </li>
                     @endif
 
-                    @if (auth()->user()->hasPermissionForModuleCode('notification_management', 'view', 'central'))
-                        <li class="slide {{ request()->routeIs('backend.notifications.index') ? 'active' : '' }}">
-                            <a href="{{ route('backend.notifications.index') }}"
-                                class="side-menu__item {{ request()->routeIs('backend.notifications.index') ? 'active' : '' }}">
-                                <i class="las la-bell side-menu__icon"></i>
-                                <span class="side-menu__label">Quản Lý Thông Báo</span>
+                    @if (auth()->user()->hasPermissionForModuleCode('session_management', 'view', 'central'))
+                        <li class="slide {{ request()->routeIs('backend.sessions.index') ? 'active' : '' }}">
+                            <a href="{{ route('backend.sessions.index') }}"
+                                class="side-menu__item {{ request()->routeIs('backend.sessions.index') ? 'active' : '' }}">
+                                <i class="las la-desktop side-menu__icon"></i>
+                                <span class="side-menu__label">Quản Lý Phiên</span>
                             </a>
                         </li>
                     @endif
+
+                    @if (auth()->user()->hasPermissionForModuleCode('log_management', 'view', 'central'))
+                        <li class="slide {{ request()->routeIs('backend.logs.*') ? 'active' : '' }}">
+                            <a href="{{ route('backend.logs.index') }}"
+                                class="side-menu__item {{ request()->routeIs('backend.logs.*') ? 'active' : '' }}">
+                                <i class="las la-file-alt side-menu__icon"></i>
+                                <span class="side-menu__label">Quản Lý Log</span>
+                            </a>
+                        </li>
+                    @endif
+
 
                     @if (auth()->user()->hasPermissionForModuleCode('feature_request_management', 'view', 'central'))
                         <li class="slide {{ request()->routeIs('backend.feature-requests.index') ? 'active' : '' }}">
@@ -307,7 +318,19 @@ Changes made:
                             <a href="{{ route('backend.club.dashboard') }}"
                                 class="side-menu__item {{ request()->routeIs('backend.club.dashboard') ? 'active' : '' }}">
                                 <i class="bx bx-home side-menu__icon"></i>
-                                <span class="side-menu__label">Dashboard</span>
+                                <span class="side-menu__label">Tổng Quan</span>
+                            </a>
+                        </li>
+                    @endif
+
+                    @if (auth()->user()->hasPermissionForModuleCode('notification_management', 'view', 'branch'))
+                        <li
+                            class="slide {{ request()->routeIs('backend.club.notifications.index') ? 'active' : '' }}">
+                            <a href="{{ route('backend.club.notifications.index') }}"
+                                class="side-menu__item {{ request()->routeIs('backend.club.notifications.index') ? 'active' : '' }}">
+                                <i class="las la-bell side-menu__icon"></i>
+                                <span class="side-menu__label">Thông Báo<span
+                                        class="badge bg-warning-transparent notification-badge ms-2">0</span></span>
                             </a>
                         </li>
                     @endif
@@ -336,15 +359,7 @@ Changes made:
                         </li>
                     @endif
 
-                    @if (auth()->user()->hasPermissionForModuleCode('session_management', 'view', 'branch'))
-                        <li class="slide {{ request()->routeIs('backend.club.sessions.index') ? 'active' : '' }}">
-                            <a href="{{ route('backend.club.sessions.index') }}"
-                                class="side-menu__item {{ request()->routeIs('backend.club.sessions.index') ? 'active' : '' }}">
-                                <i class="las la-desktop side-menu__icon"></i>
-                                <span class="side-menu__label">Quản Lý Phiên</span>
-                            </a>
-                        </li>
-                    @endif
+
 
 
 
@@ -354,6 +369,38 @@ Changes made:
                                 class="side-menu__item {{ request()->routeIs('backend.club.awards.index') ? 'active' : '' }}">
                                 <i class="las la-trophy side-menu__icon"></i>
                                 <span class="side-menu__label">Quản Lý Giải Thưởng</span>
+                            </a>
+                        </li>
+                    @endif
+
+                    @if (auth()->user()->hasPermissionForModuleCode('discipline_management', 'view', 'branch'))
+                        <li class="slide {{ request()->routeIs('backend.club.disciplines.index') ? 'active' : '' }}">
+                            <a href="{{ route('backend.club.disciplines.index') }}"
+                                class="side-menu__item {{ request()->routeIs('backend.club.disciplines.index') ? 'active' : '' }}">
+                                <i class="las la-exclamation-triangle side-menu__icon"></i>
+                                <span class="side-menu__label">Quản Lý Kỷ Luật</span>
+                            </a>
+                        </li>
+                    @endif
+
+                    @if (auth()->user()->hasPermissionForModuleCode('discipline_record_management', 'view', 'branch'))
+                        <li
+                            class="slide {{ request()->routeIs('backend.club.discipline-records.*') ? 'active' : '' }}">
+                            <a href="{{ route('backend.club.discipline-records.index') }}"
+                                class="side-menu__item {{ request()->routeIs('backend.club.discipline-records.*') ? 'active' : '' }}">
+                                <i class="las la-clipboard-list side-menu__icon"></i>
+                                <span class="side-menu__label">Quản Lý Điểm</span>
+                            </a>
+                        </li>
+                    @endif
+
+                    @if (auth()->user()->hasPermissionForModuleCode('discipline_record_management', 'my_points', 'branch'))
+                        <li
+                            class="slide {{ request()->routeIs('backend.club.discipline-records.my-points') ? 'active' : '' }}">
+                            <a href="{{ route('backend.club.discipline-records.my-points') }}"
+                                class="side-menu__item {{ request()->routeIs('backend.club.discipline-records.my-points') ? 'active' : '' }}">
+                                <i class="las la-chart-line side-menu__icon"></i>
+                                <span class="side-menu__label">Điểm Của Tôi</span>
                             </a>
                         </li>
                     @endif
@@ -476,17 +523,7 @@ Changes made:
                         </li>
                     @endif
 
-                    @if (auth()->user()->hasPermissionForModuleCode('notification_management', 'view', 'branch'))
-                        <li
-                            class="slide {{ request()->routeIs('backend.club.notifications.index') ? 'active' : '' }}">
-                            <a href="{{ route('backend.club.notifications.index') }}"
-                                class="side-menu__item {{ request()->routeIs('backend.club.notifications.index') ? 'active' : '' }}">
-                                <i class="las la-bell side-menu__icon"></i>
-                                <span class="side-menu__label">Thông Báo<span
-                                        class="badge bg-warning-transparent notification-badge ms-2">0</span></span>
-                            </a>
-                        </li>
-                    @endif
+
 
                     @if (auth()->user()->hasPermissionForModuleCode('feature_request_management', 'view', 'branch'))
                         <li
@@ -495,6 +532,16 @@ Changes made:
                                 class="side-menu__item {{ request()->routeIs('backend.club.feature-requests.*') ? 'active' : '' }}">
                                 <i class="las la-lightbulb side-menu__icon"></i>
                                 <span class="side-menu__label">Yêu Cầu Tính Năng</span>
+                            </a>
+                        </li>
+                    @endif
+
+                    @if (auth()->user()->hasPermissionForModuleCode('session_management', 'view', 'branch'))
+                        <li class="slide {{ request()->routeIs('backend.club.sessions.index') ? 'active' : '' }}">
+                            <a href="{{ route('backend.club.sessions.index') }}"
+                                class="side-menu__item {{ request()->routeIs('backend.club.sessions.index') ? 'active' : '' }}">
+                                <i class="las la-desktop side-menu__icon"></i>
+                                <span class="side-menu__label">Quản Lý Phiên</span>
                             </a>
                         </li>
                     @endif

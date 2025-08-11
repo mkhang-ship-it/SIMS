@@ -1,4 +1,5 @@
 <?php
+// [2024-12-19] Fixed: Updated awards and awardRecipients relationships to use proper hasManyThrough with user_club_role_id
 
 namespace App\Models;
 
@@ -59,6 +60,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'birthday' => 'date',
         ];
     }
 
@@ -162,14 +164,21 @@ class User extends Authenticatable
     }
 
     /**
-     * Get all awards received by this user
+     * Get all awards received by this user through user_club_roles
      */
     public function awards()
     {
-        return $this->belongsToMany(Award::class, 'award_recipients', 'user_id', 'award_id')
-            ->withPivot('attachment')
-            ->withTimestamps()
-            ->using(AwardRecipient::class);
+        return $this->hasManyThrough(
+            Award::class,
+            UserClubRole::class,
+            'user_id', // Foreign key on user_club_roles table
+            'id', // Foreign key on awards table
+            'id', // Local key on users table
+            'id' // Local key on user_club_roles table
+        )->join('award_recipients', function ($join) {
+            $join->on('awards.id', '=', 'award_recipients.award_id')
+                ->on('user_club_roles.id', '=', 'award_recipients.user_club_role_id');
+        });
     }
 
     /**
@@ -177,7 +186,14 @@ class User extends Authenticatable
      */
     public function awardRecipients()
     {
-        return $this->hasMany(AwardRecipient::class);
+        return $this->hasManyThrough(
+            AwardRecipient::class,
+            UserClubRole::class,
+            'user_id', // Foreign key on user_club_roles table
+            'user_club_role_id', // Foreign key on award_recipients table
+            'id', // Local key on users table
+            'id' // Local key on user_club_roles table
+        );
     }
 
     /**

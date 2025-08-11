@@ -11,9 +11,19 @@
             <h1 class="page-title fw-semibold fs-18 mb-2 mb-md-0">Quản Lý Thành Viên</h1>
 
             <!-- Nút trên desktop -->
-            @if (auth()->user()->hasPermissionForModuleCode('member_management', 'create', 'branch'))
-                <div class="d-none d-md-block">
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMemberModal">
+            <div class="d-none d-md-block">
+                @if (auth()->user()->hasPermissionForModuleCode('member_management', 'view', 'branch'))
+                    <button class="btn btn-secondary me-2" onclick="exportMembers()">
+                        <i class="ti ti-download"></i>
+                        Xuất Excel
+                    </button>
+                @endif
+                @if (auth()->user()->hasPermissionForModuleCode('member_management', 'create', 'branch'))
+                    <button class="btn btn-info me-2" data-bs-toggle="modal" data-bs-target="#importMemberModal">
+                        <i class="ti ti-file-import"></i>
+                        Import Excel
+                    </button>
+                    <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#addMemberModal">
                         <i class="ti ti-plus"></i>
                         Thêm Mới
                     </button>
@@ -21,8 +31,8 @@
                         <i class="ti ti-user-plus"></i>
                         Gán Thành Viên
                     </button>
-                </div>
-            @endif
+                @endif
+            </div>
             <!-- Dropdown trên mobile -->
             <div class="dropdown d-md-none">
                 <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown"
@@ -30,7 +40,23 @@
                     Hành động
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
+                    @if (auth()->user()->hasPermissionForModuleCode('member_management', 'view', 'branch'))
+                        <li>
+                            <a class="dropdown-item" href="#" onclick="exportMembers()">
+                                <i class="ti ti-download"></i> Xuất Excel
+                            </a>
+                        </li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                    @endif
                     @if (auth()->user()->hasPermissionForModuleCode('member_management', 'create', 'branch'))
+                        <li>
+                            <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                data-bs-target="#importMemberModal">
+                                <i class="ti ti-file-import"></i> Import Excel
+                            </a>
+                        </li>
                         <li>
                             <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#addMemberModal">
                                 <i class="ti ti-plus"></i> Thêm Thành Viên
@@ -183,8 +209,8 @@
                                                                 Thành
                                                                 Viên
                                                             </h5>
-                                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                                aria-label="Close"></button>
+                                                            <button type="button" class="btn-close"
+                                                                data-bs-dismiss="modal" aria-label="Close"></button>
                                                         </div>
                                                         <form
                                                             action="{{ route('backend.club.members.update', $member->user->id) }}"
@@ -250,7 +276,8 @@
                                                                             <input type="date" class="form-control"
                                                                                 id="edit_birthday{{ $member->user->id }}"
                                                                                 name="birthday"
-                                                                                value="{{ $member->user->birthday }}" required>
+                                                                                value="{{ $member->user->birthday }}"
+                                                                                required>
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -264,7 +291,8 @@
                                                                             <input type="text" class="form-control"
                                                                                 id="edit_identity_card_code{{ $member->user->id }}"
                                                                                 name="identity_card_code"
-                                                                                value="{{ $member->user->identity_card_code }}" required>
+                                                                                value="{{ $member->user->identity_card_code }}"
+                                                                                required>
                                                                         </div>
                                                                     </div>
                                                                     <div class="col-md-6">
@@ -275,7 +303,8 @@
                                                                             <input type="text" class="form-control"
                                                                                 id="edit_phone{{ $member->user->id }}"
                                                                                 name="phone"
-                                                                                value="{{ $member->user->phone }}" required>
+                                                                                value="{{ $member->user->phone }}"
+                                                                                required>
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -290,7 +319,8 @@
                                                                             <input type="text" class="form-control"
                                                                                 id="edit_student_code{{ $member->user->id }}"
                                                                                 name="student_code"
-                                                                                value="{{ $member->user->student_code }}" required>
+                                                                                value="{{ $member->user->student_code }}"
+                                                                                required>
                                                                         </div>
                                                                     </div>
                                                                     <div class="col-md-6">
@@ -644,7 +674,8 @@
                                         <label for="add_identity_card_code" class="form-label">CCCD/CMND <span
                                                 class="text-danger">*</span></label>
                                         <input type="text" class="form-control" id="add_identity_card_code"
-                                            name="identity_card_code" value="{{ old('identity_card_code') }}" required disabled>
+                                            name="identity_card_code" value="{{ old('identity_card_code') }}" required
+                                            disabled>
                                         @error('identity_card_code')
                                             <div class="text-danger small">{{ $message }}</div>
                                         @enderror
@@ -699,7 +730,8 @@
                                     <div class="mb-3">
                                         <label for="add_course_id" class="form-label">Khóa Học <span
                                                 class="text-danger">*</span></label>
-                                        <select class="form-select" id="add_course_id" name="course_id" required disabled>
+                                        <select class="form-select" id="add_course_id" name="course_id" required
+                                            disabled>
                                             <option value="">Chọn khóa học</option>
                                             @foreach ($courses as $course)
                                                 <option value="{{ $course->id }}"
@@ -848,6 +880,55 @@
             </div>
         </div>
     @endif
+
+    <!-- Import Members Modal -->
+    @if (auth()->user()->hasPermissionForModuleCode('member_management', 'create', 'branch'))
+        <div class="modal fade" id="importMemberModal" tabindex="-1" aria-labelledby="importMemberModalLabel"
+            aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <form action="{{ route('backend.club.members.import') }}" method="POST"
+                        enctype="multipart/form-data">
+                        @csrf
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="importMemberModalLabel">
+                                <i class="ti ti-file-import"></i>
+                                Import Thành Viên từ Excel
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="text-center mb-3">
+                                <a href="{{ route('backend.club.members.export-template') }}" class="btn btn-info">
+                                    <i class="ti ti-download"></i>
+                                    Tải File Mẫu
+                                </a>
+                            </div>
+                            <div class="mb-3">
+                                <label for="import_file" class="form-label">
+                                    Chọn File Excel <span class="text-danger">*</span>
+                                </label>
+                                <input type="file" class="form-control" id="import_file" name="import_file"
+                                    accept=".xlsx,.xls,.csv" required>
+                                <small class="form-text text-muted">
+                                    Chỉ hỗ trợ file Excel (.xlsx, .xls) hoặc CSV (.csv).
+                                    <br>Nếu tài khoản đã tồn tại, sẽ chỉ thêm vào câu lạc bộ.
+                                </small>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                            <button type="submit" class="btn btn-success">
+                                <i class="ti ti-upload"></i>
+                                Import Dữ Liệu
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    @endif
 @endsection
 
 @section('scripts')
@@ -899,6 +980,12 @@
                 $('#email-exists-alert').addClass('d-none');
                 setAddMemberFieldsDisabled(false);
             });
+
+            // Export members function
+            window.exportMembers = function() {
+                const url = '{{ route('backend.club.members.export') }}';
+                window.open(url, '_self');
+            };
         });
     </script>
 @endsection

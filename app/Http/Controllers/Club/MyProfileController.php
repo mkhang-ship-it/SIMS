@@ -14,7 +14,6 @@ use App\Models\Course;
 use App\Models\Role;
 use App\Models\Province;
 use App\Models\Commune;
-use App\Models\UserBankAccount;
 
 class MyProfileController extends Controller
 {
@@ -152,6 +151,7 @@ class MyProfileController extends Controller
         }
         $user->password = Hash::make($request->password);
         $user->save();
+
         return back()->with('success', 'Đổi mật khẩu thành công!');
     }
 

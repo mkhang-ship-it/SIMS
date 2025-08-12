@@ -1,10 +1,11 @@
 <?php
 
-// LoginController.php - Updated to provide specific error messages, account status checking, and GitHub OAuth
+// LoginController.php - Updated to provide specific error messages, account status checking, GitHub and Microsoft OAuth
 // Methods: showLoginForm(), login(), logout() for handling user authentication
 // Added specific error messages for email not found vs wrong password, removed remember functionality
 // Added account status validation to prevent inactive users from logging in
 // Added GitHub OAuth methods: redirectToGitHub(), handleGitHubCallback() for social authentication
+// Added Microsoft OAuth methods: redirectToMicrosoft(), handleMicrosoftCallback() for Microsoft Azure authentication
 
 namespace App\Http\Controllers\Auth;
 
@@ -45,7 +46,7 @@ class LoginController extends Controller
         if (!$user) {
             // Email not found
             throw ValidationException::withMessages([
-                'email' => ['Email đã nhập không tồn tại trong hệ thống.'],
+                'email' => ['Email đã nhập không tồn tại trong hệ thống. Vui lòng liên hệ ban chủ nhiệm câu lạc bộ hoặc Phòng Công tác Sinh viên để được hỗ trợ.'],
             ]);
         }
 
@@ -158,7 +159,7 @@ class LoginController extends Controller
 
                 if (!$user) {
                     // User doesn't exist, redirect to login with error
-                    return redirect()->route('login')->with('error', 'Không tìm thấy tài khoản với email GitHub này. Vui lòng liên hệ quản trị viên để được tạo tài khoản.');
+                    return redirect()->route('login')->with('error', 'Không tìm thấy tài khoản với email GitHub này. Vui lòng liên hệ ban chủ nhiệm câu lạc bộ hoặc Phòng Công tác Sinh viên để được hỗ trợ.');
                 }
 
                 // Link GitHub ID to existing user
@@ -182,10 +183,108 @@ class LoginController extends Controller
                 $request->session()->forget('club_id');
                 return redirect()->intended(route('backend.dashboard'))->with('success', 'Đăng nhập GitHub thành công!');
             }
-
         } catch (\Exception $e) {
             Log::error('GitHub OAuth callback error: ' . $e->getMessage());
             return redirect()->route('login')->with('error', 'Có lỗi xảy ra trong quá trình đăng nhập GitHub. Vui lòng thử lại.');
+        }
+    }
+
+    /**
+     * Redirect the user to Microsoft authentication page
+     */
+    public function redirectToMicrosoft()
+    {
+        // Check if Microsoft OAuth is enabled
+        $microsoftOAuthEnabled = Setting::getValue(null, 'microsoft_oauth_enabled');
+        if ($microsoftOAuthEnabled !== '1') {
+            return redirect()->route('login')->with('error', 'Đăng nhập Microsoft không khả dụng.');
+        }
+
+        // Get Microsoft OAuth settings
+        $microsoftClientId = Setting::getValue(null, 'microsoft_client_id');
+        $microsoftClientSecret = Setting::getValue(null, 'microsoft_client_secret');
+
+        if (empty($microsoftClientId) || empty($microsoftClientSecret)) {
+            return redirect()->route('login')->with('error', 'Cấu hình Microsoft OAuth không hợp lệ.');
+        }
+
+        // Configure Socialite with dynamic settings
+        config([
+            'services.microsoft.client_id' => $microsoftClientId,
+            'services.microsoft.client_secret' => $microsoftClientSecret,
+            'services.microsoft.redirect' => route('auth.microsoft.callback'),
+            'services.microsoft.tenant' => Setting::getValue(null, 'microsoft_tenant_id') ?: 'common',
+        ]);
+
+        return Socialite::driver('microsoft')->redirect();
+    }
+
+    /**
+     * Handle Microsoft OAuth callback
+     */
+    public function handleMicrosoftCallback(Request $request)
+    {
+        try {
+            // Check if Microsoft OAuth is enabled
+            $microsoftOAuthEnabled = Setting::getValue(null, 'microsoft_oauth_enabled');
+            if ($microsoftOAuthEnabled !== '1') {
+                return redirect()->route('login')->with('error', 'Đăng nhập Microsoft không khả dụng.');
+            }
+
+            // Get Microsoft OAuth settings
+            $microsoftClientId = Setting::getValue(null, 'microsoft_client_id');
+            $microsoftClientSecret = Setting::getValue(null, 'microsoft_client_secret');
+
+            if (empty($microsoftClientId) || empty($microsoftClientSecret)) {
+                return redirect()->route('login')->with('error', 'Cấu hình Microsoft OAuth không hợp lệ.');
+            }
+
+            // Configure Socialite with dynamic settings
+            config([
+                'services.microsoft.client_id' => $microsoftClientId,
+                'services.microsoft.client_secret' => $microsoftClientSecret,
+                'services.microsoft.redirect' => route('auth.microsoft.callback'),
+                'services.microsoft.tenant' => Setting::getValue(null, 'microsoft_tenant_id') ?: 'common',
+            ]);
+
+            $microsoftUser = Socialite::driver('microsoft')->user();
+
+            // Check if user exists with this Microsoft ID
+            $user = User::where('microsoft_id', $microsoftUser->id)->first();
+
+            if (!$user) {
+                // Check if user exists with this email
+                $user = User::where('email', $microsoftUser->email)->first();
+
+                if (!$user) {
+                    // User doesn't exist, redirect to login with error
+                    return redirect()->route('login')->with('error', 'Không tìm thấy tài khoản với email Microsoft này. Vui lòng liên hệ ban chủ nhiệm câu lạc bộ hoặc Phòng Công tác Sinh viên để được hỗ trợ.');
+                }
+
+                // Link Microsoft ID to existing user
+                $user->update(['microsoft_id' => $microsoftUser->id]);
+            }
+
+            // Check if account is active
+            if ($user->status !== 'active') {
+                return redirect()->route('login')->with('error', 'Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ ban chủ nhiệm câu lạc bộ hoặc Phòng Công tác Sinh viên để được hỗ trợ.');
+            }
+
+            // Authentication successful
+            Auth::login($user);
+            $request->session()->regenerate();
+
+            // Redirect based on user's default club
+            if ($user->default_club_id) {
+                $request->session()->put('club_id', $user->default_club_id);
+                return redirect()->intended(route('backend.club.dashboard'))->with('success', 'Đăng nhập Microsoft thành công!');
+            } else {
+                $request->session()->forget('club_id');
+                return redirect()->intended(route('backend.dashboard'))->with('success', 'Đăng nhập Microsoft thành công!');
+            }
+        } catch (\Exception $e) {
+            Log::error('Microsoft OAuth callback error: ' . $e->getMessage());
+            return redirect()->route('login')->with('error', 'Có lỗi xảy ra trong quá trình đăng nhập Microsoft. Vui lòng thử lại.');
         }
     }
 }

@@ -1,4 +1,6 @@
 {{-- Partial: Admin Email Configuration --}}
+{{-- Added JavaScript to handle switching between SMTP and Outlook mailer fields --}}
+{{-- Fixes form validation error where mail_encryption field was required but hidden --}}
 <form action="{{ route('backend.settings.mail.update') }}" method="POST" id="mail-form">
     @csrf
     <div class="row mb-4">
@@ -19,12 +21,12 @@
             <div class="col-md-4 mb-3">
                 <label class="form-label fw-semibold">Host <span class="text-danger">*</span></label>
                 <input type="text" name="mail_host" class="form-control"
-                    value="{{ old('mail_host', $mailSettings['mail_host'] ?? '') }}">
+                    value="{{ old('mail_host', $mailSettings['mail_host'] ?? '') }}" required>
             </div>
             <div class="col-md-4 mb-3">
                 <label class="form-label fw-semibold">Port <span class="text-danger">*</span></label>
                 <input type="number" name="mail_port" class="form-control"
-                    value="{{ old('mail_port', $mailSettings['mail_port'] ?? '') }}">
+                    value="{{ old('mail_port', $mailSettings['mail_port'] ?? '') }}" required>
             </div>
             <div class="col-md-4 mb-3">
                 <label class="form-label fw-semibold">Encryption <span class="text-danger">*</span></label>
@@ -37,13 +39,13 @@
             <div class="col-md-6 mb-3">
                 <label class="form-label fw-semibold">Username <span class="text-danger">*</span></label>
                 <input type="text" name="mail_username" class="form-control"
-                    value="{{ old('mail_username', $mailSettings['mail_username'] ?? '') }}">
+                    value="{{ old('mail_username', $mailSettings['mail_username'] ?? '') }}" required>
             </div>
             <div class="col-md-6 mb-3">
                 <label class="form-label fw-semibold">Password <span class="text-danger">*</span></label>
                 <input type="password" name="mail_password" class="form-control"
-                    value="{{ old('mail_password', $mailSettings['mail_password'] ?? '') }}"
-                    autocomplete="new-password">
+                    value="{{ old('mail_password', $mailSettings['mail_password'] ?? '') }}" autocomplete="new-password"
+                    required>
             </div>
         </div>
     </div>
@@ -106,9 +108,73 @@
         </div>
     </div>
 </form>
-@if (session('success'))
-    <div class="alert alert-success mt-2">{{ session('success') }}</div>
-@endif
-@if (session('error'))
-    <div class="alert alert-danger mt-2">{{ session('error') }}</div>
-@endif
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const mailerSelect = document.getElementById('mail_mailer_select');
+        const smtpFields = document.getElementById('smtp-fields');
+        const outlookFields = document.getElementById('outlook-fields');
+
+        // Define specific field names that should be required for each mailer
+        const smtpRequiredFieldNames = ['mail_host', 'mail_port', 'mail_username', 'mail_password',
+            'mail_encryption'
+        ];
+        const outlookRequiredFieldNames = ['mail_outlook_client_id', 'mail_outlook_secret_id',
+            'mail_outlook_tenant_id'
+        ];
+
+        function toggleMailerFields() {
+            const selectedMailer = mailerSelect.value;
+
+            if (selectedMailer === 'smtp') {
+                // Show SMTP fields, hide Outlook fields
+                smtpFields.style.display = 'block';
+                outlookFields.style.display = 'none';
+
+                // Make SMTP fields required
+                smtpRequiredFieldNames.forEach(fieldName => {
+                    const field = document.querySelector(`input[name="${fieldName}"]`);
+                    if (field) field.setAttribute('required', 'required');
+                });
+
+                // Remove required from Outlook fields
+                outlookRequiredFieldNames.forEach(fieldName => {
+                    const field = document.querySelector(`input[name="${fieldName}"]`);
+                    if (field) field.removeAttribute('required');
+                });
+
+            } else if (selectedMailer === 'outlook') {
+                // Hide SMTP fields, show Outlook fields
+                smtpFields.style.display = 'none';
+                outlookFields.style.display = 'block';
+
+                // Remove required from SMTP fields
+                smtpRequiredFieldNames.forEach(fieldName => {
+                    const field = document.querySelector(`input[name="${fieldName}"]`);
+                    if (field) field.removeAttribute('required');
+                });
+
+                // Make Outlook fields required
+                outlookRequiredFieldNames.forEach(fieldName => {
+                    const field = document.querySelector(`input[name="${fieldName}"]`);
+                    if (field) field.setAttribute('required', 'required');
+                });
+            }
+        }
+
+        // Initial toggle on page load
+        toggleMailerFields();
+
+        // Toggle on mailer selection change
+        mailerSelect.addEventListener('change', toggleMailerFields);
+
+        // Add form submit handler to debug
+        document.getElementById('mail-form').addEventListener('submit', function(e) {
+            console.log('Form submitting with mailer:', mailerSelect.value);
+
+            // Log which fields are required
+            const requiredFields = this.querySelectorAll('input[required]');
+            console.log('Required fields:', Array.from(requiredFields).map(f => f.name));
+        });
+    });
+</script>

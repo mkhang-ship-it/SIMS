@@ -88,6 +88,10 @@ Route::middleware(['guest', 'logsystem'])->group(function () {
     // GitHub OAuth routes
     Route::get('/auth/github', [LoginController::class, 'redirectToGitHub'])->name('auth.github');
     Route::get('/auth/github/callback', [LoginController::class, 'handleGitHubCallback'])->name('auth.github.callback');
+
+    // Microsoft OAuth routes
+    Route::get('/auth/microsoft', [LoginController::class, 'redirectToMicrosoft'])->name('auth.microsoft');
+    Route::get('/auth/microsoft/callback', [LoginController::class, 'handleMicrosoftCallback'])->name('auth.microsoft.callback');
 });
 
 Route::middleware(['auth', 'logsystem'])->group(function () {

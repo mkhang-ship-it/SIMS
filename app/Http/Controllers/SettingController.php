@@ -3,8 +3,13 @@
 // Added refreshPermissions method to handle permission refresh from web interface
 // Added custom validation for background images to ensure 360x1000px dimensions
 // Added OAuth settings management for GitHub authentication with enable/disable functionality
+// Added external background image configuration for external pages with overlay color and opacity settings
 // Created: Method to run RefreshPermissions command via web interface
 // Created: updateOAuthSettings method to handle GitHub OAuth configuration
+// Updated: Added external_bg_image, external_bg_overlay_color, external_bg_overlay_opacity settings support
+// Fixed: Mail settings validation to handle nullable fields for different mailer types (SMTP vs Outlook)
+// Fixed: Only save relevant fields based on selected mailer type to prevent validation conflicts
+// Updated: testMail method to use existing MailService which properly handles both SMTP and Microsoft Graph API
 
 namespace App\Http\Controllers;
 
@@ -18,6 +23,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Artisan;
+use App\Services\MailService;
 
 class SettingController extends Controller
 {
@@ -45,6 +51,9 @@ class SettingController extends Controller
             'image_horizontal_dark',
             'image_square_light',
             'image_square_dark',
+            'external_bg_image',
+            'external_bg_overlay_color',
+            'external_bg_overlay_opacity',
         ]);
 
         $maintenanceSettings = Setting::getMany(null, [
@@ -77,6 +86,10 @@ class SettingController extends Controller
             'github_oauth_enabled',
             'github_client_id',
             'github_client_secret',
+            'microsoft_oauth_enabled',
+            'microsoft_client_id',
+            'microsoft_client_secret',
+            'microsoft_tenant_id',
         ]);
 
         return view('settings.index', compact('mailSettings', 'generalSettings', 'maintenanceSettings', 'adminAddress', 'provinces', 'themeSettings', 'oauthSettings'));
@@ -93,13 +106,20 @@ class SettingController extends Controller
             'image_horizontal_dark' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'image_square_light' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'image_square_dark' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'external_bg_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
+            'external_bg_overlay_color' => [
+                'nullable',
+                'string',
+                'regex:' . '/^#(?:[A-Fa-f0-9]{3}|[A-Fa-f0-9]{6})$/'
+            ],
+            'external_bg_overlay_opacity' => 'nullable|numeric|min:0|max:1',
             'province_id' => 'nullable|exists:provinces,id',
             'commune_id' => 'nullable|exists:communes,id',
             'address' => 'nullable|string|max:500',
         ]);
 
         // Handle image uploads and delete old images if exist
-        $imageFields = ['image_horizontal_light', 'image_horizontal_dark', 'image_square_light', 'image_square_dark'];
+        $imageFields = ['image_horizontal_light', 'image_horizontal_dark', 'image_square_light', 'image_square_dark', 'external_bg_image'];
 
         // Lấy các giá trị cũ của logo từ DB
         $oldSettings = Setting::getMany(null, $imageFields);
@@ -111,7 +131,14 @@ class SettingController extends Controller
                     Storage::disk('public')->delete($oldSettings[$field]);
                 }
                 $file = $request->file($field);
-                $path = $file->store('admin/settings', 'public');
+
+                // Use different storage path for external background image
+                if ($field === 'external_bg_image') {
+                    $path = $file->store('external/backgrounds', 'public');
+                } else {
+                    $path = $file->store('admin/settings', 'public');
+                }
+
                 $validated[$field] = $path;
             }
         }
@@ -158,24 +185,39 @@ class SettingController extends Controller
     {
         $validated = $request->validate([
             'mail_mailer' => 'required|in:smtp,outlook',
-            'mail_host' => 'required_if:mail_mailer,smtp',
-            'mail_port' => 'required_if:mail_mailer,smtp|numeric',
-            'mail_username' => 'required_if:mail_mailer,smtp',
-            'mail_password' => 'required_if:mail_mailer,smtp',
-            'mail_encryption' => 'required_if:mail_mailer,smtp',
+            'mail_host' => 'required_if:mail_mailer,smtp|nullable',
+            'mail_port' => 'nullable|numeric|required_if:mail_mailer,smtp',
+            'mail_username' => 'required_if:mail_mailer,smtp|nullable',
+            'mail_password' => 'required_if:mail_mailer,smtp|nullable',
+            'mail_encryption' => 'required_if:mail_mailer,smtp|nullable',
             'mail_from_address' => 'required|email',
             'mail_from_name' => 'required|string',
-            'mail_outlook_client_id' => 'required_if:mail_mailer,outlook',
-            'mail_outlook_secret_id' => 'required_if:mail_mailer,outlook',
-            'mail_outlook_tenant_id' => 'required_if:mail_mailer,outlook',
+            'mail_outlook_client_id' => 'required_if:mail_mailer,outlook|nullable',
+            'mail_outlook_secret_id' => 'required_if:mail_mailer,outlook|nullable',
+            'mail_outlook_tenant_id' => 'required_if:mail_mailer,outlook|nullable',
         ]);
 
-        // Update or create settings
-        foreach ($validated as $key => $value) {
-            if ($value !== null) {
+        // Always save mailer type, from_address, from_name
+        $alwaysSave = ['mail_mailer', 'mail_from_address', 'mail_from_name'];
+
+        // Define fields for each mailer type
+        $smtpFields = ['mail_host', 'mail_port', 'mail_username', 'mail_password', 'mail_encryption'];
+        $outlookFields = ['mail_outlook_client_id', 'mail_outlook_secret_id', 'mail_outlook_tenant_id'];
+
+        // Determine which fields to save based on selected mailer
+        $fieldsToSave = $alwaysSave;
+        if ($validated['mail_mailer'] === 'smtp') {
+            $fieldsToSave = array_merge($fieldsToSave, $smtpFields);
+        } else if ($validated['mail_mailer'] === 'outlook') {
+            $fieldsToSave = array_merge($fieldsToSave, $outlookFields);
+        }
+
+        // Update or create settings for relevant fields only
+        foreach ($fieldsToSave as $key) {
+            if (isset($validated[$key]) && $validated[$key] !== null && $validated[$key] !== '') {
                 Setting::updateOrCreate(
                     ['club_id' => null, 'key' => $key, 'is_admin' => 'central'],
-                    ['value' => $value]
+                    ['value' => $validated[$key]]
                 );
             }
         }
@@ -228,45 +270,23 @@ class SettingController extends Controller
         ]);
 
         try {
-            // Get current mail settings
-            $mailSettings = Setting::getMany(null, [
-                'mail_mailer',
-                'mail_host',
-                'mail_port',
-                'mail_username',
-                'mail_password',
-                'mail_encryption',
-                'mail_from_address',
-                'mail_from_name',
-                'mail_outlook_client_id',
-                'mail_outlook_secret_id',
-                'mail_outlook_tenant_id',
-            ]);
+            $subject = 'Test Email - ' . Setting::getValue(null, 'site_name');
+            $body = '<p>Đây là email test từ hệ thống ' . Setting::getValue(null, 'site_name') . '. Cấu hình email đã hoạt động bình thường.</p>';
 
-            // Configure mail settings dynamically
-            config([
-                'mail.default' => $mailSettings['mail_mailer'] ?? 'smtp',
-                'mail.mailers.smtp.host' => $mailSettings['mail_host'] ?? '',
-                'mail.mailers.smtp.port' => $mailSettings['mail_port'] ?? '',
-                'mail.mailers.smtp.username' => $mailSettings['mail_username'] ?? '',
-                'mail.mailers.smtp.password' => $mailSettings['mail_password'] ?? '',
-                'mail.mailers.smtp.encryption' => $mailSettings['mail_encryption'] ?? '',
-                'mail.from.address' => $mailSettings['mail_from_address'] ?? '',
-                'mail.from.name' => $mailSettings['mail_from_name'] ?? '',
-            ]);
+            // Use the existing MailService which handles both SMTP and Microsoft Graph API
+            $result = MailService::sendClubMail(null, $request->to, $subject, $body);
 
-            // Send test email
-            Mail::raw('Đây là email test từ hệ thống admin. Cấu hình email đã hoạt động bình thường.', function ($message) use ($request, $mailSettings) {
-                $message->to($request->to)
-                    ->subject('Test Email - Hệ Thống Admin')
-                    ->from($mailSettings['mail_from_address'] ?? config('mail.from.address'), $mailSettings['mail_from_name'] ?? config('mail.from.name'));
-            });
-
-            return redirect()->back()->with('success', 'Email test đã được gửi thành công đến ' . $request->to);
+            if ($result === true) {
+                return redirect()->back()->with('success', 'Email test đã được gửi thành công đến ' . $request->to);
+            } else {
+                throw new \Exception($result);
+            }
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Lỗi gửi email: ' . $e->getMessage());
         }
     }
+
+
 
     /**
      * Refresh permissions for admin and club
@@ -432,6 +452,7 @@ class SettingController extends Controller
 
     /**
      * Update OAuth settings - preserves saved credentials when disabled
+     * Supports both GitHub and Microsoft OAuth configurations
      */
     public function updateOAuthSettings(Request $request)
     {
@@ -439,36 +460,67 @@ class SettingController extends Controller
             'github_oauth_enabled' => 'nullable|in:1',
             'github_client_id' => 'nullable|string|max:255',
             'github_client_secret' => 'nullable|string|max:255',
+            'microsoft_oauth_enabled' => 'nullable|in:1',
+            'microsoft_client_id' => 'nullable|string|max:255',
+            'microsoft_client_secret' => 'nullable|string|max:255',
+            'microsoft_tenant_id' => 'nullable|string|max:255',
         ]);
 
-        // Custom validation: if OAuth is being enabled, check if credentials exist
+        $errors = [];
+        $messages = [];
+
+        // Custom validation: GitHub OAuth
         $githubOAuthEnabled = $request->has('github_oauth_enabled') ? '1' : '0';
         if ($githubOAuthEnabled === '1') {
-            $existingClientId = Setting::getValue(null, 'github_client_id');
-            $existingClientSecret = Setting::getValue(null, 'github_client_secret');
+            $existingGithubClientId = Setting::getValue(null, 'github_client_id');
+            $existingGithubClientSecret = Setting::getValue(null, 'github_client_secret');
 
             // If enabling OAuth and no existing credentials, require them
-            if ((empty($existingClientId) && empty($validated['github_client_id'])) ||
-                (empty($existingClientSecret) && empty($validated['github_client_secret']))) {
-                return redirect()->back()->withErrors([
-                    'github_client_id' => empty($validated['github_client_id']) && empty($existingClientId)
-                        ? 'Client ID là bắt buộc khi bật OAuth GitHub.' : null,
-                    'github_client_secret' => empty($validated['github_client_secret']) && empty($existingClientSecret)
-                        ? 'Client Secret là bắt buộc khi bật OAuth GitHub.' : null,
-                ])->withInput();
+            if ((empty($existingGithubClientId) && empty($validated['github_client_id'])) ||
+                (empty($existingGithubClientSecret) && empty($validated['github_client_secret']))
+            ) {
+                if (empty($validated['github_client_id']) && empty($existingGithubClientId)) {
+                    $errors['github_client_id'] = 'Client ID là bắt buộc khi bật OAuth GitHub.';
+                }
+                if (empty($validated['github_client_secret']) && empty($existingGithubClientSecret)) {
+                    $errors['github_client_secret'] = 'Client Secret là bắt buộc khi bật OAuth GitHub.';
+                }
             }
         }
 
-        // Convert checkbox to proper value
-        $validated['github_oauth_enabled'] = $request->has('github_oauth_enabled') ? '1' : '0';
+        // Custom validation: Microsoft OAuth
+        $microsoftOAuthEnabled = $request->has('microsoft_oauth_enabled') ? '1' : '0';
+        if ($microsoftOAuthEnabled === '1') {
+            $existingMicrosoftClientId = Setting::getValue(null, 'microsoft_client_id');
+            $existingMicrosoftClientSecret = Setting::getValue(null, 'microsoft_client_secret');
 
-        // Update enabled/disabled status
+            // If enabling OAuth and no existing credentials, require them
+            if ((empty($existingMicrosoftClientId) && empty($validated['microsoft_client_id'])) ||
+                (empty($existingMicrosoftClientSecret) && empty($validated['microsoft_client_secret']))
+            ) {
+                if (empty($validated['microsoft_client_id']) && empty($existingMicrosoftClientId)) {
+                    $errors['microsoft_client_id'] = 'Client ID là bắt buộc khi bật OAuth Microsoft.';
+                }
+                if (empty($validated['microsoft_client_secret']) && empty($existingMicrosoftClientSecret)) {
+                    $errors['microsoft_client_secret'] = 'Client Secret là bắt buộc khi bật OAuth Microsoft.';
+                }
+            }
+        }
+
+        if (!empty($errors)) {
+            return redirect()->back()->withErrors($errors)->withInput();
+        }
+
+        // Convert checkboxes to proper values
+        $validated['github_oauth_enabled'] = $githubOAuthEnabled;
+        $validated['microsoft_oauth_enabled'] = $microsoftOAuthEnabled;
+
+        // Update GitHub OAuth settings
         Setting::updateOrCreate(
             ['club_id' => null, 'key' => 'github_oauth_enabled', 'is_admin' => 'central'],
             ['value' => $validated['github_oauth_enabled']]
         );
 
-        // Only update client credentials if OAuth is enabled and credentials are provided
         if ($validated['github_oauth_enabled'] === '1') {
             if (!empty($validated['github_client_id'])) {
                 Setting::updateOrCreate(
@@ -484,12 +536,49 @@ class SettingController extends Controller
                 );
             }
         }
-        // If disabled, keep existing credentials untouched for future use
 
-        $message = $validated['github_oauth_enabled'] === '1'
-            ? 'Cấu hình OAuth GitHub đã được bật thành công.'
-            : 'Cấu hình OAuth GitHub đã được tắt.';
+        // Update Microsoft OAuth settings
+        Setting::updateOrCreate(
+            ['club_id' => null, 'key' => 'microsoft_oauth_enabled', 'is_admin' => 'central'],
+            ['value' => $validated['microsoft_oauth_enabled']]
+        );
 
-        return redirect()->back()->with('success', $message);
+        if ($validated['microsoft_oauth_enabled'] === '1') {
+            if (!empty($validated['microsoft_client_id'])) {
+                Setting::updateOrCreate(
+                    ['club_id' => null, 'key' => 'microsoft_client_id', 'is_admin' => 'central'],
+                    ['value' => $validated['microsoft_client_id']]
+                );
+            }
+
+            if (!empty($validated['microsoft_client_secret'])) {
+                Setting::updateOrCreate(
+                    ['club_id' => null, 'key' => 'microsoft_client_secret', 'is_admin' => 'central'],
+                    ['value' => $validated['microsoft_client_secret']]
+                );
+            }
+
+            if (!empty($validated['microsoft_tenant_id'])) {
+                Setting::updateOrCreate(
+                    ['club_id' => null, 'key' => 'microsoft_tenant_id', 'is_admin' => 'central'],
+                    ['value' => $validated['microsoft_tenant_id']]
+                );
+            }
+        }
+
+        // Prepare success messages
+        if ($validated['github_oauth_enabled'] === '1') {
+            $messages[] = 'Cấu hình OAuth GitHub đã được bật thành công.';
+        } else {
+            $messages[] = 'Cấu hình OAuth GitHub đã được tắt.';
+        }
+
+        if ($validated['microsoft_oauth_enabled'] === '1') {
+            $messages[] = 'Cấu hình OAuth Microsoft đã được bật thành công.';
+        } else {
+            $messages[] = 'Cấu hình OAuth Microsoft đã được tắt.';
+        }
+
+        return redirect()->back()->with('success', implode(' ', $messages));
     }
 }

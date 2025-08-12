@@ -37,6 +37,7 @@ class User extends Authenticatable
         'status',
         'default_club_id',
         'github_id',
+        'microsoft_id',
     ];
 
 

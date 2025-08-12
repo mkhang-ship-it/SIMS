@@ -250,7 +250,7 @@
                                             {{-- Bảo Mật (Đặt lại mật khẩu) --}}
                                             <div class="mb-3">
                                                 <form method="POST"
-                                                    action="{{ route('backend.my-profile.update-password') }}"
+                                                    action="{{ route('backend.club.my-profile.update-password') }}"
                                                     class="w-100" style="max-width:400px">
                                                     @csrf
                                                     <div class="mb-3">

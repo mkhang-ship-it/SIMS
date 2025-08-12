@@ -1,5 +1,4 @@
 <?php
-// Đã cập nhật: Lấy và cập nhật đầy đủ các trường thông tin cá nhân (avatar, name, email, gender, birthday, identity_card_code, phone, student_code, major_id, course_id, role_id). Truyền thêm majors (chỉ chuyên ngành con), courses, roles cho view.
 
 namespace App\Http\Controllers;
 
@@ -74,7 +73,9 @@ class MyProfileController extends Controller
             return back()->withErrors(['current_password' => 'Mật khẩu hiện tại không đúng']);
         }
         $user->password = Hash::make($request->password);
+
         $user->save();
+
         return back()->with('success', 'Đổi mật khẩu thành công!');
     }
 

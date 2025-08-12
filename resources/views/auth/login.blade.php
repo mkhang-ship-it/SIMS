@@ -1,9 +1,13 @@
 <?php
+// Login page with external background image configuration support and OAuth integration
+// Added external background image settings with overlay color and opacity options
+// Supports GitHub and Microsoft OAuth login buttons based on configuration settings
 
 use App\Models\Setting;
 
 $generalSettings = Setting::getMany(null, ['image_horizontal_light', 'image_horizontal_dark', 'image_square_light', 'image_square_dark', 'site_name']);
-$oauthSettings = Setting::getMany(null, ['github_oauth_enabled', 'github_client_id', 'github_client_secret']);
+$oauthSettings = Setting::getMany(null, ['github_oauth_enabled', 'github_client_id', 'github_client_secret', 'microsoft_oauth_enabled', 'microsoft_client_id', 'microsoft_client_secret']);
+$externalBgSettings = Setting::getExternalBackgroundSettings();
 ?>
 <!DOCTYPE html>
 <html lang="en" dir="ltr" data-nav-layout="vertical" data-vertical-style="overlay" data-theme-mode="light"
@@ -35,6 +39,42 @@ $oauthSettings = Setting::getMany(null, ['github_oauth_enabled', 'github_client_
     <!-- Icons Css -->
     <link href="{{ asset('assets/css/icons.min.css') }}" rel="stylesheet">
 
+    <!-- External Background Styles -->
+    @if (!empty($externalBgSettings['external_bg_image']))
+        <style>
+            body {
+                background-image: url('{{ Storage::url($externalBgSettings['external_bg_image']) }}');
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
+                background-attachment: fixed;
+                position: relative;
+            }
+
+            body::before {
+                content: '';
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: {{ $externalBgSettings['external_bg_overlay_color'] ?? '#000000' }};
+                opacity: {{ $externalBgSettings['external_bg_overlay_opacity'] ?? '0.5' }};
+                z-index: -1;
+            }
+
+            .authentication {
+                position: relative;
+                z-index: 1;
+            }
+
+            .card {
+                background-color: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+            }
+        </style>
+    @endif
 
 </head>
 
@@ -90,21 +130,94 @@ $oauthSettings = Setting::getMany(null, ['github_oauth_enabled', 'github_client_
                             <p class="fs-12 text-muted mt-3">Không có tài khoản? <a href=""
                                     class="text-primary">Đăng Ký</a></p>
                         </div>
-                        @if (
-                            ($oauthSettings['github_oauth_enabled'] ?? '0') === '1' &&
+                        @php
+                            $githubEnabled =
+                                ($oauthSettings['github_oauth_enabled'] ?? '0') === '1' &&
                                 !empty($oauthSettings['github_client_id']) &&
-                                !empty($oauthSettings['github_client_secret']))
+                                !empty($oauthSettings['github_client_secret']);
+                            $microsoftEnabled =
+                                ($oauthSettings['microsoft_oauth_enabled'] ?? '0') === '1' &&
+                                !empty($oauthSettings['microsoft_client_id']) &&
+                                !empty($oauthSettings['microsoft_client_secret']);
+                        @endphp
+
+                        @if ($githubEnabled || $microsoftEnabled)
                             <div class="text-center my-3 authentication-barrier">
                                 <span>HOẶC</span>
                             </div>
-                            <!-- GitHub OAuth Login -->
                             <div class="text-center">
-                                <a href="{{ route('auth.github') }}"
-                                    class="d-block mb-2 mx-auto d-flex align-items-center justify-content-center"
-                                    style="width: 220px; background-color: #24292f; color: #fff; border-radius: 6px; padding: 8px 12px; text-decoration: none; font-weight: 500; display: flex; align-items: center; justify-content: center; transition: background-color 0.2s;">
-                                    <i class="ri-github-line fw-bold me-2" style="color: #fff; font-size: 18px;"></i>
-                                    <span>Đăng nhập với GitHub</span>
-                                </a>
+
+                                @if ($githubEnabled)
+                                    <!-- GitHub OAuth Login -->
+                                    <a href="{{ route('auth.github') }}" class="d-block mb-2 mx-auto"
+                                        style="width: 240px;
+               background-color: #24292f;
+               color: #ffffff;
+               border-radius: 6px;
+               padding: 6px 12px;
+               text-decoration: none;
+               font-weight: 500;
+               display: flex;
+               align-items: center;
+               border: none;
+               font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+               transition: background-color 0.2s;">
+
+                                        <!-- GitHub SVG Logo -->
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                            viewBox="0 0 16 16" fill="#ffffff" style="margin-right: 8px;">
+                                            <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54
+                2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
+                0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52
+                0-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87
+                2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95
+                0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12
+                0 0 .67-.21 2.2.82.64-.18 1.32-.27
+                2-.27.68 0 1.36.09 2 .27 1.53-1.04
+                2.2-.82 2.2-.82.44 1.1.16 1.92.08
+                2.12.51.56.82 1.27.82 2.15
+                0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54
+                1.48 0 1.07-.01 1.93-.01 2.2
+                0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z">
+                                            </path>
+                                        </svg>
+
+                                        <span>Đăng nhập với GitHub</span>
+                                    </a>
+                                @endif
+
+
+                                @if ($microsoftEnabled)
+                                    <!-- Microsoft OAuth Login -->
+                                    <a href="{{ route('auth.microsoft') }}" class="d-block mb-2 mx-auto"
+                                        style="width: 240px;
+               background-color: #ffffff;
+               color: #000000;
+               border-radius: 4px;
+               padding: 6px 12px;
+               text-decoration: none;
+               font-weight: 500;
+               display: flex;
+               align-items: center;
+               border: 1px solid #8C8C8C;
+               font-family: 'Segoe UI', sans-serif;
+               transition: background-color 0.2s;">
+
+                                        <!-- Microsoft Logo SVG -->
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                            viewBox="0 0 23 23" style="margin-right: 8px;">
+                                            <rect width="10" height="10" x="0" y="0" fill="#F35325" />
+                                            <rect width="10" height="10" x="12" y="0" fill="#81BC06" />
+                                            <rect width="10" height="10" x="0" y="12" fill="#05A6F0" />
+                                            <rect width="10" height="10" x="12" y="12" fill="#FFBA08" />
+                                        </svg>
+
+                                        <span>Đăng nhập với Microsoft</span>
+                                    </a>
+                                @endif
+
+
+
                             </div>
                         @endif
 

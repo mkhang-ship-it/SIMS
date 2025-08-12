@@ -1,4 +1,7 @@
 <?php
+// Updated to include Microsoft OAuth configuration for authentication services
+// Added Microsoft Azure OAuth integration alongside existing third-party services
+// Configured to use environment variables for secure credential management
 
 return [
 
@@ -38,6 +41,13 @@ return [
     'openai' => [
         'api_key' => env('OPENAI_API_KEY'),
         'base_url' => env('OPENAI_BASE_URL', 'https://api.openai.com/v1'),
+    ],
+
+    'microsoft' => [
+        'client_id' => env('MICROSOFT_CLIENT_ID'),
+        'client_secret' => env('MICROSOFT_CLIENT_SECRET'),
+        'redirect' => env('MICROSOFT_REDIRECT_URI', '/auth/microsoft/callback'),
+        'tenant' => env('MICROSOFT_TENANT_ID', 'common'),
     ],
 
 ];

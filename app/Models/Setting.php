@@ -66,6 +66,20 @@ class Setting extends Model
     }
 
     /**
+     * Lấy cấu hình background image cho trang ngoài.
+     */
+    public static function getExternalBackgroundSettings()
+    {
+        $backgroundKeys = [
+            'external_bg_image',
+            'external_bg_overlay_color',
+            'external_bg_overlay_opacity'
+        ];
+
+        return self::getMany(null, $backgroundKeys);
+    }
+
+    /**
      * Quan hệ ngược về Club (nếu có model Club).
      */
     public function club()

@@ -1,18 +1,3 @@
-{{--
-Updated: Added Flasher JS integration
-- Added flasher.min.js for notification functionality
-- Fixed: Moved JavaScript files from CSS include and proper loading order
-- Updated: Modified notification dropdown JavaScript to use real data with new design, including proper styling, icons, and mark-as-read functionality
-- Updated: Modified to only display unread notifications in dropdown with improved empty state message
-- Fixed: Replaced hardcode URLs with Laravel route helpers to fix notification loading issues
-- Fixed: Added better error handling and console logging for debugging
-- Fixed: Resolved duplicate function names by renaming modal-specific functions
-- Fixed: Corrected route ordering to prevent {notification} parameter conflict with API endpoints
-- Fixed: Modal notification now only runs for club users with proper permissions
-- Fixed: Enhanced modal notification marking as read with improved event handling and debug logging
-- Fixed: Added backup method to mark notification as read when close button is clicked
---}}
-
 <!-- Popper JS -->
 <script src="{{ asset('assets/libs/@popperjs/core/umd/popper.min.js') }}"></script>
 

@@ -1,132 +1,80 @@
-<!-- Popper JS -->
 <script src="{{ asset('assets/libs/@popperjs/core/umd/popper.min.js') }}"></script>
-
-<!-- Bootstrap JS -->
 <script src="{{ asset('assets/libs/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-
-<!-- Choices JS -->
 <script src="{{ asset('assets/libs/choices.js/public/assets/scripts/choices.min.js') }}"></script>
-
-<!-- Main Theme Js -->
 <script src="{{ asset('assets/js/main.js') }}"></script>
-
-<!-- Defaultmenu JS -->
 <script src="{{ asset('assets/js/defaultmenu.min.js') }}"></script>
-
-<!-- Node Waves JS-->
 <script src="{{ asset('assets/libs/node-waves/waves.min.js') }}"></script>
-
-<!-- Sticky JS -->
 <script src="{{ asset('assets/js/sticky.js') }}"></script>
-
-<!-- Simplebar JS -->
 <script src="{{ asset('assets/libs/simplebar/simplebar.min.js') }}"></script>
 <script src="{{ asset('assets/js/simplebar.js') }}"></script>
-
-<!-- custom switcher -->
-{{-- <script src="{{ asset('assets/js/custom-switcher.min.js') }}"></script> --}}
-
-<!-- Pickr JS -->
 <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
-
-
 <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
 <script src="https://cdn.datatables.net/2.3.2/js/dataTables.js"></script>
 <script src="https://cdn.datatables.net/2.3.2/js/dataTables.bootstrap5.js"></script>
-
-<!-- Flasher JS -->
 <script src="{{ asset('vendor/flasher/flasher.min.js') }}"></script>
 <script src="{{ asset('assets/libs/glightbox/js/glightbox.min.js') }}"></script>
 <script src="{{ asset('assets/js/gallery.js') }}"></script>
 <script src="{{ asset('assets/libs/apexcharts/apexcharts.min.js') }}"></script>
-
-<!-- Chart.js -->
 <script src="{{ asset('assets/libs/chart.js/chart.min.js') }}"></script>
-
-
-
 <script>
     $(document).ready(function() {
-        // Initialize data-table if it exists
-        // Fixed DataTable initialization: set 'order' to an empty array to disable initial ordering
         if ($('#data-table').length) {
             $('#data-table').DataTable({
                 scrollX: true,
                 ordering: false
             });
         }
-
-        // Initialize budget-items-table if it exists
         if ($('#budget-items-table').length) {
             $('#budget-items-table').DataTable({
                 scrollX: true,
                 searching: false,
                 paging: false,
-                info: false // disables "Showing 1 to 2 of 2 entries"
+                info: false
             });
         }
-
-        // Initialize action-plans-table if it exists
         if ($('#action-plans-table').length) {
             $('#action-plans-table').DataTable({
                 scrollX: true,
                 searching: false,
                 paging: false,
-                info: false // disables "Showing 1 to 2 of 2 entries"
+                info: false
             });
         }
-
-        // Initialize equipment-table if it exists
         if ($('#equipment-table').length) {
             $('#equipment-table').DataTable({
                 scrollX: true,
                 searching: false,
                 paging: false,
-                info: false // disables "Showing 1 to 2 of 2 entries"
+                info: false
             });
         }
-
-        // Initialize objectives-table if it exists with disabled search, pagination, and info display
         if ($('#objectives-table').length) {
             $('#objectives-table').DataTable({
                 scrollX: true,
                 searching: false,
                 paging: false,
-                info: false // disables "Showing 1 to 2 of 2 entries"
+                info: false
             });
         }
-
-        // Notification functionality for club users
         @if (session('club_id') && auth()->user()->hasPermissionForModuleCode('notification_management', 'view', 'branch'))
-            // Load recent notifications when dropdown is opened
             $('#messageDropdown').on('show.bs.dropdown', function() {
                 loadRecentNotifications();
             });
-
-            // Load unread count on page load
             updateUnreadCount();
-
-            // Auto-refresh unread count every 30 seconds
             setInterval(function() {
                 updateUnreadCount();
             }, 30000);
 
-            // Function to load recent notifications
             function loadRecentNotifications() {
                 $.get('{{ route('backend.club.notifications.recent') }}', function(response) {
                     if (response.success) {
                         const container = $('#recentNotifications');
                         container.empty();
-
                         if (response.data.length > 0) {
                             response.data.forEach(function(notification) {
                                 const timeAgo = getTimeAgo(notification.created_at);
-
-                                // Determine icon and color based on notification type
                                 let iconClass = 'ti ti-bell';
                                 let bgClass = 'bg-primary-transparent';
-
-                                // You can customize this based on notification content or add a type field
                                 if (notification.title.toLowerCase().includes('thành công') ||
                                     notification.title.toLowerCase().includes('success')) {
                                     iconClass = 'ti ti-circle-check';
@@ -147,7 +95,6 @@
                                     iconClass = 'ti ti-info-circle';
                                     bgClass = 'bg-info-transparent';
                                 }
-
                                 const item = `
                                     <li class="dropdown-item">
                                         <div class="d-flex align-items-start">
@@ -197,13 +144,11 @@
                 });
             }
 
-            // Function to update unread count
             function updateUnreadCount() {
                 $.get('{{ route('backend.club.notifications.unread-count') }}', function(response) {
                     if (response.success) {
                         const badges = $('.notification-badge');
                         const notificationData = $('#notifiation-data');
-
                         badges.each(function() {
                             if (response.count > 0) {
                                 $(this).text(response.count).removeClass('d-none');
@@ -211,8 +156,6 @@
                                 $(this).addClass('d-none');
                             }
                         });
-
-                        // Update the notification data text
                         if (response.count > 0) {
                             notificationData.text(response.count + ' Chưa đọc');
                         } else {
@@ -224,7 +167,6 @@
                 });
             }
 
-            // Function to mark notification as read
             function markNotificationAsRead(notificationId) {
                 const url = '{{ route('backend.club.notifications.mark-as-read', ':id') }}'.replace(':id',
                     notificationId);
@@ -232,7 +174,6 @@
                     _token: '{{ csrf_token() }}'
                 }, function(response) {
                     if (response.success) {
-                        // Reload notifications and update count
                         loadRecentNotifications();
                         updateUnreadCount();
                     }
@@ -241,12 +182,10 @@
                 });
             }
 
-            // Function to get time ago
             function getTimeAgo(dateString) {
                 const date = new Date(dateString);
                 const now = new Date();
                 const diffInSeconds = Math.floor((now - date) / 1000);
-
                 if (diffInSeconds < 60) {
                     return 'Vừa xong';
                 } else if (diffInSeconds < 3600) {
@@ -262,10 +201,7 @@
             }
         @endif
     });
-
-    // Notification Modal Functionality
     @if (session('club_id') && auth()->user()->hasPermissionForModuleCode('notification_management', 'view', 'branch'))
-        // Check for latest unread notification on page load
         checkLatestNotification();
 
         function checkLatestNotification() {
@@ -285,24 +221,17 @@
 
         function showNotificationModal(notification) {
             console.log('Showing notification modal for ID:', notification.id);
-
-            // Populate modal with notification data
             $('#notificationModalTitle').text(notification.title);
             $('#notificationModalContent').html(notification.content);
             $('#notificationModalDate').text(notification.formatted_date);
             $('#notificationModalSender').text(notification.sender_name);
-
-            // Handle image
             if (notification.image_path) {
                 $('#notificationModalImage').attr('src', "{{ asset('storage/') }}/" + notification.image_path).show();
             } else {
                 $('#notificationModalImage').hide();
             }
-
-            // Handle files
             const filesContainer = $('#notificationModalFiles');
             filesContainer.empty();
-
             if (notification.files_path && notification.files_path.length > 0) {
                 filesContainer.show();
                 notification.files_path.forEach(function(file) {
@@ -329,15 +258,9 @@
             } else {
                 filesContainer.hide();
             }
-
-            // Store notification ID for marking as read
             $('#notificationModal').data('notification-id', notification.id);
             console.log('Stored notification ID in modal data:', notification.id);
-
-            // Show modal
             $('#notificationModal').modal('show');
-
-            // Mark as read immediately when modal is shown (consistent with dropdown behavior)
             markNotificationAsReadModal(notification.id);
         }
 
@@ -348,11 +271,8 @@
             const i = Math.floor(Math.log(bytes) / Math.log(k));
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
-
-        // Modal close event handler for cleanup (notification already marked as read when shown)
         $('#notificationModal').on('hidden.bs.modal', function() {
             console.log('Modal hidden.bs.modal event fired - cleaning up');
-            // Clear the stored notification ID
             $(this).removeData('notification-id');
             console.log('Modal data cleared');
         });
@@ -360,7 +280,6 @@
         function markNotificationAsReadModal(notificationId) {
             console.log('markNotificationAsReadModal called with ID:', notificationId);
             const url = "{{ route('backend.club.notifications.mark-as-read', ':id') }}".replace(':id', notificationId);
-
             $.ajax({
                 url: url,
                 type: 'POST',
@@ -369,7 +288,6 @@
                 },
                 success: function(response) {
                     console.log('Modal notification marked as read successfully:', response);
-                    // Update UI after marking as read
                     updateUnreadCount();
                 },
                 error: function(xhr, status, error) {
@@ -381,8 +299,6 @@
         }
     @endif
 </script>
-
-<!-- Notification Modal -->
 <div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
@@ -394,13 +310,10 @@
                     aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <!-- Notification Image -->
                 <div class="text-center mb-3">
                     <img id="notificationModalImage" src="" alt="Notification Image"
                         class="img-fluid rounded shadow-sm" style="max-height: 300px; display: none;">
                 </div>
-
-                <!-- Notification Header -->
                 <div class="mb-3">
                     <h4 id="notificationModalTitle" class="text-primary mb-2"></h4>
                     <div class="d-flex justify-content-between text-muted small">
@@ -414,18 +327,13 @@
                         </span>
                     </div>
                 </div>
-
-                <!-- Notification Content -->
                 <div class="mb-4">
                     <div id="notificationModalContent" class="text-dark lh-lg"></div>
                 </div>
-
-                <!-- Files Section -->
                 <div id="notificationModalFiles" style="display: none;">
                     <h6 class="text-primary mb-2">
                         <i class="ri-attachment-line me-2"></i>File đính kèm
                     </h6>
-                    <!-- Files will be populated here -->
                 </div>
             </div>
             <div class="modal-footer">

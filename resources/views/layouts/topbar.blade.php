@@ -1,12 +1,8 @@
 <header class="app-header">
 
-    <!-- Start::main-header-container -->
     <div class="main-header-container container-fluid">
 
-        <!-- Start::header-content-left -->
         <div class="header-content-left">
-
-            <!-- Start::header-element -->
 
             @php
                 use App\Models\Setting;
@@ -68,17 +64,13 @@
                     </div>
                 </div>
             @endif
-            <!-- End::header-element -->
 
-            <!-- Start::header-element -->
             <div class="header-element d-flex align-items-center">
-                <!-- Sidebar Toggle Button -->
                 <a aria-label="Hide Sidebar"
                     class="sidemenu-toggle header-link animated-arrow hor-toggle horizontal-navtoggle me-3"
                     data-bs-toggle="sidebar" href="javascript:void(0);">
                     <span></span>
                 </a>
-                <!-- User/Club Greeting -->
 
                 @if (session('club_id'))
                     @php
@@ -94,13 +86,8 @@
                 @endif
 
             </div>
-            <!-- End::header-element -->
-            <!-- End::header-element -->
-
         </div>
-        <!-- End::header-content-left -->
 
-        <!-- Start::header-content-right -->
         <div class="header-content-right">
 
             @php
@@ -108,30 +95,23 @@
                 $clubs = $user->clubs ?? collect();
             @endphp
 
-            <!-- Impersonation Alert -->
             @php
                 $isImpersonating = \App\Http\Controllers\ImpersonationController::isImpersonating();
                 $impersonator = \App\Http\Controllers\ImpersonationController::getImpersonator();
             @endphp
 
             @if ($isImpersonating)
-                <!-- Start::header-element -->
                 <div class="header-element">
-                    <!-- Start::header-link -->
                     <a href="javascript:void(0);" class="header-link" data-bs-toggle="offcanvas"
                         data-bs-target="#impersonationOffcanvas" aria-controls="impersonationOffcanvas">
                         <i class="bx bx-user-check header-link-icon text-warning"></i>
                         <span class="badge bg-warning rounded-pill header-icon-badge pulse pulse-warning">!</span>
                     </a>
-                    <!-- End::header-link -->
                 </div>
-                <!-- End::header-element -->
             @endif
 
             @if ($clubs->count() > 1)
-                <!-- Start::header-element -->
                 <div class="header-element club-selector">
-                    <!-- Start::header-link|dropdown-toggle -->
                     @php
                         $defaultClub = $clubs->firstWhere('id', $user->default_club_id) ?? $clubs->first();
                         $defaultClubImage = !empty($defaultClub->image_square_light)
@@ -143,7 +123,6 @@
                         <img src="{{ $defaultClubImage }}" alt="img" class="rounded-circle"
                             style="width: 24px; height: 24px;">
                     </a>
-                    <!-- End::header-link|dropdown-toggle -->
 
                     <ul class="main-header-dropdown dropdown-menu dropdown-menu-end" data-popper-placement="none">
                         <li class="dropdown-header text-muted fs-12 px-3 pt-2 pb-1">
@@ -173,26 +152,19 @@
                         @endforeach
                     </ul>
                 </div>
-                <!-- End::header-element -->
             @endif
 
             @if (session('club_id') && auth()->user()->hasPermissionForModuleCode('feature_request_management', 'create', 'branch'))
-                <!-- Start::header-element -->
                 <div class="header-element">
-                    <!-- Start::header-link -->
                     <a href="javascript:void(0);" class="header-link" data-bs-toggle="offcanvas"
                         data-bs-target="#featureRequestOffcanvas" aria-controls="featureRequestOffcanvas">
                         <i class="bx bx-plus-circle header-link-icon"></i>
                     </a>
-                    <!-- End::header-link -->
                 </div>
-                <!-- End::header-element -->
             @endif
 
             @if (session('club_id') && auth()->user()->hasPermissionForModuleCode('notification_management', 'view', 'branch'))
-                <!-- Start::header-element -->
                 <div class="header-element">
-                    <!-- Start::header-link|dropdown-toggle -->
                     <a href="javascript:void(0);" class="header-link dropdown-toggle" data-bs-toggle="dropdown"
                         data-bs-auto-close="outside" id="messageDropdown" aria-expanded="false">
                         <i class="bx bx-bell header-link-icon"></i>
@@ -200,8 +172,7 @@
                             class="badge bg-secondary rounded-pill header-icon-badge pulse pulse-secondary notification-badge d-none"
                             id="notification-icon-badge">0</span>
                     </a>
-                    <!-- End::header-link|dropdown-toggle -->
-                    <!-- Start::main-header-dropdown -->
+
                     <div class="main-header-dropdown dropdown-menu dropdown-menu-end" data-popper-placement="none">
                         <div class="p-3">
                             <div class="d-flex align-items-center justify-content-between">
@@ -235,14 +206,10 @@
                             </div>
                         </div>
                     </div>
-                    <!-- End::main-header-dropdown -->
                 </div>
-                <!-- End::header-element -->
             @endif
 
-            <!-- Start::header-element -->
             <div class="header-element">
-                <!-- Start::header-link|dropdown-toggle -->
                 <a href="#" class="header-link dropdown-toggle" id="mainHeaderProfile"
                     data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
                     <div class="d-flex align-items-center">
@@ -260,7 +227,6 @@
                         </div>
                     </div>
                 </a>
-                <!-- End::header-link|dropdown-toggle -->
                 <ul class="main-header-dropdown dropdown-menu pt-0 overflow-hidden header-profile-dropdown dropdown-menu-end"
                     aria-labelledby="mainHeaderProfile">
                     <li><a class="dropdown-item d-flex"
@@ -274,15 +240,11 @@
                     </form>
                 </ul>
             </div>
-            <!-- End::header-element -->
 
         </div>
-        <!-- End::header-content-right -->
 
     </div>
-    <!-- End::main-header-container -->
 
-    <!-- Feature Request Offcanvas -->
     @if (session('club_id') && auth()->user()->hasPermissionForModuleCode('feature_request_management', 'create', 'branch'))
         <div class="offcanvas offcanvas-end" tabindex="-1" id="featureRequestOffcanvas"
             aria-labelledby="featureRequestOffcanvasLabel">
@@ -361,7 +323,6 @@
         </div>
     @endif
 
-    <!-- Impersonation Offcanvas -->
     @if ($isImpersonating)
         <div class="offcanvas offcanvas-end" tabindex="-1" id="impersonationOffcanvas"
             aria-labelledby="impersonationOffcanvasLabel">

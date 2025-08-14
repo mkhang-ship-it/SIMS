@@ -1,15 +1,4 @@
-<!--
-Changes made:
-- Reorganized sidebar menu items into logical categories
-- Assigned unique icons to each menu item to avoid conflicts
-- Added category separators for better organization
-- Grouped related functionality together
-- Improved visual hierarchy and navigation flow
--->
-
 <aside class="app-sidebar sticky" id="sidebar">
-
-    <!-- Start::main-sidebar-header -->
     @php
         use App\Models\Setting;
         $generalSettings = Setting::getMany(null, [
@@ -66,12 +55,7 @@ Changes made:
             </a>
         </div>
     @endif
-    <!-- End::main-sidebar-header -->
-
-    <!-- Start::main-sidebar -->
     <div class="main-sidebar" id="sidebar-scroll">
-
-        <!-- Start::nav -->
         <nav class="main-menu-container nav nav-pills flex-column sub-open">
             <div class="slide-left" id="slide-left">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="#7b8191" width="24" height="24"
@@ -80,14 +64,8 @@ Changes made:
                 </svg>
             </div>
             <ul class="main-menu">
-
                 @if (!session('club_id'))
-                    <!-- CENTRAL ADMIN SECTION -->
-
-                    <!-- Start::slide__category -->
                     <li class="slide__category"><span class="category-name">Tổng Quan</span></li>
-                    <!-- End::slide__category -->
-
                     @if (auth()->user()->hasPermissionForModuleCode('dashboard', 'view', 'central'))
                         <li class="slide {{ request()->routeIs('backend.dashboard') ? 'active' : '' }}">
                             <a href="{{ route('backend.dashboard') }}"
@@ -107,11 +85,7 @@ Changes made:
                             </a>
                         </li>
                     @endif
-
-                    <!-- Start::slide__category -->
                     <li class="slide__category"><span class="category-name">Quản Lý Hệ Thống</span></li>
-                    <!-- End::slide__category -->
-
                     @if (auth()->user()->hasPermissionForModuleCode('club_management', 'view', 'central'))
                         <li class="slide {{ request()->routeIs('backend.clubs.index') ? 'active' : '' }}">
                             <a href="{{ route('backend.clubs.index') }}"
@@ -151,10 +125,7 @@ Changes made:
                             </a>
                         </li>
                     @endif
-
-                    <!-- Start::slide__category -->
                     <li class="slide__category"><span class="category-name">Quản Lý Học Tập</span></li>
-                    <!-- End::slide__category -->
 
                     @if (auth()->user()->hasPermissionForModuleCode('course_management', 'view', 'central'))
                         <li class="slide {{ request()->routeIs('backend.courses.index') ? 'active' : '' }}">
@@ -206,9 +177,7 @@ Changes made:
                         </li>
                     @endif
 
-                    <!-- Start::slide__category -->
                     <li class="slide__category"><span class="category-name">Quản Lý Sự Kiện</span></li>
-                    <!-- End::slide__category -->
 
                     @if (auth()->user()->hasPermissionForModuleCode('event_management', 'view', 'central'))
                         <li class="slide {{ request()->routeIs('backend.events.index') ? 'active' : '' }}">
@@ -252,9 +221,7 @@ Changes made:
                         </li>
                     @endif
 
-                    <!-- Start::slide__category -->
                     <li class="slide__category"><span class="category-name">Nội Dung & Cấu Hình</span></li>
-                    <!-- End::slide__category -->
 
                     @if (auth()->user()->hasPermissionForModuleCode('quote_management', 'view', 'central'))
                         <li class="slide {{ request()->routeIs('backend.quotes.index') ? 'active' : '' }}">
@@ -307,11 +274,7 @@ Changes made:
                         </li>
                     @endif
                 @else
-                    <!-- CLUB USER SECTION -->
-
-                    <!-- Start::slide__category -->
                     <li class="slide__category"><span class="category-name">Tổng Quan</span></li>
-                    <!-- End::slide__category -->
 
                     @if (auth()->user()->hasPermissionForModuleCode('dashboard', 'view', 'branch'))
                         <li class="slide {{ request()->routeIs('backend.club.dashboard') ? 'active' : '' }}">
@@ -335,9 +298,7 @@ Changes made:
                         </li>
                     @endif
 
-                    <!-- Start::slide__category -->
                     <li class="slide__category"><span class="category-name">Quản Lý Câu Lạc Bộ</span></li>
-                    <!-- End::slide__category -->
 
                     @if (auth()->user()->hasPermissionForModuleCode('role_management', 'view', 'branch'))
                         <li class="slide {{ request()->routeIs('backend.club.roles.index') ? 'active' : '' }}">
@@ -405,9 +366,7 @@ Changes made:
                         </li>
                     @endif
 
-                    <!-- Start::slide__category -->
                     <li class="slide__category"><span class="category-name">Quản Lý Sự Kiện</span></li>
-                    <!-- End::slide__category -->
 
                     @if (auth()->user()->hasPermissionForModuleCode('event_management', 'view', 'branch'))
                         <li class="slide {{ request()->routeIs('backend.club.events.index') ? 'active' : '' }}">
@@ -461,9 +420,7 @@ Changes made:
                         </li>
                     @endif
 
-                    <!-- Start::slide__category -->
                     <li class="slide__category"><span class="category-name">Quản Lý Tài Chính</span></li>
-                    <!-- End::slide__category -->
 
                     @if (auth()->user()->hasPermissionForModuleCode('invoice_management', 'view', 'branch'))
                         <li class="slide {{ request()->routeIs('backend.club.invoices.index') ? 'active' : '' }}">
@@ -507,9 +464,7 @@ Changes made:
                         </li>
                     @endif
 
-                    <!-- Start::slide__category -->
                     <li class="slide__category"><span class="category-name">Hệ Thống</span></li>
-                    <!-- End::slide__category -->
 
                     @if (auth()->user()->hasPermissionForModuleCode('setting_management', 'general', 'branch') ||
                             auth()->user()->hasPermissionForModuleCode('setting_management', 'word_template', 'branch') ||
@@ -522,8 +477,6 @@ Changes made:
                             </a>
                         </li>
                     @endif
-
-
 
                     @if (auth()->user()->hasPermissionForModuleCode('feature_request_management', 'view', 'branch'))
                         <li
@@ -552,9 +505,5 @@ Changes made:
                     <path d="M10.707 17.707 16.414 12l-5.707-5.707-1.414 1.414L13.586 12l-4.293 4.293z"></path>
                 </svg></div>
         </nav>
-        <!-- End::nav -->
-
     </div>
-    <!-- End::main-sidebar -->
-
 </aside>

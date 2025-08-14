@@ -1,10 +1,4 @@
 <?php
-// Đã bổ sung: Sử dụng cấu hình thuộc tính HTML động từ theme settings nếu có (tương tự layouts/app.blade.php).
-// Đã bổ sung: Đồng bộ hóa màu primary của button login với theme settings
-// Login page with external background image configuration support and OAuth integration
-// Added external background image settings with overlay color and opacity options
-// Supports GitHub and Microsoft OAuth login buttons based on configuration settings
-// Added dynamic primary color CSS variables from theme settings to sync login button color
 
 use App\Models\Setting;
 use App\Models\ThemeSetting;
@@ -13,13 +7,11 @@ $generalSettings = Setting::getMany(null, ['image_horizontal_light', 'image_hori
 $oauthSettings = Setting::getMany(null, ['github_oauth_enabled', 'github_client_id', 'github_client_secret', 'microsoft_oauth_enabled', 'microsoft_client_id', 'microsoft_client_secret']);
 $externalBgSettings = Setting::getExternalBackgroundSettings();
 
-// Lấy theme settings (nếu có) để bổ sung thuộc tính HTML động
 $themeSettings = ThemeSetting::getActiveTheme();
 $htmlAttributes = [];
 if (is_object($themeSettings) && method_exists($themeSettings, 'getHtmlAttributes')) {
     $htmlAttributes = $themeSettings->getHtmlAttributes();
 } else {
-    // Default attributes nếu không có theme settings
     $htmlAttributes = [
         'lang' => 'en',
         'dir' => 'ltr',
@@ -32,7 +24,6 @@ if (is_object($themeSettings) && method_exists($themeSettings, 'getHtmlAttribute
     ];
 }
 
-// Build HTML attributes string
 $htmlAttributesString = '';
 foreach ($htmlAttributes as $key => $value) {
     $htmlAttributesString .= ' ' . $key . '="' . $value . '"';
@@ -43,7 +34,6 @@ foreach ($htmlAttributes as $key => $value) {
 
     <head>
 
-        <!-- Meta Data -->
         <meta charset="UTF-8">
         <meta name='viewport' content='width=device-width, initial-scale=1.0'>
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -52,23 +42,17 @@ foreach ($htmlAttributes as $key => $value) {
         <meta name="Author" content="YNEX">
         <meta name="keywords" content="Đăng Nhập, {{ $generalSettings['site_name'] ?? '-' }}">
 
-        <!-- Favicon -->
         <link rel="icon" href="{{ Storage::url($generalSettings['image_square_light'] ?? '') }}"
             type="image/x-icon">
 
-        <!-- Main Theme Js -->
         <script src="{{ asset('assets/js/authentication-main.js') }}"></script>
 
-        <!-- Bootstrap Css -->
         <link id="style" href="{{ asset('assets/libs/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
 
-        <!-- Style Css -->
         <link href="{{ asset('assets/css/styles.min.css') }}" rel="stylesheet">
 
-        <!-- Icons Css -->
         <link href="{{ asset('assets/css/icons.min.css') }}" rel="stylesheet">
 
-        <!-- Theme Primary Color -->
         <style>
             :root {
                 @if (isset($themeSettings->primary_color) && $themeSettings->primary_color)
@@ -91,16 +75,31 @@ foreach ($htmlAttributes as $key => $value) {
             }
         </style>
 
-        <!-- External Background Styles -->
         @if (!empty($externalBgSettings['external_bg_image']))
             <style>
-                body {
-                    background-image: url('{{ Storage::url($externalBgSettings['external_bg_image']) }}');
-                    background-size: cover;
-                    background-position: center;
-                    background-repeat: no-repeat;
-                    background-attachment: fixed;
-                    position: relative;
+                /* Desktop and tablet background */
+                @media (min-width: 768px) {
+                    body {
+                        background-image: url('{{ Storage::url($externalBgSettings['external_bg_image']) }}');
+                        background-size: cover;
+                        background-position: center;
+                        background-repeat: no-repeat;
+                        background-attachment: fixed;
+                        position: relative;
+                    }
+                }
+
+                /* Mobile background - without fixed attachment */
+                @media (max-width: 767.98px) {
+                    body {
+                        background-image: url('{{ Storage::url($externalBgSettings['external_bg_image']) }}');
+                        background-size: cover;
+                        background-position: center;
+                        background-repeat: no-repeat;
+                        background-attachment: scroll;
+                        position: relative;
+                        min-height: 100vh;
+                    }
                 }
 
                 body::before {
@@ -118,12 +117,32 @@ foreach ($htmlAttributes as $key => $value) {
                 .authentication {
                     position: relative;
                     z-index: 1;
+                    min-height: 100vh;
+                    display: flex;
+                    align-items: center;
                 }
 
                 .card {
                     background-color: rgba(255, 255, 255, 0.95);
                     backdrop-filter: blur(10px);
                     border: 1px solid rgba(255, 255, 255, 0.2);
+                }
+
+                /* Additional mobile optimizations */
+                @media (max-width: 575.98px) {
+                    .container {
+                        padding-left: 15px;
+                        padding-right: 15px;
+                    }
+
+                    .card-body {
+                        padding: 2rem !important;
+                    }
+
+                    body {
+                        background-size: cover;
+                        background-position: center center;
+                    }
                 }
             </style>
         @endif
@@ -201,7 +220,6 @@ foreach ($htmlAttributes as $key => $value) {
                                 <div class="text-center">
 
                                     @if ($githubEnabled)
-                                        <!-- GitHub OAuth Login -->
                                         <a href="{{ route('auth.github') }}" class="d-block mb-2 mx-auto"
                                             style="width: 240px;
                background-color: #24292f;
@@ -216,7 +234,6 @@ foreach ($htmlAttributes as $key => $value) {
                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
                transition: background-color 0.2s;">
 
-                                            <!-- GitHub SVG Logo -->
                                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
                                                 viewBox="0 0 16 16" fill="#ffffff" style="margin-right: 8px;">
                                                 <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54
@@ -241,7 +258,6 @@ foreach ($htmlAttributes as $key => $value) {
 
 
                                     @if ($microsoftEnabled)
-                                        <!-- Microsoft OAuth Login -->
                                         <a href="{{ route('auth.microsoft') }}" class="d-block mb-2 mx-auto"
                                             style="width: 240px;
                background-color: #ffffff;
@@ -256,7 +272,6 @@ foreach ($htmlAttributes as $key => $value) {
                font-family: 'Segoe UI', sans-serif;
                transition: background-color 0.2s;">
 
-                                            <!-- Microsoft Logo SVG -->
                                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
                                                 viewBox="0 0 23 23" style="margin-right: 8px;">
                                                 <rect width="10" height="10" x="0" y="0" fill="#F35325" />
@@ -269,8 +284,6 @@ foreach ($htmlAttributes as $key => $value) {
                                         </a>
                                     @endif
 
-
-
                                 </div>
                             @endif
 
@@ -281,10 +294,8 @@ foreach ($htmlAttributes as $key => $value) {
         </div>
 
 
-        <!-- Bootstrap JS -->
         <script src="{{ asset('assets/libs/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 
-        <!-- Show Password JS -->
         <script src="{{ asset('assets/js/show-password.js') }}"></script>
 
     </body>

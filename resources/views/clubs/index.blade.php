@@ -1,8 +1,3 @@
-{{-- Club index view - Created based on course index view with image display support --}}
-{{-- Handles listing, creating, editing, and deleting clubs with image management --}}
-{{-- [2024-12-19] Updated: Replaced address textarea with province and commune select dropdowns for better address management --}}
-{{-- Added AJAX functionality to load communes based on selected province --}}
-
 @extends('layouts.app')
 
 @section('content')
@@ -475,7 +470,7 @@
                             // Load communes via AJAX
                             fetch(
                                     `{{ route('backend.clubs.get-communes') }}?province_id=${provinceId}`
-                                    )
+                                )
                                 .then(response => response.json())
                                 .then(communes => {
                                     communes.forEach(commune => {

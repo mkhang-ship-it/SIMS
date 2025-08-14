@@ -218,6 +218,11 @@ class MemberController extends Controller
                 ->where('approved_by', $member->id)
                 ->update(['approved_by' => null]);
 
+            // Delete all user sessions to avoid foreign key constraint
+            DB::table('sessions')
+                ->where('user_id', $member->id)
+                ->delete();
+
             // Delete all user club roles
             $member->userClubRoles()->delete();
 

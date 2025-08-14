@@ -546,9 +546,9 @@
                     <p>Hệ thống đã ghi nhận thanh toán của bạn.</p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-success" data-bs-dismiss="modal"
-                        onclick="window.location.href='{{ route('backend.club.invoices.show', $invoice->id) }}'">Thông Tin
-                        Thanh Toán</button>
+                    <button type="button" class="btn btn-success" data-bs-dismiss="modal" id="paymentSuccessInfoBtn">
+                        Thông Tin Thanh Toán
+                    </button>
                 </div>
             </div>
         </div>
@@ -635,6 +635,17 @@
                                         clearInterval(pollingInterval);
                                         var qrModal = bootstrap.Modal.getInstance(modalEl);
                                         if (qrModal) qrModal.hide();
+
+                                        // Set URL for payment success button
+                                        var successBtn = document.getElementById(
+                                            'paymentSuccessInfoBtn');
+                                        if (successBtn) {
+                                            successBtn.onclick = function() {
+                                                window.location.href =
+                                                    '/club/invoices/{{ $invoice->id }}';
+                                            };
+                                        }
+
                                         var successModal = new bootstrap.Modal(document
                                             .getElementById('paymentSuccessModal'));
                                         successModal.show();

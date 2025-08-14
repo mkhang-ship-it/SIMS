@@ -209,6 +209,15 @@ class MemberController extends Controller
                     ->delete();
             }
 
+            // Handle expenses - set requested_by and approved_by to null to preserve expense records
+            DB::table('expenses')
+                ->where('requested_by', $member->id)
+                ->update(['requested_by' => null]);
+
+            DB::table('expenses')
+                ->where('approved_by', $member->id)
+                ->update(['approved_by' => null]);
+
             // Delete all user club roles
             $member->userClubRoles()->delete();
 

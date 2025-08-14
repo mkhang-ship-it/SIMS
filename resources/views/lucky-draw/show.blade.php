@@ -1,4 +1,4 @@
-{{-- Updated: Added prize availability checks and participant eligibility validation for lucky draw system - Added checks to prevent spinning when prizes are exhausted or participants have already won --}}
+{{-- Updated: Added modal background image support and no-prize spinning mode - users can now spin without prizes with option "🎲 Quay số may mắn (không giải)". In no-prize mode: hides prize name in spinning modal and hides "ĐÃ TRÚNG GIẢI" section in result modal, shows only congratulations + winner name. Results are always saved to database (no-prize mode saves with prize text "Quay số may mắn"). Also includes prize availability checks with participant eligibility validation --}}
 <!doctype html>
 <html lang="en">
 
@@ -121,7 +121,8 @@
     <div class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" id="spinModal" tabindex="-1"
         aria-labelledby="spinModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered">
-            <div class="modal-content text-center justify-content-center align-items-center">
+            <div class="modal-content text-center justify-content-center align-items-center"
+                @if ($luckyDraw->modal_background_image) style="background-image: url({{ asset('storage/' . $luckyDraw->modal_background_image) }}); background-size: cover; background-position: center; background-repeat: no-repeat;" @endif>
                 <button type="button"
                     style="position: absolute;
     top: -3px;
@@ -132,14 +133,13 @@
                 </button>
                 <div class="container">
                     <div class="spinning">
-                        <h1 id="" class="text-primary fs-1 currentPrize"></h1>
                         <h1 id="luckynumber" class="text-primary fs-1 my-5"> -- -- -- -- -- -- -- </h1>
                         <a href="javascript:" id="startSpin" class="w-25 btn btn-primary btn-lg">
                             BẮT ĐẦU
                         </a>
                     </div>
                     <div class="spinResult" style="display: none;     margin-top: 10%;">
-                        <dotlottie-player
+                        {{-- <dotlottie-player
                             src="https://lottie.host/f1ff7b5d-aa51-4bdc-ba73-fdcb8388dee9/7QM24NkP8I.json?v=2"
                             background="transparent" speed="1"
                             style="width: 600px;
@@ -147,13 +147,15 @@
     position: absolute;
     top: -2%;
     left: 28%;"
-                            loop autoplay></dotlottie-player>
+                            loop autoplay></dotlottie-player> --}}
 
                         <h1 class="text-primary fs-1">XIN CHÚC MỪNG</h1>
                         <h1><b id="resultSpin" class="text-primary " style="font-size: 3rem"></b></h1>
                         <br>
-                        <span class="text-primary fs-1">ĐÃ TRÚNG GIẢI </span> <br><b
-                            class="text-primary fs-1 currentPrize"></b>
+                        <div class="d-flex align-items-center justify-content-center">
+                            <span class="text-primary fs-1 me-2">ĐÃ TRÚNG THƯỞNG</span>
+                            <b class="text-primary fs-1 currentPrize"></b>
+                        </div>
                         <br>
                         <button id="continueSpin" class="btn btn-success btn-lg mt-3 " style=" z-index: 10;">Tiếp
                             tục</button>
@@ -337,18 +339,26 @@
             url: "{{ route('lucky-draw.prizes', $luckyDraw->slug) }}?" + timestamp + Math.random(),
             method: 'GET',
             success: function(data) {
-                console.log('Prizes loaded:', data);
+                // console.log('Prizes loaded:', data);
                 var prizeSetting = "";
                 var prizeSelect = "";
                 $('#prizeSelect').empty();
-                $('#prizeSelect').append('<option value="">-- Chọn giải thưởng --</option>');
-                $.each(data, function(key, value) {
-                    prizeSetting += value + "\n";
-                    prizeSelect += `<option value="${key}">${value}</option>`;
-                });
+
+                // Always add the "Lucky Draw" option first
+                $('#prizeSelect').append(
+                    '<option value="no-prize">🎲 Quay số may mắn (không giải)</option>');
+
+                if (Object.keys(data).length > 0) {
+                    $('#prizeSelect').append('<option value="">-- Chọn giải thưởng --</option>');
+                    $.each(data, function(key, value) {
+                        prizeSetting += value + "\n";
+                        prizeSelect += `<option value="${key}">${value}</option>`;
+                    });
+                    $('#prizeSelect').append(prizeSelect);
+                }
+
                 prizeSetting = prizeSetting.trim();
                 $('#prizeSetting').val(prizeSetting);
-                $('#prizeSelect').append(prizeSelect);
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 console.error('Error loading prizes:', textStatus, errorThrown);
@@ -392,7 +402,7 @@
             url: "{{ route('lucky-draw.participants', $luckyDraw->slug) }}?" + timestamp + Math.random(),
             method: 'GET',
             success: function(data) {
-                console.log('Participants loaded:', data);
+                // console.log('Participants loaded:', data);
                 var participants = "";
                 $.each(data, function(key, value) {
                     participants += value + "\n";
@@ -443,7 +453,7 @@
             url: "{{ route('lucky-draw.winners', $luckyDraw->slug) }}?" + timestamp + Math.random(),
             method: 'GET',
             success: function(data) {
-                console.log('Winners loaded:', data);
+                // console.log('Winners loaded:', data);
                 const tableBody = $('#winnersTableBody');
                 tableBody.empty();
 
@@ -500,9 +510,9 @@
         var selectedPrize = $('#prizeSelect').val();
         var selectedPrizeText = $('#prizeSelect option:selected').text();
 
-        // Check if prize is selected and available
+        // Check if an option is selected
         if (selectedPrize === "") {
-            toastr.warning("Vui lòng chọn giải thưởng trước khi quay.");
+            toastr.warning("Vui lòng chọn một tùy chọn trước khi quay.");
             return;
         }
 
@@ -515,54 +525,163 @@
                 return;
             }
 
-            // Check if all participants have already won
-            $.ajax({
-                url: "{{ route('lucky-draw.winners', $luckyDraw->slug) }}?" + timestamp + Math
-                    .random(),
-                method: 'GET',
-                success: function(winnersData) {
-                    var winners = winnersData || [];
-                    var availableParticipants = participants.filter(function(participant) {
-                        return !winners.some(function(winner) {
-                            return winner.name === participant.trim();
+            // Check prize availability before proceeding (only for real prizes, not no-prize mode)
+            if (selectedPrize !== 'no-prize') {
+                $.ajax({
+                    url: "{{ route('lucky-draw.prizes.details', $luckyDraw->slug) }}?" +
+                        timestamp + Math.random(),
+                    method: 'GET',
+                    success: function(prizesData) {
+                        var selectedPrizeObj = prizesData.find(function(prize) {
+                            return prize.name === selectedPrizeText;
                         });
-                    });
 
-                    if (availableParticipants.length === 0) {
-                        toastr.error("Tất cả người tham dự đã trúng giải!");
-                        return;
+                        if (!selectedPrizeObj) {
+                            toastr.error("Giải thưởng không tồn tại!");
+                            return;
+                        }
+
+                        if (!selectedPrizeObj.is_available) {
+                            toastr.error("Giải thưởng '" + selectedPrizeText + "' đã hết!");
+                            return;
+                        }
+
+                        // If prize is available, proceed with participant check
+                        checkParticipantsAndProceed();
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        console.error('Error checking prizes:', textStatus, errorThrown);
+                        toastr.error("Có lỗi xảy ra khi kiểm tra giải thưởng.");
                     }
+                });
+            } else {
+                // For no-prize mode, directly check participants
+                checkParticipantsAndProceed();
+            }
 
-                    // Proceed with spin
-                    $('.spinning').show();
-                    $('.spinResult').hide();
-                    $('#startSpin').removeClass('disabled');
-                    $('#luckynumber').html(' -- -- -- -- -- -- -- ');
-                    $('#settingModal').modal('hide');
-                    $('#spinModal').modal('show');
-                    currentPrize = selectedPrize;
-                    currentPrizeText = selectedPrizeText;
-                    $('.currentPrize').html(currentPrizeText);
-                    $('.currentPrize').show();
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    console.error('Error checking winners:', textStatus, errorThrown);
-                    toastr.error("Có lỗi xảy ra khi kiểm tra danh sách trúng thưởng.");
-                }
-            });
+            function checkParticipantsAndProceed() {
+                // Check if all participants have already won (applies to both prize and no-prize modes)
+                $.ajax({
+                    url: "{{ route('lucky-draw.winners', $luckyDraw->slug) }}?" + timestamp +
+                        Math.random(),
+                    method: 'GET',
+                    success: function(winnersData) {
+                        var winners = winnersData || [];
+                        var availableParticipants = participants.filter(function(
+                            participant) {
+                            return !winners.some(function(winner) {
+                                return winner.name === participant.trim();
+                            });
+                        });
+
+                        if (availableParticipants.length === 0) {
+                            toastr.error("Tất cả người tham dự đã trúng giải!");
+                            return;
+                        }
+
+                        proceedWithSpin();
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        console.error('Error checking winners:', textStatus, errorThrown);
+                        toastr.error("Có lỗi xảy ra khi kiểm tra danh sách trúng thưởng.");
+                    }
+                });
+            }
+
+            function proceedWithSpin() {
+                // Proceed with spin
+                $('.spinning').show();
+                $('.spinResult').hide();
+                $('#startSpin').removeClass('disabled');
+                $('#luckynumber').html(' -- -- -- -- -- -- -- ');
+                $('#settingModal').modal('hide');
+                $('#spinModal').modal('show');
+                currentPrize = selectedPrize;
+                currentPrizeText = selectedPrizeText;
+            }
         });
     });
 
     $('#startSpin').on('click', function() {
-        startSpinning();
+        // Check prize availability before starting spin (only for real prizes, not no-prize mode)
+        if (currentPrize !== 'no-prize') {
+            $.ajax({
+                url: "{{ route('lucky-draw.prizes.details', $luckyDraw->slug) }}?" + timestamp + Math
+                    .random(),
+                method: 'GET',
+                success: function(prizesData) {
+                    var selectedPrizeObj = prizesData.find(function(prize) {
+                        return prize.name === currentPrizeText;
+                    });
+
+                    if (!selectedPrizeObj) {
+                        toastr.error("Giải thưởng không tồn tại!");
+                        return;
+                    }
+
+                    if (!selectedPrizeObj.is_available) {
+                        toastr.error("Giải thưởng '" + currentPrizeText +
+                            "' đã hết! Vui lòng chọn giải thưởng khác để tiếp tục.");
+                        return;
+                    }
+
+                    // If prize is still available, proceed with spinning
+                    startSpinning();
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.error('Error checking prizes:', textStatus, errorThrown);
+                    toastr.error("Có lỗi xảy ra khi kiểm tra giải thưởng.");
+                }
+            });
+        } else {
+            // For no-prize mode, directly start spinning
+            startSpinning();
+        }
     });
 
     $(document).on('click', '#continueSpin', function() {
+        // Check prize availability before continuing (only for real prizes, not no-prize mode)
+        if (currentPrize !== 'no-prize') {
+            $.ajax({
+                url: "{{ route('lucky-draw.prizes.details', $luckyDraw->slug) }}?" + timestamp + Math
+                    .random(),
+                method: 'GET',
+                success: function(prizesData) {
+                    var selectedPrizeObj = prizesData.find(function(prize) {
+                        return prize.name === currentPrizeText;
+                    });
+
+                    if (!selectedPrizeObj) {
+                        toastr.error("Giải thưởng không tồn tại!");
+                        return;
+                    }
+
+                    if (!selectedPrizeObj.is_available) {
+                        toastr.error("Giải thưởng '" + currentPrizeText +
+                            "' đã hết! Vui lòng chọn giải thưởng khác để tiếp tục.");
+                        return;
+                    }
+
+                    // If prize is still available, proceed with reset
+                    resetSpinningModal();
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.error('Error checking prizes:', textStatus, errorThrown);
+                    toastr.error("Có lỗi xảy ra khi kiểm tra giải thưởng.");
+                }
+            });
+        } else {
+            // For no-prize mode, directly reset
+            resetSpinningModal();
+        }
+    });
+
+    function resetSpinningModal() {
         $('.spinResult').hide();
         $('.spinning').show();
         $('#luckynumber').html(' -- -- -- -- -- -- -- ');
         $('#startSpin').removeClass('disabled');
-    });
+    }
 
     let initialInterval = 80;
     let currentInterval = initialInterval;
@@ -592,7 +711,7 @@
             return;
         }
 
-        // Get winners to exclude them from spinning
+        // Always exclude already-won participants (applies to both prize and no-prize modes)
         $.ajax({
             url: "{{ route('lucky-draw.winners', $luckyDraw->slug) }}?" + timestamp + Math.random(),
             method: 'GET',
@@ -660,12 +779,28 @@
                 $('#resultSpin').html(luckyEntries[newIndex])
                 $('.spinning').hide();
                 $('.spinResult').show();
-                if (currentPrizeText == "") {
+                // Handle display based on prize mode
+                if (currentPrize === 'no-prize') {
+                    // In no-prize mode: hide all prize-related text, just show congratulations
                     $(".spinResult span.text-primary.fs-1, .spinResult b.currentPrize").hide();
+                    $(".spinResult h1:first").text("XIN CHÚC MỪNG");
                 } else {
+                    // Prize mode: show full congratulations with prize name
                     $(".spinResult span.text-primary.fs-1, .spinResult b.currentPrize").show();
+                    $(".spinResult h1:first").text("XIN CHÚC MỪNG");
+                    $(".spinResult span.text-primary.fs-1").text("ĐÃ TRÚNG THƯỞNG");
+                    $(".spinResult b.currentPrize").text('"' + currentPrizeText + '"');
                 }
-                storeResult(luckyEntries[newIndex], currentPrizeText)
+                // Always save result, but adjust prize text for no-prize mode
+                if (currentPrize === 'no-prize') {
+                    // In no-prize mode, save with "Quay số may mắn" as prize text
+                    storeResult(luckyEntries[newIndex], "-");
+                    setTimeout(function() {
+                        // toastr.success("🎲 Kết quả quay số đã được lưu!");
+                    }, 500);
+                } else {
+                    storeResult(luckyEntries[newIndex], currentPrizeText);
+                }
             }, 600);
         }
     }
@@ -689,7 +824,7 @@
                 if (response.success) {
                     loadWinners();
                     loadPrizeSetting(); // Refresh prize list to update availability
-                    toastr.success("Kết quả đã được lưu thành công!");
+                    // toastr.success("Kết quả đã được lưu thành công!");
                 } else {
                     toastr.error(response.error || "Có lỗi xảy ra khi lưu kết quả.");
                 }

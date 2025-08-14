@@ -83,13 +83,7 @@
                                             </label>
                                             <div class="input-group">
                                                 <input type="text" class="form-control" id="securityCode"
-                                                    value="{{ $luckyDraw->security_code ?? 'Chưa có' }}" readonly>
-                                                @if ($luckyDraw->security_code)
-                                                    <button class="btn btn-outline-secondary" type="button"
-                                                        onclick="copySecurityCode()">
-                                                        <i class="fas fa-copy"></i>
-                                                    </button>
-                                                @endif
+                                                    value="{{ $luckyDraw->security_code ?? '-' }}" readonly>
                                             </div>
                                         </div>
                                     </div>
@@ -314,27 +308,3 @@
 
     </div>
 @endsection
-
-@push('scripts')
-    <script>
-        $(document).ready(function() {
-            $('#copyLink').on('click', function() {
-                const link = $('#publicLink').val();
-                navigator.clipboard.writeText(link).then(function() {
-                    toastr.success('Đã copy link vào clipboard!');
-                }, function() {
-                    toastr.error('Không thể copy link!');
-                });
-            });
-        });
-
-        function copySecurityCode() {
-            const code = document.getElementById('securityCode').value;
-            navigator.clipboard.writeText(code).then(function() {
-                toastr.success('Đã copy mã bảo mật vào clipboard!');
-            }, function() {
-                toastr.error('Không thể copy mã bảo mật!');
-            });
-        }
-    </script>
-@endpush

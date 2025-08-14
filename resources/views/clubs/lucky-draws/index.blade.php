@@ -1,4 +1,4 @@
-{{-- Updated: Added security_code field to lucky draw forms and views for public page protection --}}
+{{-- Updated: Added modal_background_image field to lucky draw forms with preview functionality for customizing spinning wheel modal background. Also includes security_code field for public page protection --}}
 @extends('layouts.app')
 
 @section('content')
@@ -224,26 +224,66 @@
                                                                                 mật.</small>
                                                                         </div>
 
-                                                                        <div class="mb-3">
-                                                                            <label
-                                                                                for="edit_background_image{{ $luckyDraw->id }}"
-                                                                                class="form-label">Hình nền</label>
-                                                                            <input type="file" class="form-control"
-                                                                                id="edit_background_image{{ $luckyDraw->id }}"
-                                                                                name="background_image" accept="image/*">
-                                                                            <small class="form-text text-muted">Để trống
-                                                                                nếu không muốn thay đổi hình nền</small>
+                                                                        <div class="row">
+                                                                            <div class="col-md-6">
+                                                                                <div class="mb-3">
+                                                                                    <label
+                                                                                        for="edit_background_image{{ $luckyDraw->id }}"
+                                                                                        class="form-label">Hình nền</label>
+                                                                                    <input type="file"
+                                                                                        class="form-control"
+                                                                                        id="edit_background_image{{ $luckyDraw->id }}"
+                                                                                        name="background_image"
+                                                                                        accept="image/*">
+                                                                                    <small class="form-text text-muted">Để
+                                                                                        trống
+                                                                                        nếu không muốn thay đổi hình
+                                                                                        nền</small>
 
-                                                                            @if ($luckyDraw->background_image)
-                                                                                <div class="mt-2">
-                                                                                    <label class="form-label">Hình nền hiện
-                                                                                        tại:</label>
-                                                                                    <img src="{{ asset('storage/' . $luckyDraw->background_image) }}"
-                                                                                        alt="Current background"
-                                                                                        class="img-thumbnail rounded"
-                                                                                        style="max-width: 200px; max-height: 120px; object-fit: cover;">
+                                                                                    @if ($luckyDraw->background_image)
+                                                                                        <div class="mt-2">
+                                                                                            <label class="form-label">Hình
+                                                                                                nền hiện
+                                                                                                tại:</label>
+                                                                                            <img src="{{ asset('storage/' . $luckyDraw->background_image) }}"
+                                                                                                alt="Current background"
+                                                                                                class="img-thumbnail rounded"
+                                                                                                style="max-width: 200px; max-height: 120px; object-fit: cover;">
+                                                                                        </div>
+                                                                                    @endif
                                                                                 </div>
-                                                                            @endif
+                                                                            </div>
+                                                                            <div class="col-md-6">
+                                                                                <div class="mb-3">
+                                                                                    <label
+                                                                                        for="edit_modal_background_image{{ $luckyDraw->id }}"
+                                                                                        class="form-label">Hình nền modal
+                                                                                        quay
+                                                                                        thưởng</label>
+                                                                                    <input type="file"
+                                                                                        class="form-control"
+                                                                                        id="edit_modal_background_image{{ $luckyDraw->id }}"
+                                                                                        name="modal_background_image"
+                                                                                        accept="image/*">
+                                                                                    <small class="form-text text-muted">Để
+                                                                                        trống
+                                                                                        nếu không muốn thay đổi hình nền
+                                                                                        modal quay thưởng.</small>
+
+                                                                                    @if ($luckyDraw->modal_background_image)
+                                                                                        <div class="mt-2">
+                                                                                            <label class="form-label">Hình
+                                                                                                nền
+                                                                                                modal hiện
+                                                                                                tại:</label>
+                                                                                            <img src="{{ asset('storage/' . $luckyDraw->modal_background_image) }}"
+                                                                                                alt="Current modal background"
+                                                                                                class="img-thumbnail rounded"
+                                                                                                style="max-width: 200px; max-height: 120px; object-fit: cover;">
+                                                                                        </div>
+                                                                                    @endif
+                                                                                </div>
+                                                                            </div>
                                                                         </div>
 
                                                                         <div class="row">
@@ -406,7 +446,7 @@
     <!-- Add Lucky Draw Modal -->
     <div class="modal fade" id="addLuckyDrawModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
         aria-labelledby="addLuckyDrawModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="addLuckyDrawModalLabel">
@@ -440,11 +480,24 @@
                                         thưởng, bỏ trống nếu không cần mã bảo mật.</small>
                                 </div>
 
-                                <div class="mb-3">
-                                    <label for="background_image" class="form-label">Hình nền</label>
-                                    <input type="file" class="form-control" id="background_image"
-                                        name="background_image" accept="image/*">
-                                    <small class="form-text text-muted">Để trống nếu không muốn thêm hình nền.</small>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="background_image" class="form-label">Hình nền <span
+                                                    class="text-danger">*</span></label>
+                                            <input type="file" class="form-control" id="background_image"
+                                                name="background_image" accept="image/*" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="modal_background_image" class="form-label">Hình nền modal quay
+                                                thưởng
+                                                <span class="text-danger">*</span></label>
+                                            <input type="file" class="form-control" id="modal_background_image"
+                                                name="modal_background_image" accept="image/*">
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div class="row">
@@ -563,13 +616,39 @@
             });
 
             // Add image preview for edit forms
-            $('input[name="background_image"]').on('change', function() {
+            $('input[name="background_image"][id^="edit_background_image"]').on('change', function() {
                 const luckyDrawId = $(this).attr('id').replace('edit_background_image', '');
                 const previewId = '#edit_background_image_preview' + luckyDrawId;
 
                 if (!$(previewId).length) {
                     $(this).closest('.mb-3').append(
                         '<div class="mt-2"><label class="form-label">Xem trước:</label><br><img id="edit_background_image_preview' +
+                        luckyDrawId +
+                        '" src="" alt="Preview" class="img-thumbnail rounded" style="max-width: 200px; max-height: 120px; object-fit: cover; display: none;"></div>'
+                    );
+                }
+                handleImagePreview(this, previewId);
+            });
+
+            // Add image preview for modal background image in new form
+            $('#modal_background_image').on('change', function() {
+                const previewId = '#modal_background_image_preview';
+                if (!$(previewId).length) {
+                    $(this).after(
+                        '<div class="mt-2"><label class="form-label">Xem trước:</label><br><img id="modal_background_image_preview" src="" alt="Preview" class="img-thumbnail rounded" style="max-width: 200px; max-height: 120px; object-fit: cover; display: none;"></div>'
+                    );
+                }
+                handleImagePreview(this, previewId);
+            });
+
+            // Add image preview for modal background image in edit forms
+            $('input[name="modal_background_image"][id^="edit_modal_background_image"]').on('change', function() {
+                const luckyDrawId = $(this).attr('id').replace('edit_modal_background_image', '');
+                const previewId = '#edit_modal_background_image_preview' + luckyDrawId;
+
+                if (!$(previewId).length) {
+                    $(this).closest('.mb-3').append(
+                        '<div class="mt-2"><label class="form-label">Xem trước:</label><br><img id="edit_modal_background_image_preview' +
                         luckyDrawId +
                         '" src="" alt="Preview" class="img-thumbnail rounded" style="max-width: 200px; max-height: 120px; object-fit: cover; display: none;"></div>'
                     );

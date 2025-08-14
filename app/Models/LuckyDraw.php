@@ -1,5 +1,6 @@
 <?php
-// Updated: Added security_code field to LuckyDraw model fillable array and updated participant winner checking methods
+// Updated: Added modal_background_image field to LuckyDraw model for customizing the spinning wheel modal background
+// - Added security_code field to fillable array and updated participant winner checking methods
 // - Added hasParticipantWon() method to check if a participant has already won
 // - Updated getAvailableParticipants() to be more efficient
 // - Added getAvailableParticipantsForPrize() method to get participants available for a specific prize
@@ -17,6 +18,7 @@ class LuckyDraw extends Model
 
     protected $fillable = [
         'club_id',
+        'type',
         'title',
         'slug',
         'security_code',
@@ -26,7 +28,8 @@ class LuckyDraw extends Model
         'end_date',
         'is_active',
         'created_by',
-        'background_image'
+        'background_image',
+        'modal_background_image'
     ];
 
     protected $casts = [

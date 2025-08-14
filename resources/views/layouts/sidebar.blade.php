@@ -273,6 +273,16 @@
                             </a>
                         </li>
                     @endif
+
+                    @if (auth()->user()->hasPermissionForModuleCode('lucky_draw_management', 'view', 'central'))
+                        <li class="slide {{ request()->routeIs('backend.lucky-draws.*') ? 'active' : '' }}">
+                            <a href="{{ route('backend.lucky-draws.index') }}"
+                                class="side-menu__item {{ request()->routeIs('backend.lucky-draws.*') ? 'active' : '' }}">
+                                <i class="las la-dice side-menu__icon"></i>
+                                <span class="side-menu__label">Quản Lý Lucky Draw</span>
+                            </a>
+                        </li>
+                    @endif
                 @else
                     <li class="slide__category"><span class="category-name">Tổng Quan</span></li>
 

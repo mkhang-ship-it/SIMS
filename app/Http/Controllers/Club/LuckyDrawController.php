@@ -1,5 +1,5 @@
 <?php
-// Updated: Added security_code field to LuckyDrawController validation and create/update methods with auto-generation
+// Updated: Added modal_background_image field support with upload, validation, and storage management for customizing the spinning wheel modal background. Also fixed security_code auto-generation logic to respect user input
 
 namespace App\Http\Controllers\Club;
 
@@ -30,6 +30,7 @@ class LuckyDrawController extends Controller
             'end_date' => 'required|date|after:start_date',
             'participants' => 'nullable|string',
             'background_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'modal_background_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'security_code' => 'nullable|string|max:50'
         ]);
 
@@ -46,8 +47,13 @@ class LuckyDrawController extends Controller
             $backgroundImagePath = $request->file('background_image')->store('lucky-draws/backgrounds', 'public');
         }
 
-        // Generate security code if not provided
-        $securityCode = $request->security_code ?: Str::random(12);
+        $modalBackgroundImagePath = null;
+        if ($request->hasFile('modal_background_image')) {
+            $modalBackgroundImagePath = $request->file('modal_background_image')->store('lucky-draws/modal-backgrounds', 'public');
+        }
+
+        // Generate security code only if field is not submitted, allow empty string to be saved as null
+        $securityCode = $request->has('security_code') ? ($request->security_code ?: null) : Str::random(12);
 
         $luckyDraw = LuckyDraw::create([
             'club_id' => session('club_id'),
@@ -60,7 +66,8 @@ class LuckyDrawController extends Controller
             'end_date' => $request->end_date,
             'is_active' => $request->has('is_active'),
             'created_by' => Auth::user()->id,
-            'background_image' => $backgroundImagePath
+            'background_image' => $backgroundImagePath,
+            'modal_background_image' => $modalBackgroundImagePath
         ]);
 
         if ($request->expectsJson()) {
@@ -99,6 +106,7 @@ class LuckyDrawController extends Controller
             'end_date' => 'required|date|after:start_date',
             'participants' => 'nullable|string',
             'background_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'modal_background_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'security_code' => 'nullable|string|max:50'
         ]);
 
@@ -120,8 +128,19 @@ class LuckyDrawController extends Controller
             $backgroundImagePath = $request->file('background_image')->store('lucky-draws/backgrounds', 'public');
         }
 
-        // Generate security code if not provided and doesn't exist
-        $securityCode = $request->security_code ?: ($luckyDraw->security_code ?: Str::random(12));
+        $modalBackgroundImagePath = $luckyDraw->modal_background_image;
+        if ($request->hasFile('modal_background_image')) {
+            // Delete old modal background image if exists
+            if ($luckyDraw->modal_background_image) {
+                Storage::disk('public')->delete($luckyDraw->modal_background_image);
+            }
+            // Store new modal background image
+            $modalBackgroundImagePath = $request->file('modal_background_image')->store('lucky-draws/modal-backgrounds', 'public');
+        }
+
+        // Handle security code: use submitted value (including empty/null), keep existing, or generate if none exist
+        $securityCode = $request->has('security_code') ?
+            ($request->security_code ?: null) : ($luckyDraw->security_code ?: Str::random(12));
 
         $luckyDraw->update([
             'title' => $request->title,
@@ -130,7 +149,8 @@ class LuckyDrawController extends Controller
             'start_date' => $request->start_date,
             'end_date' => $request->end_date,
             'is_active' => $request->has('is_active'),
-            'background_image' => $backgroundImagePath
+            'background_image' => $backgroundImagePath,
+            'modal_background_image' => $modalBackgroundImagePath
         ]);
 
         if ($request->expectsJson()) {
@@ -155,6 +175,11 @@ class LuckyDrawController extends Controller
         // Delete background image if exists
         if ($luckyDraw->background_image) {
             Storage::disk('public')->delete($luckyDraw->background_image);
+        }
+
+        // Delete modal background image if exists
+        if ($luckyDraw->modal_background_image) {
+            Storage::disk('public')->delete($luckyDraw->modal_background_image);
         }
 
         $luckyDraw->delete();

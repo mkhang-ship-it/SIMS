@@ -40,10 +40,12 @@
 
             <!-- Nút trên desktop -->
             <div class="d-none d-md-block">
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPrizeModal">
-                    <i class="ti ti-plus"></i>
-                    Thêm Mới
-                </button>
+                @if (auth()->user()->hasPermissionForModuleCode('lucky_draw_management', 'create', 'branch'))
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPrizeModal">
+                        <i class="ti ti-plus"></i>
+                        Thêm Mới
+                    </button>
+                @endif
                 <a href="{{ route('backend.club.lucky-draws.show', $luckyDraw) }}" class="btn btn-secondary">
                     <i class="ti ti-arrow-left"></i>
                     Quay Lại
@@ -56,11 +58,13 @@
                     Hành động
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
-                    <li>
-                        <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#addPrizeModal">
-                            <i class="ti ti-plus"></i> Thêm Giải Thưởng
-                        </a>
-                    </li>
+                    @if (auth()->user()->hasPermissionForModuleCode('lucky_draw_management', 'create', 'branch'))
+                        <li>
+                            <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#addPrizeModal">
+                                <i class="ti ti-plus"></i> Thêm Giải Thưởng
+                            </a>
+                        </li>
+                    @endif
                     <li>
                         <a class="dropdown-item" href="{{ route('backend.club.lucky-draws.show', $luckyDraw) }}">
                             <i class="ti ti-arrow-left"></i> Quay Lại
@@ -139,135 +143,150 @@
                                                 </td>
                                                 <td class="text-center">
                                                     <div class="gap-2 fs-15">
-                                                        <button class="btn btn-icon btn-sm btn-info-light"
-                                                            data-bs-toggle="modal"
-                                                            data-bs-target="#editPrizeModal{{ $prize->id }}"
-                                                            title="Chỉnh sửa">
-                                                            <i class="ri-edit-line"></i>
-                                                        </button>
-                                                        <button class="btn btn-icon btn-sm btn-danger-light"
-                                                            data-bs-toggle="modal"
-                                                            data-bs-target="#deletePrizeModal{{ $prize->id }}"
-                                                            title="Xóa">
-                                                            <i class="ri-delete-bin-line"></i>
-                                                        </button>
+                                                        @if (auth()->user()->hasPermissionForModuleCode('lucky_draw_management', 'edit', 'branch'))
+                                                            <button class="btn btn-icon btn-sm btn-info-light"
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#editPrizeModal{{ $prize->id }}"
+                                                                title="Chỉnh sửa">
+                                                                <i class="ri-edit-line"></i>
+                                                            </button>
+                                                        @endif
+                                                        @if (auth()->user()->hasPermissionForModuleCode('lucky_draw_management', 'delete', 'branch'))
+                                                            <button class="btn btn-icon btn-sm btn-danger-light"
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#deletePrizeModal{{ $prize->id }}"
+                                                                title="Xóa">
+                                                                <i class="ri-delete-bin-line"></i>
+                                                            </button>
+                                                        @endif
                                                     </div>
                                                 </td>
                                             </tr>
 
-                                            <!-- Edit Prize Modal for each prize -->
-                                            <div class="modal fade" id="editPrizeModal{{ $prize->id }}" tabindex="-1"
-                                                aria-labelledby="editPrizeModalLabel{{ $prize->id }}" aria-hidden="true"
-                                                data-bs-backdrop="static" data-bs-keyboard="false">
-                                                <div class="modal-dialog modal-dialog-centered">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title"
-                                                                id="editPrizeModalLabel{{ $prize->id }}">
-                                                                <i class="ti ti-edit text-primary me-2"></i> Chỉnh Sửa Giải
-                                                                Thưởng
-                                                            </h5>
-                                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                                aria-label="Close"></button>
-                                                        </div>
-                                                        <form
-                                                            action="{{ route('backend.club.lucky-draws.prizes.update', [$luckyDraw, $prize]) }}"
-                                                            method="POST" enctype="multipart/form-data">
-                                                            @csrf
-                                                            @method('PUT')
-                                                            <div class="modal-body">
-                                                                <div class="mb-3">
-                                                                    <label for="edit_name{{ $prize->id }}"
-                                                                        class="form-label">Tên Giải Thưởng <span
-                                                                            class="text-danger">*</span></label>
-                                                                    <input type="text" class="form-control"
-                                                                        id="edit_name{{ $prize->id }}" name="name"
-                                                                        value="{{ $prize->name }}" required>
-                                                                </div>
-                                                                <div class="mb-3">
-                                                                    <label for="edit_image{{ $prize->id }}"
-                                                                        class="form-label">Hình Ảnh</label>
-                                                                    <input type="file" class="form-control"
-                                                                        id="edit_image{{ $prize->id }}" name="image"
-                                                                        accept="image/*">
-                                                                    <small class="form-text text-muted">Hỗ trợ: JPEG, PNG,
-                                                                        JPG, GIF (tối đa 2MB)</small>
-                                                                </div>
-                                                                <div class="mb-3">
-                                                                    <label for="edit_quantity{{ $prize->id }}"
-                                                                        class="form-label">Số Lượng <span
-                                                                            class="text-danger">*</span></label>
-                                                                    <input type="number" class="form-control"
-                                                                        id="edit_quantity{{ $prize->id }}"
-                                                                        name="quantity" min="1"
-                                                                        value="{{ $prize->quantity }}" required>
-                                                                </div>
-                                                                <div class="mb-3">
-                                                                    <div class="form-check">
-                                                                        <input class="form-check-input" type="checkbox"
-                                                                            id="edit_special_gift{{ $prize->id }}"
-                                                                            name="special_gift" value="1"
-                                                                            {{ $prize->special_gift ? 'checked' : '' }}>
-                                                                        <label class="form-check-label"
-                                                                            for="edit_special_gift{{ $prize->id }}">
-                                                                            <i class="ti ti-star text-warning me-1"></i>
-                                                                            Giải Đặc Biệt
-                                                                        </label>
-                                                                    </div>
-                                                                    <small class="form-text text-muted">Đánh dấu giải
-                                                                        thưởng này là giải đặc biệt</small>
-                                                                </div>
+                                            @if (auth()->user()->hasPermissionForModuleCode('lucky_draw_management', 'edit', 'branch'))
+                                                <!-- Edit Prize Modal for each prize -->
+                                                <div class="modal fade" id="editPrizeModal{{ $prize->id }}"
+                                                    tabindex="-1" aria-labelledby="editPrizeModalLabel{{ $prize->id }}"
+                                                    aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+                                                    <div class="modal-dialog modal-dialog-centered">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title"
+                                                                    id="editPrizeModalLabel{{ $prize->id }}">
+                                                                    <i class="ti ti-edit text-primary me-2"></i> Chỉnh Sửa
+                                                                    Giải
+                                                                    Thưởng
+                                                                </h5>
+                                                                <button type="button" class="btn-close"
+                                                                    data-bs-dismiss="modal" aria-label="Close"></button>
                                                             </div>
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary"
-                                                                    data-bs-dismiss="modal">Hủy</button>
-                                                                <button type="submit" class="btn btn-primary">
-                                                                    <i class="ti ti-device-floppy me-1"></i> Cập Nhật
-                                                                </button>
-                                                            </div>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <!-- Delete Prize Modal for each prize -->
-                                            <div class="modal fade" id="deletePrizeModal{{ $prize->id }}"
-                                                tabindex="-1" aria-labelledby="deletePrizeModalLabel{{ $prize->id }}"
-                                                aria-hidden="true">
-                                                <div class="modal-dialog modal-dialog-centered">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title"
-                                                                id="deletePrizeModalLabel{{ $prize->id }}">
-                                                                <i class="ti ti-trash text-danger me-2"></i> Xóa Giải
-                                                                Thưởng
-                                                            </h5>
-                                                            <button type="button" class="btn-close"
-                                                                data-bs-dismiss="modal" aria-label="Close"></button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <p>Bạn có chắc chắn muốn xóa giải thưởng
-                                                                <strong>"{{ $prize->name }}"</strong>?
-                                                            </p>
-                                                            <p class="text-muted mb-0">Hành động này không thể hoàn tác.
-                                                            </p>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary"
-                                                                data-bs-dismiss="modal">Hủy</button>
                                                             <form
-                                                                action="{{ route('backend.club.lucky-draws.prizes.destroy', [$luckyDraw, $prize]) }}"
-                                                                method="POST" class="d-inline">
+                                                                action="{{ route('backend.club.lucky-draws.prizes.update', [$luckyDraw, $prize]) }}"
+                                                                method="POST" enctype="multipart/form-data">
                                                                 @csrf
-                                                                @method('DELETE')
-                                                                <button type="submit" class="btn btn-danger">
-                                                                    <i class="ti ti-trash me-1"></i> Xóa
-                                                                </button>
+                                                                @method('PUT')
+                                                                <div class="modal-body">
+                                                                    <div class="mb-3">
+                                                                        <label for="edit_name{{ $prize->id }}"
+                                                                            class="form-label">Tên Giải Thưởng <span
+                                                                                class="text-danger">*</span></label>
+                                                                        <input type="text" class="form-control"
+                                                                            id="edit_name{{ $prize->id }}"
+                                                                            name="name" value="{{ $prize->name }}"
+                                                                            required>
+                                                                    </div>
+                                                                    <div class="mb-3">
+                                                                        <label for="edit_image{{ $prize->id }}"
+                                                                            class="form-label">Hình Ảnh</label>
+                                                                        <input type="file" class="form-control"
+                                                                            id="edit_image{{ $prize->id }}"
+                                                                            name="image" accept="image/*">
+                                                                        <small class="form-text text-muted">Hỗ trợ: JPEG,
+                                                                            PNG,
+                                                                            JPG, GIF (tối đa 2MB)</small>
+                                                                    </div>
+                                                                    <div class="mb-3">
+                                                                        <label for="edit_quantity{{ $prize->id }}"
+                                                                            class="form-label">Số Lượng <span
+                                                                                class="text-danger">*</span></label>
+                                                                        <input type="number" class="form-control"
+                                                                            id="edit_quantity{{ $prize->id }}"
+                                                                            name="quantity" min="1"
+                                                                            value="{{ $prize->quantity }}" required>
+                                                                    </div>
+                                                                    <div class="mb-3">
+                                                                        <div class="form-check">
+                                                                            <input class="form-check-input"
+                                                                                type="checkbox"
+                                                                                id="edit_special_gift{{ $prize->id }}"
+                                                                                name="special_gift" value="1"
+                                                                                {{ $prize->special_gift ? 'checked' : '' }}>
+                                                                            <label class="form-check-label"
+                                                                                for="edit_special_gift{{ $prize->id }}">
+                                                                                <i
+                                                                                    class="ti ti-star text-warning me-1"></i>
+                                                                                Giải Đặc Biệt
+                                                                            </label>
+                                                                        </div>
+                                                                        <small class="form-text text-muted">Đánh dấu giải
+                                                                            thưởng này là giải đặc biệt</small>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <button type="button" class="btn btn-secondary"
+                                                                        data-bs-dismiss="modal">Hủy</button>
+                                                                    <button type="submit" class="btn btn-primary">
+                                                                        <i class="ti ti-device-floppy me-1"></i> Cập Nhật
+                                                                    </button>
+                                                                </div>
                                                             </form>
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
+                                            @endif
+
+                                            @if (auth()->user()->hasPermissionForModuleCode('lucky_draw_management', 'delete', 'branch'))
+                                                <!-- Delete Prize Modal for each prize -->
+                                                <div class="modal fade" id="deletePrizeModal{{ $prize->id }}"
+                                                    tabindex="-1"
+                                                    aria-labelledby="deletePrizeModalLabel{{ $prize->id }}"
+                                                    aria-hidden="true">
+                                                    <div class="modal-dialog modal-dialog-centered">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title"
+                                                                    id="deletePrizeModalLabel{{ $prize->id }}">
+                                                                    <i class="ti ti-trash text-danger me-2"></i> Xóa Giải
+                                                                    Thưởng
+                                                                </h5>
+                                                                <button type="button" class="btn-close"
+                                                                    data-bs-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <p>Bạn có chắc chắn muốn xóa giải thưởng
+                                                                    <strong>"{{ $prize->name }}"</strong>?
+                                                                </p>
+                                                                <p class="text-muted mb-0">Hành động này không thể hoàn
+                                                                    tác.
+                                                                </p>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary"
+                                                                    data-bs-dismiss="modal">Hủy</button>
+                                                                <form
+                                                                    action="{{ route('backend.club.lucky-draws.prizes.destroy', [$luckyDraw, $prize]) }}"
+                                                                    method="POST" class="d-inline">
+                                                                    @csrf
+                                                                    @method('DELETE')
+                                                                    <button type="submit" class="btn btn-danger">
+                                                                        <i class="ti ti-trash me-1"></i> Xóa
+                                                                    </button>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            @endif
                                         @endforeach
                                     </tbody>
                                 </table>
@@ -290,59 +309,62 @@
 
     </div>
 
-    <!-- Add Prize Modal -->
-    <div class="modal fade" id="addPrizeModal" tabindex="-1" aria-labelledby="addPrizeModalLabel" aria-hidden="true"
-        data-bs-backdrop="static" data-bs-keyboard="false">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addPrizeModalLabel">
-                        <i class="ti ti-plus text-primary me-2"></i> Thêm Giải Thưởng
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form action="{{ route('backend.club.lucky-draws.prizes.store', $luckyDraw) }}" method="POST"
-                    enctype="multipart/form-data">
-                    @csrf
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="name" class="form-label">Tên Giải Thưởng <span
-                                    class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="name" name="name" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="image" class="form-label">Hình Ảnh</label>
-                            <input type="file" class="form-control" id="image" name="image" accept="image/*">
-                            <small class="form-text text-muted">Hỗ trợ: JPEG, PNG, JPG, GIF (tối đa 2MB)</small>
-                        </div>
-                        <div class="mb-3">
-                            <label for="quantity" class="form-label">Số Lượng <span class="text-danger">*</span></label>
-                            <input type="number" class="form-control" id="quantity" name="quantity" min="1"
-                                value="1" required>
-                        </div>
-                        <div class="mb-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="special_gift" name="special_gift"
-                                    value="1">
-                                <label class="form-check-label" for="special_gift">
-                                    <i class="ti ti-star text-warning me-1"></i>
-                                    Giải Đặc Biệt
-                                </label>
+    @if (auth()->user()->hasPermissionForModuleCode('lucky_draw_management', 'create', 'branch'))
+        <!-- Add Prize Modal -->
+        <div class="modal fade" id="addPrizeModal" tabindex="-1" aria-labelledby="addPrizeModalLabel"
+            aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addPrizeModalLabel">
+                            <i class="ti ti-plus text-primary me-2"></i> Thêm Giải Thưởng
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form action="{{ route('backend.club.lucky-draws.prizes.store', $luckyDraw) }}" method="POST"
+                        enctype="multipart/form-data">
+                        @csrf
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Tên Giải Thưởng <span
+                                        class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="name" name="name" required>
                             </div>
-                            <small class="form-text text-muted">Đánh dấu giải thưởng này là giải đặc biệt</small>
+                            <div class="mb-3">
+                                <label for="image" class="form-label">Hình Ảnh</label>
+                                <input type="file" class="form-control" id="image" name="image"
+                                    accept="image/*">
+                                <small class="form-text text-muted">Hỗ trợ: JPEG, PNG, JPG, GIF (tối đa 2MB)</small>
+                            </div>
+                            <div class="mb-3">
+                                <label for="quantity" class="form-label">Số Lượng <span
+                                        class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="quantity" name="quantity"
+                                    min="1" value="1" required>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="special_gift"
+                                        name="special_gift" value="1">
+                                    <label class="form-check-label" for="special_gift">
+                                        <i class="ti ti-star text-warning me-1"></i>
+                                        Giải Đặc Biệt
+                                    </label>
+                                </div>
+                                <small class="form-text text-muted">Đánh dấu giải thưởng này là giải đặc biệt</small>
+                            </div>
                         </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="ti ti-device-floppy me-1"></i> Lưu
-                        </button>
-                    </div>
-                </form>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="ti ti-device-floppy me-1"></i> Lưu
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
-    </div>
-
+    @endif
 @endsection
 
 @section('scripts')

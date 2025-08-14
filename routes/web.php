@@ -42,6 +42,8 @@ use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SwitchClubController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\FeatureRequestController;
+use App\Http\Controllers\LuckyDrawController;
+use App\Http\Controllers\PrizeController;
 use App\Http\Controllers\SessionController;
 use App\Http\Controllers\Club\SessionController as ClubSessionController;
 use App\Http\Controllers\ImpersonationController;
@@ -223,6 +225,21 @@ Route::middleware(['auth', 'logsystem'])->group(function () {
         Route::get('/feature-requests', [FeatureRequestController::class, 'index'])->name('feature-requests.index')->middleware('CheckPermission:feature_request_management,view,central');
         Route::put('/feature-requests/{featureRequest}', [FeatureRequestController::class, 'update'])->name('feature-requests.update')->middleware('CheckPermission:feature_request_management,edit,central');
         Route::delete('/feature-requests/{featureRequest}', [FeatureRequestController::class, 'destroy'])->name('feature-requests.destroy')->middleware('CheckPermission:feature_request_management,delete,central');
+
+        // Central Lucky Draw routes
+        Route::get('/lucky-draws', [LuckyDrawController::class, 'index'])->name('lucky-draws.index')->middleware('CheckPermission:lucky_draw_management,view,central');
+        Route::post('/lucky-draws', [LuckyDrawController::class, 'store'])->name('lucky-draws.store')->middleware('CheckPermission:lucky_draw_management,create,central');
+        Route::get('/lucky-draws/{luckyDraw}', [LuckyDrawController::class, 'show'])->name('lucky-draws.show')->middleware('CheckPermission:lucky_draw_management,view,central');
+        Route::put('/lucky-draws/{luckyDraw}', [LuckyDrawController::class, 'update'])->name('lucky-draws.update')->middleware('CheckPermission:lucky_draw_management,edit,central');
+        Route::delete('/lucky-draws/{luckyDraw}', [LuckyDrawController::class, 'destroy'])->name('lucky-draws.destroy')->middleware('CheckPermission:lucky_draw_management,delete,central');
+        Route::post('/lucky-draws/{luckyDraw}/toggle-active', [LuckyDrawController::class, 'toggleActive'])->name('lucky-draws.toggle-active')->middleware('CheckPermission:lucky_draw_management,edit,central');
+
+        // Central Lucky Draw Prizes routes
+        Route::get('/lucky-draws/{luckyDraw}/prizes', [PrizeController::class, 'index'])->name('lucky-draws.prizes.index')->middleware('CheckPermission:lucky_draw_management,edit,central');
+        Route::post('/lucky-draws/{luckyDraw}/prizes', [PrizeController::class, 'store'])->name('lucky-draws.prizes.store')->middleware('CheckPermission:lucky_draw_management,edit,central');
+        Route::put('/lucky-draws/{luckyDraw}/prizes/{prize}', [PrizeController::class, 'update'])->name('lucky-draws.prizes.update')->middleware('CheckPermission:lucky_draw_management,edit,central');
+        Route::delete('/lucky-draws/{luckyDraw}/prizes/{prize}', [PrizeController::class, 'destroy'])->name('lucky-draws.prizes.destroy')->middleware('CheckPermission:lucky_draw_management,edit,central');
+        Route::post('/lucky-draws/{luckyDraw}/prizes/reorder', [PrizeController::class, 'reorder'])->name('lucky-draws.prizes.reorder')->middleware('CheckPermission:lucky_draw_management,edit,central');
 
         // Sessions routes (Central Admin only)
         Route::get('/sessions', [SessionController::class, 'index'])->name('sessions.index')->middleware('CheckPermission:session_management,view,central');

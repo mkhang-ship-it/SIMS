@@ -240,19 +240,21 @@ class LuckyDrawPublicController extends Controller
                     ], 400);
                 }
 
-                // Validate participant eligibility
-                $winners = $luckyDraw->winners ?? [];
-                $hasWon = collect($winners)->contains('name', $participantName);
+                // Validate participant eligibility (only for real prizes, not for no-prize mode)
+                if ($prizeName && $prizeName !== '-' && $prizeName !== 'Quay số may mắn') {
+                    $winners = $luckyDraw->winners ?? [];
+                    $hasWon = collect($winners)->contains('name', $participantName);
 
-                if ($hasWon) {
-                    return response()->json([
-                        'error' => 'Người tham dự đã trúng giải trước đó',
-                        'success' => false
-                    ], 400);
+                    if ($hasWon) {
+                        return response()->json([
+                            'error' => 'Người tham dự đã trúng giải trước đó',
+                            'success' => false
+                        ], 400);
+                    }
                 }
 
-                // Validate prize availability
-                if ($prizeName) {
+                // Validate prize availability (only if it's a real prize, not no-prize mode)
+                if ($prizeName && $prizeName !== '-' && $prizeName !== 'Quay số may mắn') {
                     $prize = $luckyDraw->prizes()->where('name', $prizeName)->first();
                     if (!$prize) {
                         return response()->json([

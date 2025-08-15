@@ -131,7 +131,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($sessions as $index => $session)
+                                    @foreach ($sessions as $index => $session)
                                         <tr>
                                             <td class="text-center">{{ $index + 1 }}</td>
                                             <td>
@@ -173,8 +173,9 @@
                                                 </div>
                                             </td>
                                             <td class="text-center">
-                                                {{ \Carbon\Carbon::createFromTimestamp($session->last_activity)->format('d/m/Y H:i:s') }}
+                                                {{ \Carbon\Carbon::createFromTimestamp($session->last_activity)->setTimezone('Asia/Ho_Chi_Minh')->format('d/m/Y H:i:s') }}
                                             </td>
+
                                             <td class="text-center">
                                                 @php
                                                     $isActive =

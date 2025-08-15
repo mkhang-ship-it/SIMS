@@ -47,7 +47,6 @@
                                             <th>Tiêu đề</th>
                                             <th style="text-align: center !important;">Mã bảo mật</th>
                                             <th style="text-align: center !important;">Hình nền</th>
-                                            <th style="text-align: center !important;">Trạng thái</th>
                                             <th style="text-align: center !important;">Thời gian</th>
                                             <th style="text-align: center !important;">Người tham gia</th>
                                             <th style="text-align: center !important;">Người trúng thưởng</th>
@@ -85,17 +84,6 @@
                                                             style="width: 60px; height: 40px; object-fit: cover;">
                                                     @else
                                                         <span class="text-muted small">Không có</span>
-                                                    @endif
-                                                </td>
-                                                <td class="text-center">
-                                                    @if ($luckyDraw->isExpired())
-                                                        <span class="badge bg-danger">Đã hết hạn</span>
-                                                    @elseif($luckyDraw->isActive())
-                                                        <span class="badge bg-success">Đang hoạt động</span>
-                                                    @elseif(!$luckyDraw->is_active)
-                                                        <span class="badge bg-secondary">Tạm dừng</span>
-                                                    @else
-                                                        <span class="badge bg-warning">Chưa bắt đầu</span>
                                                     @endif
                                                 </td>
                                                 <td class="text-center">
@@ -147,14 +135,6 @@
                                                             data-bs-target="#editLuckyDrawModal{{ $luckyDraw->id }}"
                                                             title="Chỉnh sửa">
                                                             <i class="ri-edit-line"></i>
-                                                        </button>
-                                                        <button type="button"
-                                                            class="btn btn-icon btn-sm btn-{{ $luckyDraw->is_active ? 'warning' : 'success' }}-light toggle-active"
-                                                            data-id="{{ $luckyDraw->id }}"
-                                                            data-active="{{ $luckyDraw->is_active ? 'true' : 'false' }}"
-                                                            title="{{ $luckyDraw->is_active ? 'Tạm dừng' : 'Kích hoạt' }}">
-                                                            <i
-                                                                class="ri-{{ $luckyDraw->is_active ? 'pause-line' : 'play-line' }}"></i>
                                                         </button>
                                                         <button class="btn btn-icon btn-sm btn-danger-light"
                                                             data-bs-toggle="modal"
@@ -209,8 +189,7 @@
                                                                                 <input type="text" class="form-control"
                                                                                     id="edit_security_code{{ $luckyDraw->id }}"
                                                                                     name="security_code"
-                                                                                    value="{{ $luckyDraw->security_code }}"
-                                                                                    placeholder="Để trống để tự động tạo">
+                                                                                    value="{{ $luckyDraw->security_code }}">
                                                                                 <button class="btn btn-outline-secondary"
                                                                                     type="button"
                                                                                     onclick="generateSecurityCode('edit_security_code{{ $luckyDraw->id }}')">
@@ -319,19 +298,7 @@
                                                                             </div>
                                                                         </div>
 
-                                                                        <div class="mb-3">
-                                                                            <div class="form-check">
-                                                                                <input class="form-check-input"
-                                                                                    type="checkbox" value="1"
-                                                                                    id="edit_is_active{{ $luckyDraw->id }}"
-                                                                                    name="is_active"
-                                                                                    {{ $luckyDraw->is_active ? 'checked' : '' }}>
-                                                                                <label class="form-check-label"
-                                                                                    for="edit_is_active{{ $luckyDraw->id }}">
-                                                                                    Kích hoạt
-                                                                                </label>
-                                                                            </div>
-                                                                        </div>
+
                                                                     </div>
                                                                 </div>
 
@@ -519,15 +486,7 @@
                                     </div>
                                 </div>
 
-                                <div class="mb-3">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" value="1" id="is_active"
-                                            name="is_active" checked>
-                                        <label class="form-check-label" for="is_active">
-                                            Kích hoạt ngay
-                                        </label>
-                                    </div>
-                                </div>
+
                             </div>
                         </div>
 
@@ -701,52 +660,6 @@
                     toastr.success('Đã copy mã bảo mật vào clipboard!');
                 }, function() {
                     toastr.error('Không thể copy mã bảo mật!');
-                });
-            });
-
-            // Toggle active/inactive
-            $('.toggle-active').on('click', function() {
-                const id = $(this).data('id');
-                const isActive = $(this).data('active') === 'true';
-                const button = $(this);
-
-                $.ajax({
-                    url: `{{ route('backend.lucky-draws.toggle-active', ':id') }}`.replace(
-                        ':id', id),
-                    method: 'POST',
-                    data: {
-                        _token: '{{ csrf_token() }}'
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            toastr.success(response.message);
-                            // Update button
-                            if (response.is_active) {
-                                button.html('<i class="ti ti-player-pause"></i>');
-                                button.attr('title', 'Tạm dừng');
-                                button.data('active', 'true');
-                            } else {
-                                button.html('<i class="ti ti-player-play"></i>');
-                                button.attr('title', 'Kích hoạt');
-                                button.data('active', 'false');
-                            }
-                            // Reload page to update status
-                            setTimeout(() => location.reload(), 0);
-                        } else {
-                            toastr.error(response.message || 'Có lỗi xảy ra!');
-                        }
-                    },
-                    error: function(xhr) {
-                        if (xhr.status === 404) {
-                            toastr.error('Lucky Draw không tồn tại hoặc đã bị xóa!');
-                            // Reload page to refresh the list
-                            setTimeout(() => location.reload(), 1500);
-                        } else if (xhr.status === 403) {
-                            toastr.error('Bạn không có quyền thực hiện hành động này!');
-                        } else {
-                            toastr.error('Có lỗi xảy ra khi cập nhật trạng thái!');
-                        }
-                    }
                 });
             });
         });

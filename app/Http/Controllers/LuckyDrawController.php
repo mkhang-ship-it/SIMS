@@ -63,7 +63,6 @@ class LuckyDrawController extends Controller
             'winners' => [],
             'start_date' => $request->start_date,
             'end_date' => $request->end_date,
-            'is_active' => $request->has('is_active'),
             'created_by' => Auth::user()->id,
             'background_image' => $backgroundImagePath,
             'modal_background_image' => $modalBackgroundImagePath
@@ -146,7 +145,6 @@ class LuckyDrawController extends Controller
             'participants' => $participants,
             'start_date' => $request->start_date,
             'end_date' => $request->end_date,
-            'is_active' => $request->has('is_active'),
             'background_image' => $backgroundImagePath,
             'modal_background_image' => $modalBackgroundImagePath
         ]);
@@ -191,25 +189,5 @@ class LuckyDrawController extends Controller
 
         return redirect()->route('backend.lucky-draws.index')
             ->with('success', 'Lucky Draw đã được xóa thành công!');
-    }
-
-    public function toggleActive($id)
-    {
-        $luckyDraw = LuckyDraw::find($id);
-        // Check if lucky draw is central type and belongs to no club
-        if ($luckyDraw->type !== 'central' || $luckyDraw->club_id !== null) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized access to this lucky draw.'
-            ], 403);
-        }
-
-        $luckyDraw->update(['is_active' => !$luckyDraw->is_active]);
-
-        return response()->json([
-            'success' => true,
-            'message' => $luckyDraw->is_active ? 'Lucky Draw đã được kích hoạt!' : 'Lucky Draw đã được tạm dừng!',
-            'is_active' => $luckyDraw->is_active
-        ]);
     }
 }

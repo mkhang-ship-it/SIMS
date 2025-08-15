@@ -106,6 +106,16 @@
                         </li>
                     @endif
 
+                    @if (auth()->user()->hasPermissionForModuleCode('user_management', 'view', 'central'))
+                        <li class="slide {{ request()->routeIs('backend.users.index') ? 'active' : '' }}">
+                            <a href="{{ route('backend.users.index') }}"
+                                class="side-menu__item {{ request()->routeIs('backend.users.index') ? 'active' : '' }}">
+                                <i class="las la-user side-menu__icon"></i>
+                                <span class="side-menu__label">Quản Lý Người Dùng</span>
+                            </a>
+                        </li>
+                    @endif
+
                     @if (auth()->user()->hasPermissionForModuleCode('member_management', 'view', 'central'))
                         <li class="slide {{ request()->routeIs('backend.members.index') ? 'active' : '' }}">
                             <a href="{{ route('backend.members.index') }}"

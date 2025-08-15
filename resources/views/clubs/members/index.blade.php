@@ -576,7 +576,7 @@
                                                                 @csrf
                                                                 <button type="submit" class="btn btn-warning">
                                                                     <i class="ri-user-shared-line me-2"></i>
-                                                                    Bắt đầu mạo danh
+                                                                    Mạo Danh
                                                                 </button>
                                                             </form>
                                                         </div>

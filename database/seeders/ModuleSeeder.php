@@ -209,7 +209,7 @@ class ModuleSeeder extends Seeder
                     ['name' => 'edit', 'display_name' => 'Chỉnh sửa'],
                     ['name' => 'delete', 'display_name' => 'Xóa'],
                 ]
-            ]
+            ],
         ];
 
         foreach ($modules as $moduleData) {

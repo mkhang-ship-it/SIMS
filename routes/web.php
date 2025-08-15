@@ -50,6 +50,7 @@ use App\Http\Controllers\ImpersonationController;
 use App\Http\Controllers\LogController;
 use App\Http\Controllers\ShortUrlController;
 use App\Http\Controllers\Club\ShortUrlController as ClubShortUrlController;
+use App\Http\Controllers\UserController;
 
 // Bypass route for maintenance mode - handled entirely by middleware
 Route::middleware('logsystem')->get('/bypass/{token}', function ($token) {
@@ -111,6 +112,12 @@ Route::middleware(['auth', 'logsystem'])->group(function () {
         Route::delete('/my-profile/destroy-session/{sessionId}', [MyProfileController::class, 'destroySession'])->name('my-profile.destroy-session')->middleware('CheckPermission:user_management,my_profile,central');
         Route::delete('/my-profile/destroy-all-sessions', [MyProfileController::class, 'destroyAllSessions'])->name('my-profile.destroy-all-sessions')->middleware('CheckPermission:user_management,my_profile,central');
 
+
+        // Users routes (Central)
+        Route::get('/users', [UserController::class, 'index'])->name('users.index')->middleware('CheckPermission:user_management,view,central');
+        Route::post('/users', [UserController::class, 'store'])->name('users.store')->middleware('CheckPermission:user_management,create,central');
+        Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update')->middleware('CheckPermission:user_management,edit,central');
+        Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy')->middleware('CheckPermission:user_management,delete,central');
 
         // Courses routes
         Route::get('/courses', [CourseController::class, 'index'])->name('courses.index')->middleware('CheckPermission:course_management,view,central');

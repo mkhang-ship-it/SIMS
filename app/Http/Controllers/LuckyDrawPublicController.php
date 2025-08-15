@@ -34,9 +34,9 @@ class LuckyDrawPublicController extends Controller
     {
         $luckyDraw = LuckyDraw::where('slug', $slug)->firstOrFail();
 
-        if (!$luckyDraw->isActive()) {
-            return response()->json(['error' => 'Lucky draw not active'], 404);
-        }
+        // if (!$luckyDraw->isActive()) {
+        //     return response()->json(['error' => 'Lucky draw not active'], 404);
+        // }
 
         // Get only available prizes (those with remaining quantity > 0)
         $prizes = [];
@@ -55,9 +55,9 @@ class LuckyDrawPublicController extends Controller
     {
         $luckyDraw = LuckyDraw::where('slug', $slug)->firstOrFail();
 
-        if (!$luckyDraw->isActive()) {
-            return response()->json(['error' => 'Lucky draw not active'], 404);
-        }
+        // if (!$luckyDraw->isActive()) {
+        //     return response()->json(['error' => 'Lucky draw not active'], 404);
+        // }
 
         // Get all prizes with their availability information
         $prizes = [];
@@ -82,9 +82,9 @@ class LuckyDrawPublicController extends Controller
     {
         $luckyDraw = LuckyDraw::where('slug', $slug)->firstOrFail();
 
-        if (!$luckyDraw->isActive()) {
-            return response()->json(['error' => 'Lucky draw not active'], 404);
-        }
+        // if (!$luckyDraw->isActive()) {
+        //     return response()->json(['error' => 'Lucky draw not active'], 404);
+        // }
 
         // Return participants as a simple array instead of key-value object
         $participants = $luckyDraw->participants ?? [];
@@ -95,9 +95,9 @@ class LuckyDrawPublicController extends Controller
     {
         $luckyDraw = LuckyDraw::where('slug', $slug)->firstOrFail();
 
-        if (!$luckyDraw->isActive()) {
-            return response()->json(['error' => 'Lucky draw not active'], 404);
-        }
+        // if (!$luckyDraw->isActive()) {
+        //     return response()->json(['error' => 'Lucky draw not active'], 404);
+        // }
 
         // Return winners as they are stored, ensuring proper structure
         $winners = $luckyDraw->winners ?? [];
@@ -108,9 +108,9 @@ class LuckyDrawPublicController extends Controller
     {
         $luckyDraw = LuckyDraw::where('slug', $slug)->firstOrFail();
 
-        if (!$luckyDraw->isActive()) {
-            return response()->json(['error' => 'Lucky draw not active'], 404);
-        }
+        // if (!$luckyDraw->isActive()) {
+        //     return response()->json(['error' => 'Lucky draw not active'], 404);
+        // }
 
         $participantName = $request->input('participant');
         $prizeName = $request->input('prize');
@@ -147,9 +147,9 @@ class LuckyDrawPublicController extends Controller
     {
         $luckyDraw = LuckyDraw::where('slug', $slug)->firstOrFail();
 
-        if (!$luckyDraw->isActive()) {
-            return response()->json(['error' => 'Lucky draw not active'], 404);
-        }
+        // if (!$luckyDraw->isActive()) {
+        //     return response()->json(['error' => 'Lucky draw not active'], 404);
+        // }
 
         // Check security verification
         if (!$this->checkSecurityVerification($slug)) {
@@ -181,9 +181,9 @@ class LuckyDrawPublicController extends Controller
     {
         $luckyDraw = LuckyDraw::where('slug', $slug)->firstOrFail();
 
-        if (!$luckyDraw->isActive()) {
-            return response()->json(['error' => 'Lucky draw not active'], 404);
-        }
+        // if (!$luckyDraw->isActive()) {
+        //     return response()->json(['error' => 'Lucky draw not active'], 404);
+        // }
 
         // Check security verification
         if (!$this->checkSecurityVerification($slug)) {
@@ -209,9 +209,9 @@ class LuckyDrawPublicController extends Controller
     {
         $luckyDraw = LuckyDraw::where('slug', $slug)->firstOrFail();
 
-        if (!$luckyDraw->isActive()) {
-            return response()->json(['error' => 'Lucky draw not active'], 404);
-        }
+        // if (!$luckyDraw->isActive()) {
+        //     return response()->json(['error' => 'Lucky draw not active'], 404);
+        // }
 
         // Check security verification
         if (!$this->checkSecurityVerification($slug)) {
@@ -282,9 +282,9 @@ class LuckyDrawPublicController extends Controller
     {
         $luckyDraw = LuckyDraw::where('slug', $slug)->firstOrFail();
 
-        if (!$luckyDraw->isActive()) {
-            return response()->json(['error' => 'Lucky draw not active'], 404);
-        }
+        // if (!$luckyDraw->isActive()) {
+        //     return response()->json(['error' => 'Lucky draw not active'], 404);
+        // }
 
         // Check security verification
         if (!$this->checkSecurityVerification($slug)) {
@@ -341,9 +341,9 @@ class LuckyDrawPublicController extends Controller
     {
         $luckyDraw = LuckyDraw::where('slug', $slug)->firstOrFail();
 
-        if (!$luckyDraw->isActive()) {
-            return response()->json(['error' => 'Lucky draw not active'], 404);
-        }
+        // if (!$luckyDraw->isActive()) {
+        //     return response()->json(['error' => 'Lucky draw not active'], 404);
+        // }
 
         $securityCode = $request->input('security_code');
 
@@ -413,9 +413,9 @@ class LuckyDrawPublicController extends Controller
     {
         $luckyDraw = LuckyDraw::where('slug', $slug)->firstOrFail();
 
-        if (!$luckyDraw->isActive()) {
-            return response()->json(['error' => 'Lucky draw not active'], 404);
-        }
+        // if (!$luckyDraw->isActive()) {
+        //     return response()->json(['error' => 'Lucky draw not active'], 404);
+        // }
 
         // Remove verification from session
         session()->forget('lucky_draw_verified_' . $slug);

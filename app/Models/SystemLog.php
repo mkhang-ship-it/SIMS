@@ -51,7 +51,8 @@ class SystemLog extends Model
      */
     public function getTruncatedUrlAttribute(): string
     {
-        return strlen($this->url) > 80 ? substr($this->url, 0, 80) . '...' : $this->url;
+        $url = (string) ($this->url ?? '');
+        return strlen($url) > 80 ? substr($url, 0, 80) . '...' : $url;
     }
 
     /**
@@ -59,6 +60,7 @@ class SystemLog extends Model
      */
     public function getTruncatedUserAgentAttribute(): string
     {
-        return strlen($this->user_agent) > 100 ? substr($this->user_agent, 0, 100) . '...' : $this->user_agent;
+        $userAgent = (string) ($this->user_agent ?? '');
+        return strlen($userAgent) > 100 ? substr($userAgent, 0, 100) . '...' : $userAgent;
     }
 }

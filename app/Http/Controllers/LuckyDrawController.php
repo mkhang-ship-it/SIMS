@@ -27,8 +27,8 @@ class LuckyDrawController extends Controller
             'start_date' => 'required|date',
             'end_date' => 'required|date|after:start_date',
             'participants' => 'nullable|string',
-            'background_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'modal_background_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'background_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp',
+            'modal_background_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp',
             'security_code' => 'nullable|string|max:50'
         ]);
 
@@ -103,8 +103,8 @@ class LuckyDrawController extends Controller
             'start_date' => 'required|date',
             'end_date' => 'required|date|after:start_date',
             'participants' => 'nullable|string',
-            'background_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'modal_background_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'background_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp',
+            'modal_background_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp',
             'security_code' => 'nullable|string|max:50'
         ]);
 

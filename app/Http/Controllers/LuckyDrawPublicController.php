@@ -25,7 +25,7 @@ class LuckyDrawPublicController extends Controller
         $prizesChunk1 = $prizes->slice(0, 3);
         $prizesChunk2 = $prizes->slice(3);
 
-        return view('public.homepage.index', compact('luckyDraw', 'prizesChunk1', 'prizesChunk2'));
+        return view('public.lucky-draw.show', compact('luckyDraw', 'prizesChunk1', 'prizesChunk2'));
     }
 
 

@@ -81,4 +81,9 @@ class Club extends Model
             ->withPivot(['role_id', 'joined_at', 'status', 'id'])
             ->withTimestamps();
     }
+
+    public function shortUrls()
+    {
+        return $this->hasMany(ShortUrl::class);
+    }
 }

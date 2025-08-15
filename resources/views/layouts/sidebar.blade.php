@@ -283,6 +283,16 @@
                             </a>
                         </li>
                     @endif
+
+                    @if (auth()->user()->hasPermissionForModuleCode('short_url_management', 'view', 'central'))
+                        <li class="slide {{ request()->routeIs('backend.short-urls.index') ? 'active' : '' }}">
+                            <a href="{{ route('backend.short-urls.index') }}"
+                                class="side-menu__item {{ request()->routeIs('backend.short-urls.index') ? 'active' : '' }}">
+                                <i class="las la-link side-menu__icon"></i>
+                                <span class="side-menu__label">Quản Lý URL Shortener</span>
+                            </a>
+                        </li>
+                    @endif
                 @else
                     <li class="slide__category"><span class="category-name">Tổng Quan</span></li>
 
@@ -505,6 +515,16 @@
                                 class="side-menu__item {{ request()->routeIs('backend.club.sessions.index') ? 'active' : '' }}">
                                 <i class="las la-desktop side-menu__icon"></i>
                                 <span class="side-menu__label">Quản Lý Phiên</span>
+                            </a>
+                        </li>
+                    @endif
+
+                    @if (auth()->user()->hasPermissionForModuleCode('short_url_management', 'view', 'branch'))
+                        <li class="slide {{ request()->routeIs('backend.club.short-urls.index') ? 'active' : '' }}">
+                            <a href="{{ route('backend.club.short-urls.index') }}"
+                                class="side-menu__item {{ request()->routeIs('backend.club.short-urls.index') ? 'active' : '' }}">
+                                <i class="las la-link side-menu__icon"></i>
+                                <span class="side-menu__label">Quản Lý URL Shortener</span>
                             </a>
                         </li>
                     @endif

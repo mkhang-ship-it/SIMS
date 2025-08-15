@@ -1,9 +1,4 @@
 <?php
-// Updated: Added security code validation for lucky draw setting modifications and prize availability checks
-// - Added security code validation to API methods that modify data (savePrizes, saveParticipants, saveSpinResult, clearWinners)
-// - Modified getPrizes() to only return available prizes with remaining quantity
-// - Added checkParticipantEligibility() method to validate if participant can win
-// - Added prize availability validation in saveSpinResult()
 
 namespace App\Http\Controllers;
 
@@ -30,7 +25,7 @@ class LuckyDrawPublicController extends Controller
         $prizesChunk1 = $prizes->slice(0, 3);
         $prizesChunk2 = $prizes->slice(3);
 
-        return view('lucky-draw.show', compact('luckyDraw', 'prizesChunk1', 'prizesChunk2'));
+        return view('public.homepage.index', compact('luckyDraw', 'prizesChunk1', 'prizesChunk2'));
     }
 
 

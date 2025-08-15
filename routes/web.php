@@ -48,12 +48,12 @@ use App\Http\Controllers\SessionController;
 use App\Http\Controllers\Club\SessionController as ClubSessionController;
 use App\Http\Controllers\ImpersonationController;
 use App\Http\Controllers\LogController;
+use App\Http\Controllers\ShortUrlController;
+use App\Http\Controllers\Club\ShortUrlController as ClubShortUrlController;
 
 // Bypass route for maintenance mode - handled entirely by middleware
 Route::middleware('logsystem')->get('/bypass/{token}', function ($token) {
-    // This route is handled entirely by the maintenance middleware
-    // The middleware will validate the token and set session/cookie
-    // Then redirect based on authentication status
+
     if (!Auth::check()) {
         return redirect()->route('login');
     }
@@ -137,6 +137,13 @@ Route::middleware(['auth', 'logsystem'])->group(function () {
         Route::delete('/clubs/{club}', [ClubController::class, 'destroy'])->name('clubs.destroy')->middleware('CheckPermission:club_management,delete,central');
         Route::get('/clubs/{club}', [ClubController::class, 'show'])->name('clubs.show')->middleware('CheckPermission:club_management,view,central');
         Route::get('/clubs/get/communes', [ClubController::class, 'getCommunes'])->name('clubs.get-communes')->middleware('CheckPermission:club_management,view,central');
+
+        // Short URLs routes
+        Route::get('/short-urls', [ShortUrlController::class, 'index'])->name('short-urls.index')->middleware('CheckPermission:short_url_management,view,central');
+        Route::post('/short-urls', [ShortUrlController::class, 'store'])->name('short-urls.store')->middleware('CheckPermission:short_url_management,create,central');
+        Route::put('/short-urls/{shortUrl}', [ShortUrlController::class, 'update'])->name('short-urls.update')->middleware('CheckPermission:short_url_management,edit,central');
+        Route::delete('/short-urls/{shortUrl}', [ShortUrlController::class, 'destroy'])->name('short-urls.destroy')->middleware('CheckPermission:short_url_management,delete,central');
+        Route::get('/short-urls/{shortUrl}/qr-download', [ShortUrlController::class, 'downloadQr'])->name('short-urls.qr-download')->middleware('CheckPermission:short_url_management,view,central');
 
         // Slots routes
         Route::get('/slots', [SlotController::class, 'index'])->name('slots.index')->middleware('CheckPermission:slot_management,view,central');
@@ -271,7 +278,12 @@ Route::middleware(['auth', 'logsystem'])->prefix('club')->group(function () {
         Route::delete('/my-profile/destroy-session/{sessionId}', [ClubMyProfileController::class, 'destroySession'])->name('my-profile.destroy-session')->middleware('CheckPermission:member_management,my_profile,branch');
         Route::delete('/my-profile/destroy-all-sessions', [ClubMyProfileController::class, 'destroyAllSessions'])->name('my-profile.destroy-all-sessions')->middleware('CheckPermission:member_management,my_profile,branch');
 
-
+        // Short URLs routes
+        Route::get('/short-urls', [ClubShortUrlController::class, 'index'])->name('short-urls.index')->middleware('CheckPermission:short_url_management,view,branch');
+        Route::post('/short-urls', [ClubShortUrlController::class, 'store'])->name('short-urls.store')->middleware('CheckPermission:short_url_management,create,branch');
+        Route::put('/short-urls/{shortUrl}', [ClubShortUrlController::class, 'update'])->name('short-urls.update')->middleware('CheckPermission:short_url_management,edit,branch');
+        Route::delete('/short-urls/{shortUrl}', [ClubShortUrlController::class, 'destroy'])->name('short-urls.destroy')->middleware('CheckPermission:short_url_management,delete,branch');
+        Route::get('/short-urls/{shortUrl}/qr-download', [ClubShortUrlController::class, 'downloadQr'])->name('short-urls.qr-download')->middleware('CheckPermission:short_url_management,view,branch');
         // Sessions routes
         Route::get('/sessions', [ClubSessionController::class, 'index'])->name('sessions.index')->middleware('CheckPermission:session_management,view,branch');
         Route::delete('/sessions/{sessionId}', [ClubSessionController::class, 'destroy'])->name('sessions.destroy')->middleware('CheckPermission:session_management,delete,branch');
@@ -286,6 +298,8 @@ Route::middleware(['auth', 'logsystem'])->prefix('club')->group(function () {
         Route::get('/roles/{role}/edit', [ClubRoleController::class, 'edit'])->name('roles.edit')->middleware('CheckPermission:role_management,edit,branch');
         Route::put('/roles/{role}', [ClubRoleController::class, 'update'])->name('roles.update')->middleware('CheckPermission:role_management,edit,branch');
         Route::delete('/roles/{role}', [ClubRoleController::class, 'destroy'])->name('roles.destroy')->middleware('CheckPermission:role_management,delete,branch');
+
+
 
         // Members routes
         Route::get('/members', [ClubMemberController::class, 'index'])->name('members.index')->middleware('CheckPermission:member_management,view,branch');
@@ -491,3 +505,6 @@ Route::prefix('lucky-draw')->name('lucky-draw.')->middleware('logsystem')->group
     Route::post('/{slug}/check-eligibility', [LuckyDrawPublicController::class, 'checkParticipantEligibility'])->name('check-eligibility');
     Route::post('/{slug}/api', [LuckyDrawPublicController::class, 'handleApi'])->name('api');
 });
+
+// Short URL redirect route (public, no authentication required)
+Route::get('sl/{shortCode}', [ShortUrlController::class, 'redirect'])->name('short-url.redirect')->where('shortCode', '[a-zA-Z0-9]{12}');

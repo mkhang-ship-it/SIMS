@@ -187,6 +187,16 @@ class ModuleClubSeeder extends Seeder
                     ['name' => 'revoke', 'display_name' => 'Thu hồi'],
                     ['name' => 'my_points', 'display_name' => 'Điểm của tôi']
                 ]
+            ],
+            [
+                'module_code' => 'short_url_management',
+                'name' => 'Quản Lý URL Shortener',
+                'permissions' => [
+                    ['name' => 'view', 'display_name' => 'Xem'],
+                    ['name' => 'create', 'display_name' => 'Tạo mới'],
+                    ['name' => 'edit', 'display_name' => 'Chỉnh sửa'],
+                    ['name' => 'delete', 'display_name' => 'Xóa'],
+                ]
             ]
         ];
 

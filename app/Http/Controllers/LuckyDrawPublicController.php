@@ -14,9 +14,9 @@ class LuckyDrawPublicController extends Controller
         $luckyDraw = LuckyDraw::where('slug', $slug)->firstOrFail();
 
         // Check if lucky draw is active and not expired
-        if (!$luckyDraw->isActive()) {
-            abort(404, 'Lucky draw not found or has expired.');
-        }
+        // if (!$luckyDraw->isActive()) {
+        //     abort(404, 'Lucky draw not found or has expired.');
+        // }
 
         $prizes = $luckyDraw->prizes()->orderBy('order')->get();
         $total = $prizes->count();

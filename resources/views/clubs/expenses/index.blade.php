@@ -1,7 +1,3 @@
-{{-- Expense Index Page - Redesigned following invoice pattern --}}
-{{-- Updated: New layout with 3-9 column structure, statistics sidebar, and ApexCharts --}}
-{{-- Features: Modal-based CRUD operations, approval workflow, bulk operations --}}
-{{-- Fixed: Mobile bulk delete button functionality, select all checkbox state management, individual checkbox display, bulk delete button visibility, removed automatic item deletion on delete button click, and converted approve/reject/mark as paid actions to use form submission instead of JavaScript --}}
 @extends('layouts.app')
 
 @section('content')
@@ -372,269 +368,6 @@
                                                 @endif
                                             </td>
                                         </tr>
-
-                                        <!-- Edit Expense Modal -->
-                                        @if (
-                                            $expense->status === 'pending' &&
-                                                auth()->user()->hasPermissionForModuleCode('expense_management', 'edit', 'branch'))
-                                            <div class="modal fade" id="editExpenseModal{{ $expense->id }}"
-                                                tabindex="-1" aria-labelledby="editExpenseModalLabel{{ $expense->id }}"
-                                                aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-                                                <div class="modal-dialog modal-dialog-centered modal-lg">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title"
-                                                                id="editExpenseModalLabel{{ $expense->id }}">
-                                                                Chỉnh Sửa Yêu Cầu Chi Phí
-                                                            </h5>
-                                                            <button type="button" class="btn-close"
-                                                                data-bs-dismiss="modal" aria-label="Close"></button>
-                                                        </div>
-                                                        <form
-                                                            action="{{ route('backend.club.expenses.update', $expense) }}"
-                                                            method="POST" id="editExpenseForm{{ $expense->id }}">
-                                                            @csrf
-                                                            @method('PUT')
-                                                            <div class="modal-body">
-                                                                <div class="row">
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label class="form-label">Tên Chi Phí <span
-                                                                                    class="text-danger">*</span></label>
-                                                                            <input type="text" class="form-control"
-                                                                                name="name"
-                                                                                value="{{ $expense->name }}" required>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label class="form-label">Số Tiền <span
-                                                                                    class="text-danger">*</span></label>
-                                                                            <input type="number" class="form-control"
-                                                                                name="amount"
-                                                                                value="{{ $expense->amount }}"
-                                                                                min="0" step="0.01" required>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label class="form-label">Học Kỳ <span
-                                                                                    class="text-danger">*</span></label>
-                                                                            <select class="form-select" name="semester_id"
-                                                                                required>
-                                                                                @foreach ($semesters as $semester)
-                                                                                    <option value="{{ $semester->id }}"
-                                                                                        {{ $expense->semester_id == $semester->id ? 'selected' : '' }}>
-                                                                                        {{ $semester->name }}
-                                                                                    </option>
-                                                                                @endforeach
-                                                                            </select>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label class="form-label">Người Yêu Cầu</label>
-                                                                            <input type="text" class="form-control"
-                                                                                value="{{ $expense->requestedBy->name ?? 'N/A' }}"
-                                                                                readonly>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-12">
-                                                                        <div class="mb-3">
-                                                                            <label class="form-label">Mô Tả</label>
-                                                                            <textarea class="form-control" name="description" rows="3" maxlength="1000">{{ $expense->description }}</textarea>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary"
-                                                                    data-bs-dismiss="modal">Hủy</button>
-                                                                <button type="submit" class="btn btn-primary">Cập
-                                                                    Nhật</button>
-                                                            </div>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endif
-
-                                        <!-- Delete Expense Modal -->
-                                        @if (
-                                            $expense->status === 'pending' &&
-                                                auth()->user()->hasPermissionForModuleCode('expense_management', 'delete', 'branch'))
-                                            <div class="modal fade" id="deleteExpenseModal{{ $expense->id }}"
-                                                tabindex="-1"
-                                                aria-labelledby="deleteExpenseModalLabel{{ $expense->id }}"
-                                                aria-hidden="true">
-                                                <div class="modal-dialog modal-dialog-centered">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title"
-                                                                id="deleteExpenseModalLabel{{ $expense->id }}">
-                                                                Xác Nhận Xóa
-                                                            </h5>
-                                                            <button type="button" class="btn-close"
-                                                                data-bs-dismiss="modal" aria-label="Close"></button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <p>Bạn có chắc chắn muốn xóa yêu cầu chi phí
-                                                                <strong>{{ $expense->name }}</strong>?
-                                                            </p>
-                                                            <div class="alert alert-warning">
-                                                                <i class="ti ti-alert-triangle"></i>
-                                                                Hành động này không thể hoàn tác!
-                                                            </div>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary"
-                                                                data-bs-dismiss="modal">Hủy</button>
-                                                            <form
-                                                                action="{{ route('backend.club.expenses.destroy', $expense) }}"
-                                                                method="POST" style="display: inline;">
-                                                                @csrf
-                                                                @method('DELETE')
-                                                                <button type="submit" class="btn btn-danger">Xóa</button>
-                                                            </form>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endif
-
-                                        <!-- Approve Expense Modal -->
-                                        @if (
-                                            $expense->status === 'pending' &&
-                                                auth()->user()->hasPermissionForModuleCode('expense_management', 'approve', 'branch'))
-                                            <div class="modal fade" id="approveExpenseModal{{ $expense->id }}"
-                                                tabindex="-1"
-                                                aria-labelledby="approveExpenseModalLabel{{ $expense->id }}"
-                                                aria-hidden="true">
-                                                <div class="modal-dialog modal-dialog-centered">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title"
-                                                                id="approveExpenseModalLabel{{ $expense->id }}">
-                                                                Xác Nhận Phê Duyệt
-                                                            </h5>
-                                                            <button type="button" class="btn-close"
-                                                                data-bs-dismiss="modal" aria-label="Close"></button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <p>Bạn có chắc chắn muốn phê duyệt yêu cầu chi phí
-                                                                <strong>{{ $expense->name }}</strong>?
-                                                            </p>
-                                                            <div class="alert alert-info">
-                                                                <i class="ti ti-info-circle"></i>
-                                                                Yêu cầu sẽ được chuyển sang trạng thái "Đã phê duyệt"
-                                                            </div>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary"
-                                                                data-bs-dismiss="modal">Hủy</button>
-                                                            <form
-                                                                action="{{ route('backend.club.expenses.approve', $expense) }}"
-                                                                method="POST" style="display: inline;">
-                                                                @csrf
-                                                                @method('PUT')
-                                                                <button type="submit" class="btn btn-success">
-                                                                    Phê Duyệt
-                                                                </button>
-                                                            </form>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endif
-
-                                        <!-- Reject Expense Modal -->
-                                        @if (
-                                            $expense->status === 'pending' &&
-                                                auth()->user()->hasPermissionForModuleCode('expense_management', 'reject', 'branch'))
-                                            <div class="modal fade" id="rejectExpenseModal{{ $expense->id }}"
-                                                tabindex="-1"
-                                                aria-labelledby="rejectExpenseModalLabel{{ $expense->id }}"
-                                                aria-hidden="true">
-                                                <div class="modal-dialog modal-dialog-centered">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title"
-                                                                id="rejectExpenseModalLabel{{ $expense->id }}">
-                                                                Xác Nhận Từ Chối
-                                                            </h5>
-                                                            <button type="button" class="btn-close"
-                                                                data-bs-dismiss="modal" aria-label="Close"></button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <p>Bạn có chắc chắn muốn từ chối yêu cầu chi phí
-                                                                <strong>{{ $expense->name }}</strong>?
-                                                            </p>
-                                                            <div class="alert alert-warning">
-                                                                <i class="ti ti-alert-triangle"></i>
-                                                                Yêu cầu sẽ được chuyển sang trạng thái "Bị từ chối"
-                                                            </div>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary"
-                                                                data-bs-dismiss="modal">Hủy</button>
-                                                            <form
-                                                                action="{{ route('backend.club.expenses.reject', $expense) }}"
-                                                                method="POST" style="display: inline;">
-                                                                @csrf
-                                                                @method('PUT')
-                                                                <button type="submit" class="btn btn-danger">
-                                                                    Từ Chối
-                                                                </button>
-                                                            </form>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endif
-
-                                        <!-- Mark as Paid Modal -->
-                                        @if (
-                                            $expense->status === 'approved' &&
-                                                auth()->user()->hasPermissionForModuleCode('expense_management', 'mark_as_paid', 'branch'))
-                                            <div class="modal fade" id="markAsPaidModal{{ $expense->id }}"
-                                                tabindex="-1" aria-labelledby="markAsPaidModalLabel{{ $expense->id }}"
-                                                aria-hidden="true">
-                                                <div class="modal-dialog modal-dialog-centered">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title"
-                                                                id="markAsPaidModalLabel{{ $expense->id }}">
-                                                                Xác Nhận Thanh Toán
-                                                            </h5>
-                                                            <button type="button" class="btn-close"
-                                                                data-bs-dismiss="modal" aria-label="Close"></button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <p>Bạn có chắc chắn muốn đánh dấu yêu cầu chi phí
-                                                                <strong>{{ $expense->name }}</strong> là đã thanh toán?
-                                                            </p>
-                                                            <div class="alert alert-success">
-                                                                <i class="ti ti-check-circle"></i>
-                                                                Yêu cầu sẽ được chuyển sang trạng thái "Đã thanh toán"
-                                                            </div>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary"
-                                                                data-bs-dismiss="modal">Hủy</button>
-                                                            <form
-                                                                action="{{ route('backend.club.expenses.mark-as-paid', $expense) }}"
-                                                                method="POST" style="display: inline;">
-                                                                @csrf
-                                                                @method('PUT')
-                                                                <button type="submit" class="btn btn-primary">
-                                                                    Đánh Dấu Đã Thanh Toán
-                                                                </button>
-                                                            </form>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endif
                                     @endforeach
                                 </tbody>
                             </table>
@@ -644,6 +377,245 @@
             </div>
         </div>
         <!--End::row-1 -->
+
+        @foreach ($expenses as $expense)
+            <!-- Edit Expense Modal -->
+            @if (
+                $expense->status === 'pending' &&
+                    auth()->user()->hasPermissionForModuleCode('expense_management', 'edit', 'branch'))
+                <div class="modal fade" id="editExpenseModal{{ $expense->id }}" tabindex="-1"
+                    aria-labelledby="editExpenseModalLabel{{ $expense->id }}" aria-hidden="true"
+                    data-bs-backdrop="static" data-bs-keyboard="false">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editExpenseModalLabel{{ $expense->id }}">
+                                    Chỉnh Sửa Yêu Cầu Chi Phí
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <form action="{{ route('backend.club.expenses.update', $expense) }}" method="POST"
+                                id="editExpenseForm{{ $expense->id }}">
+                                @csrf
+                                @method('PUT')
+                                <div class="modal-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Tên Chi Phí <span
+                                                        class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" name="name"
+                                                    value="{{ $expense->name }}" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Số Tiền <span
+                                                        class="text-danger">*</span></label>
+                                                <input type="number" class="form-control" name="amount"
+                                                    value="{{ $expense->amount }}" min="0" step="0.01"
+                                                    required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Học Kỳ <span
+                                                        class="text-danger">*</span></label>
+                                                <select class="form-select" name="semester_id" required>
+                                                    @foreach ($semesters as $semester)
+                                                        <option value="{{ $semester->id }}"
+                                                            {{ $expense->semester_id == $semester->id ? 'selected' : '' }}>
+                                                            {{ $semester->name }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Người Yêu Cầu</label>
+                                                <input type="text" class="form-control"
+                                                    value="{{ $expense->requestedBy->name ?? 'N/A' }}" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="mb-3">
+                                                <label class="form-label">Mô Tả</label>
+                                                <textarea class="form-control" name="description" rows="3" maxlength="1000">{{ $expense->description }}</textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                    <button type="submit" class="btn btn-primary">Cập
+                                        Nhật</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            <!-- Delete Expense Modal -->
+            @if (
+                $expense->status === 'pending' &&
+                    auth()->user()->hasPermissionForModuleCode('expense_management', 'delete', 'branch'))
+                <div class="modal fade" id="deleteExpenseModal{{ $expense->id }}" tabindex="-1"
+                    aria-labelledby="deleteExpenseModalLabel{{ $expense->id }}" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="deleteExpenseModalLabel{{ $expense->id }}">
+                                    Xác Nhận Xóa
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Bạn có chắc chắn muốn xóa yêu cầu chi phí
+                                    <strong>{{ $expense->name }}</strong>?
+                                </p>
+                                <div class="alert alert-warning">
+                                    <i class="ti ti-alert-triangle"></i>
+                                    Hành động này không thể hoàn tác!
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                <form action="{{ route('backend.club.expenses.destroy', $expense) }}" method="POST"
+                                    style="display: inline;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger">Xóa</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            <!-- Approve Expense Modal -->
+            @if (
+                $expense->status === 'pending' &&
+                    auth()->user()->hasPermissionForModuleCode('expense_management', 'approve', 'branch'))
+                <div class="modal fade" id="approveExpenseModal{{ $expense->id }}" tabindex="-1"
+                    aria-labelledby="approveExpenseModalLabel{{ $expense->id }}" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="approveExpenseModalLabel{{ $expense->id }}">
+                                    Xác Nhận Phê Duyệt
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Bạn có chắc chắn muốn phê duyệt yêu cầu chi phí
+                                    <strong>{{ $expense->name }}</strong>?
+                                </p>
+                                <div class="alert alert-info">
+                                    <i class="ti ti-info-circle"></i>
+                                    Yêu cầu sẽ được chuyển sang trạng thái "Đã phê duyệt"
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                <form action="{{ route('backend.club.expenses.approve', $expense) }}" method="POST"
+                                    style="display: inline;">
+                                    @csrf
+                                    @method('PUT')
+                                    <button type="submit" class="btn btn-success">
+                                        Phê Duyệt
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            <!-- Reject Expense Modal -->
+            @if (
+                $expense->status === 'pending' &&
+                    auth()->user()->hasPermissionForModuleCode('expense_management', 'reject', 'branch'))
+                <div class="modal fade" id="rejectExpenseModal{{ $expense->id }}" tabindex="-1"
+                    aria-labelledby="rejectExpenseModalLabel{{ $expense->id }}" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="rejectExpenseModalLabel{{ $expense->id }}">
+                                    Xác Nhận Từ Chối
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Bạn có chắc chắn muốn từ chối yêu cầu chi phí
+                                    <strong>{{ $expense->name }}</strong>?
+                                </p>
+                                <div class="alert alert-warning">
+                                    <i class="ti ti-alert-triangle"></i>
+                                    Yêu cầu sẽ được chuyển sang trạng thái "Bị từ chối"
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                <form action="{{ route('backend.club.expenses.reject', $expense) }}" method="POST"
+                                    style="display: inline;">
+                                    @csrf
+                                    @method('PUT')
+                                    <button type="submit" class="btn btn-danger">
+                                        Từ Chối
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            <!-- Mark as Paid Modal -->
+            @if (
+                $expense->status === 'approved' &&
+                    auth()->user()->hasPermissionForModuleCode('expense_management', 'mark_as_paid', 'branch'))
+                <div class="modal fade" id="markAsPaidModal{{ $expense->id }}" tabindex="-1"
+                    aria-labelledby="markAsPaidModalLabel{{ $expense->id }}" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="markAsPaidModalLabel{{ $expense->id }}">
+                                    Xác Nhận Thanh Toán
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Bạn có chắc chắn muốn đánh dấu yêu cầu chi phí
+                                    <strong>{{ $expense->name }}</strong> là đã thanh toán?
+                                </p>
+                                <div class="alert alert-success">
+                                    <i class="ti ti-check-circle"></i>
+                                    Yêu cầu sẽ được chuyển sang trạng thái "Đã thanh toán"
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                <form action="{{ route('backend.club.expenses.mark-as-paid', $expense) }}" method="POST"
+                                    style="display: inline;">
+                                    @csrf
+                                    @method('PUT')
+                                    <button type="submit" class="btn btn-primary">
+                                        Đánh Dấu Đã Thanh Toán
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
+        @endforeach
 
         <!-- Create Expense Modal -->
         @if (auth()->user()->hasPermissionForModuleCode('expense_management', 'create', 'branch'))

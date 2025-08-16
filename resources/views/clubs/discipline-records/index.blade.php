@@ -228,250 +228,6 @@ Latest Changes: Bổ sung modal thu hồi và xóa
                                                 </div>
                                             </td>
                                         </tr>
-
-                                        <!-- Edit Record Modal -->
-                                        @if (auth()->user()->hasPermissionForModuleCode('discipline_record_management', 'edit', 'branch'))
-                                            <div class="modal fade" id="editRecordModal{{ $record->id }}"
-                                                tabindex="-1" aria-hidden="true">
-                                                <div class="modal-dialog modal-dialog-centered modal-lg">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title">Chỉnh Sửa Điểm</h5>
-                                                            <button type="button" class="btn-close"
-                                                                data-bs-dismiss="modal"></button>
-                                                        </div>
-                                                        <form
-                                                            action="{{ route('backend.club.discipline-records.update', $record->id) }}"
-                                                            method="POST">
-                                                            @csrf
-                                                            @method('PUT')
-                                                            <div class="modal-body">
-                                                                <div class="row">
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label class="form-label">Loại Điểm <span
-                                                                                    class="text-danger">*</span></label>
-                                                                            <select class="form-select"
-                                                                                name="discipline_id" required>
-                                                                                @foreach ($disciplines as $discipline)
-                                                                                    <option value="{{ $discipline->id }}"
-                                                                                        {{ $record->discipline_id === $discipline->id ? 'selected' : '' }}>
-                                                                                        {{ $discipline->name }}
-                                                                                        ({{ $discipline->formatted_points }})
-                                                                                    </option>
-                                                                                @endforeach
-                                                                            </select>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label class="form-label">Học Kỳ <span
-                                                                                    class="text-danger">*</span></label>
-                                                                            <select class="form-select" name="semester_id"
-                                                                                required>
-                                                                                @foreach ($semesters as $semester)
-                                                                                    <option value="{{ $semester->id }}"
-                                                                                        {{ $record->semester_id === $semester->id ? 'selected' : '' }}>
-                                                                                        {{ $semester->name }}
-                                                                                    </option>
-                                                                                @endforeach
-                                                                            </select>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="mb-3">
-                                                                    <label class="form-label">Ngày Áp Dụng <span
-                                                                            class="text-danger">*</span></label>
-                                                                    <input type="date" class="form-control"
-                                                                        name="applied_date"
-                                                                        value="{{ $record->applied_date->format('Y-m-d') }}"
-                                                                        required>
-                                                                </div>
-                                                                <div class="mb-3">
-                                                                    <label class="form-label">Ghi Chú</label>
-                                                                    <textarea class="form-control" name="notes" rows="2">{{ $record->notes }}</textarea>
-                                                                </div>
-                                                            </div>
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-light"
-                                                                    data-bs-dismiss="modal">Hủy</button>
-                                                                <button type="submit" class="btn btn-primary">Cập
-                                                                    Nhật</button>
-                                                            </div>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endif
-
-                                        <!-- Revoke Record Modal -->
-                                        @if (
-                                            $record->status === 'active' &&
-                                                auth()->user()->hasPermissionForModuleCode('discipline_record_management', 'revoke', 'branch'))
-                                            <div class="modal fade" id="revokeRecordModal{{ $record->id }}"
-                                                tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
-                                                data-bs-keyboard="false">
-                                                <div class="modal-dialog modal-dialog-centered">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title text-warning">
-                                                                <i class="ri-warning-line"></i>
-                                                                Thu Hồi Điểm
-                                                            </h5>
-                                                            <button type="button" class="btn-close"
-                                                                data-bs-dismiss="modal"></button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <div class="alert alert-warning">
-                                                                <strong>Cảnh báo!</strong> Bạn sắp thu hồi điểm này. Hành
-                                                                động này sẽ thay đổi trạng thái của điểm từ "Hoạt động" sang
-                                                                "Đã thu hồi".
-                                                            </div>
-
-                                                            <div class="row">
-                                                                <div class="col-md-6">
-                                                                    <strong>Thành viên:</strong><br>
-                                                                    <span
-                                                                        class="text-muted">{{ $record->user->name }}</span>
-                                                                </div>
-                                                                <div class="col-md-6">
-                                                                    <strong>Loại điểm:</strong><br>
-                                                                    <span
-                                                                        class="text-muted">{{ $record->discipline->name }}</span>
-                                                                </div>
-                                                            </div>
-                                                            <hr>
-                                                            <div class="row">
-                                                                <div class="col-md-6">
-                                                                    <strong>Điểm:</strong><br>
-                                                                    <span
-                                                                        class="badge {{ $record->discipline->discipline_points > 0 ? 'bg-success' : 'bg-danger' }}">
-                                                                        {{ $record->discipline->discipline_points > 0 ? '+' : '' }}{{ $record->formatted_points }}
-                                                                    </span>
-                                                                </div>
-                                                                <div class="col-md-6">
-                                                                    <strong>Ngày áp dụng:</strong><br>
-                                                                    <span
-                                                                        class="text-muted">{{ $record->applied_date->format('d/m/Y') }}</span>
-                                                                </div>
-                                                            </div>
-
-                                                            <form id="revokeForm{{ $record->id }}"
-                                                                action="{{ route('backend.club.discipline-records.revoke', $record->id) }}"
-                                                                method="POST">
-                                                                @csrf
-                                                                @method('PATCH')
-                                                                <div class="mt-3">
-                                                                    <label class="form-label">Lý do thu hồi <span
-                                                                            class="text-danger">*</span></label>
-                                                                    <textarea class="form-control" name="revoke_reason" rows="3" placeholder="Nhập lý do thu hồi điểm này..."
-                                                                        required></textarea>
-                                                                </div>
-                                                            </form>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-light"
-                                                                data-bs-dismiss="modal">Hủy</button>
-                                                            <button type="submit" form="revokeForm{{ $record->id }}"
-                                                                class="btn btn-warning">
-                                                                <i class="ri-close-circle-line"></i>
-                                                                Thu Hồi Điểm
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endif
-
-                                        <!-- Delete Record Modal -->
-                                        @if (auth()->user()->hasPermissionForModuleCode('discipline_record_management', 'delete', 'branch'))
-                                            <div class="modal fade" id="deleteRecordModal{{ $record->id }}"
-                                                tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
-                                                data-bs-keyboard="false">
-                                                <div class="modal-dialog modal-dialog-centered">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title text-danger">
-                                                                <i class="ri-delete-bin-line"></i>
-                                                                Xóa Điểm
-                                                            </h5>
-                                                            <button type="button" class="btn-close"
-                                                                data-bs-dismiss="modal"></button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <div class="alert alert-danger">
-                                                                <strong>Nguy hiểm!</strong> Bạn sắp xóa vĩnh viễn điểm này.
-                                                                Hành động này không thể hoàn tác!
-                                                            </div>
-
-                                                            <div class="row">
-                                                                <div class="col-md-6">
-                                                                    <strong>Thành viên:</strong><br>
-                                                                    <span
-                                                                        class="text-muted">{{ $record->user->name }}</span>
-                                                                </div>
-                                                                <div class="col-md-6">
-                                                                    <strong>Loại điểm:</strong><br>
-                                                                    <span
-                                                                        class="text-muted">{{ $record->discipline->name }}</span>
-                                                                </div>
-                                                            </div>
-                                                            <hr>
-                                                            <div class="row">
-                                                                <div class="col-md-6">
-                                                                    <strong>Điểm:</strong><br>
-                                                                    <span
-                                                                        class="badge {{ $record->discipline->discipline_points > 0 ? 'bg-success' : 'bg-danger' }}">
-                                                                        {{ $record->discipline->discipline_points > 0 ? '+' : '' }}{{ $record->formatted_points }}
-                                                                    </span>
-                                                                </div>
-                                                                <div class="col-md-6">
-                                                                    <strong>Ngày áp dụng:</strong><br>
-                                                                    <span
-                                                                        class="text-muted">{{ $record->applied_date->format('d/m/Y') }}</span>
-                                                                </div>
-                                                            </div>
-
-                                                            <div class="mt-3">
-                                                                <p class="text-muted">
-                                                                    <strong>Lưu ý:</strong> Sau khi xóa, dữ liệu sẽ không
-                                                                    thể khôi phục.
-                                                                    Nếu bạn chỉ muốn tạm thời vô hiệu hóa điểm này, hãy sử
-                                                                    dụng tính năng "Thu hồi" thay vì xóa.
-                                                                </p>
-                                                            </div>
-
-                                                            <form id="deleteForm{{ $record->id }}"
-                                                                action="{{ route('backend.club.discipline-records.destroy', $record->id) }}"
-                                                                method="POST">
-                                                                @csrf
-                                                                @method('DELETE')
-                                                                <div class="mt-3">
-                                                                    <div class="form-check">
-                                                                        <input class="form-check-input" type="checkbox"
-                                                                            id="confirmDelete{{ $record->id }}"
-                                                                            required>
-                                                                        <label class="form-check-label text-danger"
-                                                                            for="confirmDelete{{ $record->id }}">
-                                                                            Tôi hiểu rằng hành động này không thể hoàn tác.
-                                                                        </label>
-                                                                    </div>
-                                                                </div>
-                                                            </form>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-light"
-                                                                data-bs-dismiss="modal">Hủy</button>
-                                                            <button type="submit" form="deleteForm{{ $record->id }}"
-                                                                class="btn btn-danger">
-                                                                <i class="ri-delete-bin-line"></i>
-                                                                Xóa Vĩnh Viễn
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endif
                                     @endforeach
                                 </tbody>
                             </table>
@@ -482,6 +238,224 @@ Latest Changes: Bổ sung modal thu hồi và xóa
             </div>
         </div>
     </div>
+
+    @foreach ($disciplineRecords as $record)
+        <!-- Edit Record Modal -->
+        @if (auth()->user()->hasPermissionForModuleCode('discipline_record_management', 'edit', 'branch'))
+            <div class="modal fade" id="editRecordModal{{ $record->id }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Chỉnh Sửa Điểm</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <form action="{{ route('backend.club.discipline-records.update', $record->id) }}" method="POST">
+                            @csrf
+                            @method('PUT')
+                            <div class="modal-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Loại Điểm <span class="text-danger">*</span></label>
+                                            <select class="form-select" name="discipline_id" required>
+                                                @foreach ($disciplines as $discipline)
+                                                    <option value="{{ $discipline->id }}"
+                                                        {{ $record->discipline_id === $discipline->id ? 'selected' : '' }}>
+                                                        {{ $discipline->name }}
+                                                        ({{ $discipline->formatted_points }})
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Học Kỳ <span class="text-danger">*</span></label>
+                                            <select class="form-select" name="semester_id" required>
+                                                @foreach ($semesters as $semester)
+                                                    <option value="{{ $semester->id }}"
+                                                        {{ $record->semester_id === $semester->id ? 'selected' : '' }}>
+                                                        {{ $semester->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Ngày Áp Dụng <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" name="applied_date"
+                                        value="{{ $record->applied_date->format('Y-m-d') }}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Ghi Chú</label>
+                                    <textarea class="form-control" name="notes" rows="2">{{ $record->notes }}</textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
+                                <button type="submit" class="btn btn-primary">Cập
+                                    Nhật</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        <!-- Revoke Record Modal -->
+        @if (
+            $record->status === 'active' &&
+                auth()->user()->hasPermissionForModuleCode('discipline_record_management', 'revoke', 'branch'))
+            <div class="modal fade" id="revokeRecordModal{{ $record->id }}" tabindex="-1" aria-hidden="true"
+                data-bs-backdrop="static" data-bs-keyboard="false">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title text-warning">
+                                <i class="ri-warning-line"></i>
+                                Thu Hồi Điểm
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="alert alert-warning">
+                                <strong>Cảnh báo!</strong> Bạn sắp thu hồi điểm này. Hành
+                                động này sẽ thay đổi trạng thái của điểm từ "Hoạt động" sang
+                                "Đã thu hồi".
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>Thành viên:</strong><br>
+                                    <span class="text-muted">{{ $record->user->name }}</span>
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Loại điểm:</strong><br>
+                                    <span class="text-muted">{{ $record->discipline->name }}</span>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>Điểm:</strong><br>
+                                    <span
+                                        class="badge {{ $record->discipline->discipline_points > 0 ? 'bg-success' : 'bg-danger' }}">
+                                        {{ $record->discipline->discipline_points > 0 ? '+' : '' }}{{ $record->formatted_points }}
+                                    </span>
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Ngày áp dụng:</strong><br>
+                                    <span class="text-muted">{{ $record->applied_date->format('d/m/Y') }}</span>
+                                </div>
+                            </div>
+
+                            <form id="revokeForm{{ $record->id }}"
+                                action="{{ route('backend.club.discipline-records.revoke', $record->id) }}"
+                                method="POST">
+                                @csrf
+                                @method('PATCH')
+                                <div class="mt-3">
+                                    <label class="form-label">Lý do thu hồi <span class="text-danger">*</span></label>
+                                    <textarea class="form-control" name="revoke_reason" rows="3" placeholder="Nhập lý do thu hồi điểm này..."
+                                        required></textarea>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
+                            <button type="submit" form="revokeForm{{ $record->id }}" class="btn btn-warning">
+                                <i class="ri-close-circle-line"></i>
+                                Thu Hồi Điểm
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        <!-- Delete Record Modal -->
+        @if (auth()->user()->hasPermissionForModuleCode('discipline_record_management', 'delete', 'branch'))
+            <div class="modal fade" id="deleteRecordModal{{ $record->id }}" tabindex="-1" aria-hidden="true"
+                data-bs-backdrop="static" data-bs-keyboard="false">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title text-danger">
+                                <i class="ri-delete-bin-line"></i>
+                                Xóa Điểm
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="alert alert-danger">
+                                <strong>Nguy hiểm!</strong> Bạn sắp xóa vĩnh viễn điểm này.
+                                Hành động này không thể hoàn tác!
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>Thành viên:</strong><br>
+                                    <span class="text-muted">{{ $record->user->name }}</span>
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Loại điểm:</strong><br>
+                                    <span class="text-muted">{{ $record->discipline->name }}</span>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>Điểm:</strong><br>
+                                    <span
+                                        class="badge {{ $record->discipline->discipline_points > 0 ? 'bg-success' : 'bg-danger' }}">
+                                        {{ $record->discipline->discipline_points > 0 ? '+' : '' }}{{ $record->formatted_points }}
+                                    </span>
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>Ngày áp dụng:</strong><br>
+                                    <span class="text-muted">{{ $record->applied_date->format('d/m/Y') }}</span>
+                                </div>
+                            </div>
+
+                            <div class="mt-3">
+                                <p class="text-muted">
+                                    <strong>Lưu ý:</strong> Sau khi xóa, dữ liệu sẽ không
+                                    thể khôi phục.
+                                    Nếu bạn chỉ muốn tạm thời vô hiệu hóa điểm này, hãy sử
+                                    dụng tính năng "Thu hồi" thay vì xóa.
+                                </p>
+                            </div>
+
+                            <form id="deleteForm{{ $record->id }}"
+                                action="{{ route('backend.club.discipline-records.destroy', $record->id) }}"
+                                method="POST">
+                                @csrf
+                                @method('DELETE')
+                                <div class="mt-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox"
+                                            id="confirmDelete{{ $record->id }}" required>
+                                        <label class="form-check-label text-danger"
+                                            for="confirmDelete{{ $record->id }}">
+                                            Tôi hiểu rằng hành động này không thể hoàn tác.
+                                        </label>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
+                            <button type="submit" form="deleteForm{{ $record->id }}" class="btn btn-danger">
+                                <i class="ri-delete-bin-line"></i>
+                                Xóa Vĩnh Viễn
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+    @endforeach
 
     <!-- Add Record Modal -->
     @if (auth()->user()->hasPermissionForModuleCode('discipline_record_management', 'create', 'branch'))

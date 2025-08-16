@@ -1,12 +1,3 @@
-{{-- Created slots index view based on courses template
-     Adapted for slot fields: name, start_time, end_time, status
-
-     UPDATED: Fixed time format display issue in edit and add modals:
-     - Added step="60" to force 24-hour format display
-     - Added pattern="[0-9]{2}:[0-9]{2}" for validation
-     - Added placeholder="HH:MM" for user guidance
-     This ensures consistent 24-hour time format instead of browser-dependent AM/PM display --}}
-
 @extends('layouts.app')
 
 @section('content')
@@ -108,129 +99,6 @@
                                                 </div>
                                             </td>
                                         </tr>
-
-                                        <!-- Edit Slot Modal -->
-                                        @if (auth()->user()->hasPermissionForModuleCode('slot_management', 'edit', 'central'))
-                                            <div class="modal fade" id="editSlotModal{{ $slot->id }}" tabindex="-1"
-                                                aria-labelledby="editSlotModalLabel{{ $slot->id }}" aria-hidden="true"
-                                                data-bs-backdrop="static" data-bs-keyboard="false">
-                                                <div class="modal-dialog modal-dialog-centered ">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title"
-                                                                id="editSlotModalLabel{{ $slot->id }}">
-                                                                Chỉnh Sửa Ca Học
-                                                            </h5>
-                                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                                aria-label="Close"></button>
-                                                        </div>
-                                                        <form action="{{ route('backend.slots.update', $slot->id) }}"
-                                                            method="POST" id="editSlotForm{{ $slot->id }}">
-                                                            @csrf
-                                                            @method('PUT')
-                                                            <div class="modal-body">
-                                                                <div class="mb-3">
-                                                                    <label for="edit_name{{ $slot->id }}"
-                                                                        class="form-label">Tên Ca Học <span
-                                                                            class="text-danger">*</span></label>
-                                                                    <input type="text" class="form-control"
-                                                                        id="edit_name{{ $slot->id }}" name="name"
-                                                                        value="{{ $slot->name }}" required>
-                                                                </div>
-                                                                <div class="row">
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label for="edit_start_time{{ $slot->id }}"
-                                                                                class="form-label">Giờ
-                                                                                Bắt Đầu <span
-                                                                                    class="text-danger">*</span></label>
-                                                                            <input type="time" class="form-control"
-                                                                                id="edit_start_time{{ $slot->id }}"
-                                                                                name="start_time"
-                                                                                value="{{ \Carbon\Carbon::parse($slot->start_time)->format('H:i') }}"
-                                                                                step="60" pattern="[0-9]{2}:[0-9]{2}"
-                                                                                placeholder="HH:MM" required>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label for="edit_end_time{{ $slot->id }}"
-                                                                                class="form-label">Giờ
-                                                                                Kết Thúc <span
-                                                                                    class="text-danger">*</span></label>
-                                                                            <input type="time" class="form-control"
-                                                                                id="edit_end_time{{ $slot->id }}"
-                                                                                name="end_time"
-                                                                                value="{{ \Carbon\Carbon::parse($slot->end_time)->format('H:i') }}"
-                                                                                step="60" pattern="[0-9]{2}:[0-9]{2}"
-                                                                                placeholder="HH:MM" required>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="mb-3">
-                                                                    <label for="edit_status{{ $slot->id }}"
-                                                                        class="form-label">Trạng Thái <span
-                                                                            class="text-danger">*</span></label>
-                                                                    <select class="form-select"
-                                                                        id="edit_status{{ $slot->id }}"
-                                                                        name="status" required>
-                                                                        <option value="">Chọn trạng thái</option>
-                                                                        <option value="active"
-                                                                            {{ $slot->status == 'active' ? 'selected' : '' }}>
-                                                                            Hoạt Động</option>
-                                                                        <option value="inactive"
-                                                                            {{ $slot->status == 'inactive' ? 'selected' : '' }}>
-                                                                            Tạm Ngưng</option>
-                                                                    </select>
-                                                                </div>
-                                                            </div>
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary"
-                                                                    data-bs-dismiss="modal">Hủy</button>
-                                                                <button type="submit" class="btn btn-primary">Cập
-                                                                    Nhật</button>
-                                                            </div>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endif
-                                        <!-- Delete Slot Modal -->
-                                        @if (auth()->user()->hasPermissionForModuleCode('slot_management', 'delete', 'central'))
-                                            <div class="modal fade" id="deleteSlotModal{{ $slot->id }}"
-                                                tabindex="-1" aria-labelledby="deleteSlotModalLabel{{ $slot->id }}"
-                                                aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-                                                <div class="modal-dialog modal-dialog-centered">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title text-danger"
-                                                                id="deleteSlotModalLabel{{ $slot->id }}">
-                                                                Xác Nhận Xóa</h5>
-                                                            <button type="button" class="btn-close"
-                                                                data-bs-dismiss="modal" aria-label="Close"></button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <div class="text-center">
-                                                                <p class="mb-2">Bạn có chắc chắn muốn xóa ca học <span
-                                                                        class="fw-bold text-danger">{{ $slot->name }}</span>
-                                                                    không?
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                        <form action="{{ route('backend.slots.destroy', $slot->id) }}"
-                                                            method="POST" id="deleteSlotForm{{ $slot->id }}">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary"
-                                                                    data-bs-dismiss="modal">Hủy</button>
-                                                                <button type="submit" class="btn btn-danger">Xóa</button>
-                                                            </div>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endif
                                     @endforeach
                                 </tbody>
                             </table>
@@ -242,6 +110,112 @@
         <!--End::row-1 -->
 
     </div>
+
+    @foreach ($slots as $slot)
+        <!-- Edit Slot Modal -->
+        @if (auth()->user()->hasPermissionForModuleCode('slot_management', 'edit', 'central'))
+            <div class="modal fade" id="editSlotModal{{ $slot->id }}" tabindex="-1"
+                aria-labelledby="editSlotModalLabel{{ $slot->id }}" aria-hidden="true" data-bs-backdrop="static"
+                data-bs-keyboard="false">
+                <div class="modal-dialog modal-dialog-centered ">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="editSlotModalLabel{{ $slot->id }}">
+                                Chỉnh Sửa Ca Học
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form action="{{ route('backend.slots.update', $slot->id) }}" method="POST"
+                            id="editSlotForm{{ $slot->id }}">
+                            @csrf
+                            @method('PUT')
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label for="edit_name{{ $slot->id }}" class="form-label">Tên Ca Học <span
+                                            class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="edit_name{{ $slot->id }}"
+                                        name="name" value="{{ $slot->name }}" required>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="edit_start_time{{ $slot->id }}" class="form-label">Giờ
+                                                Bắt Đầu <span class="text-danger">*</span></label>
+                                            <input type="time" class="form-control"
+                                                id="edit_start_time{{ $slot->id }}" name="start_time"
+                                                value="{{ \Carbon\Carbon::parse($slot->start_time)->format('H:i') }}"
+                                                step="60" pattern="[0-9]{2}:[0-9]{2}" placeholder="HH:MM" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="edit_end_time{{ $slot->id }}" class="form-label">Giờ
+                                                Kết Thúc <span class="text-danger">*</span></label>
+                                            <input type="time" class="form-control"
+                                                id="edit_end_time{{ $slot->id }}" name="end_time"
+                                                value="{{ \Carbon\Carbon::parse($slot->end_time)->format('H:i') }}"
+                                                step="60" pattern="[0-9]{2}:[0-9]{2}" placeholder="HH:MM" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="edit_status{{ $slot->id }}" class="form-label">Trạng Thái <span
+                                            class="text-danger">*</span></label>
+                                    <select class="form-select" id="edit_status{{ $slot->id }}" name="status"
+                                        required>
+                                        <option value="">Chọn trạng thái</option>
+                                        <option value="active" {{ $slot->status == 'active' ? 'selected' : '' }}>
+                                            Hoạt Động</option>
+                                        <option value="inactive" {{ $slot->status == 'inactive' ? 'selected' : '' }}>
+                                            Tạm Ngưng</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                <button type="submit" class="btn btn-primary">Cập
+                                    Nhật</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @endif
+        <!-- Delete Slot Modal -->
+        @if (auth()->user()->hasPermissionForModuleCode('slot_management', 'delete', 'central'))
+            <div class="modal fade" id="deleteSlotModal{{ $slot->id }}" tabindex="-1"
+                aria-labelledby="deleteSlotModalLabel{{ $slot->id }}" aria-hidden="true" data-bs-backdrop="static"
+                data-bs-keyboard="false">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title text-danger" id="deleteSlotModalLabel{{ $slot->id }}">
+                                Xác Nhận Xóa</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="text-center">
+                                <p class="mb-2">Bạn có chắc chắn muốn xóa ca học <span
+                                        class="fw-bold text-danger">{{ $slot->name }}</span>
+                                    không?
+                                </p>
+                            </div>
+                        </div>
+                        <form action="{{ route('backend.slots.destroy', $slot->id) }}" method="POST"
+                            id="deleteSlotForm{{ $slot->id }}">
+                            @csrf
+                            @method('DELETE')
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                <button type="submit" class="btn btn-danger">Xóa</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @endif
+    @endforeach
 
     <!-- Add Slot Modal -->
     @if (auth()->user()->hasPermissionForModuleCode('slot_management', 'create', 'central'))

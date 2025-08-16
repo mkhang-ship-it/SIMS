@@ -1,8 +1,3 @@
-{{--
-Updated: Fixed JavaScript syntax error with const declarations
-Changes: Added proper null checks and ensured all const variables are properly initialized
-Date: 2024-12-19
---}}
 @extends('layouts.app')
 
 @section('content')
@@ -14,10 +9,12 @@ Date: 2024-12-19
 
             <!-- Nút trên desktop -->
             <div class="d-none d-md-block">
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createNotificationModal">
-                    <i class="ti ti-plus"></i>
-                    Gửi Thông Báo Mới
-                </button>
+                @if (auth()->user()->hasPermissionForModuleCode('notification_management', 'create', 'central'))
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createNotificationModal">
+                        <i class="ti ti-plus"></i>
+                        Gửi Thông Báo Mới
+                    </button>
+                @endif
             </div>
 
             <!-- Dropdown trên mobile -->
@@ -27,12 +24,14 @@ Date: 2024-12-19
                     Hành động
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
-                    <li>
-                        <a class="dropdown-item" href="#" data-bs-toggle="modal"
-                            data-bs-target="#createNotificationModal">
-                            <i class="ti ti-plus"></i> Gửi Thông Báo Mới
-                        </a>
-                    </li>
+                    @if (auth()->user()->hasPermissionForModuleCode('notification_management', 'create', 'central'))
+                        <li>
+                            <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                data-bs-target="#createNotificationModal">
+                                <i class="ti ti-plus"></i> Gửi Thông Báo Mới
+                            </a>
+                        </li>
+                    @endif
                 </ul>
             </div>
         </div>
@@ -241,262 +240,280 @@ Date: 2024-12-19
     <!-- View/Edit/Delete Modals for each notification -->
     @foreach ($notifications as $notification)
         <!-- View Notification Modal -->
-        <div class="modal fade" id="viewNotificationModal{{ $notification->id }}" tabindex="-1"
-            aria-labelledby="viewNotificationModalLabel{{ $notification->id }}" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="viewNotificationModalLabel{{ $notification->id }}">
-                            <i class="ti ti-eye me-1"></i>Chi Tiết Thông Báo
-                        </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="row">
-                            <!-- Notification Header -->
-                            <div class="mb-3">
-                                <h4 id="notificationDetailTitle" class="text-primary mb-2">{{ $notification->title }}
-                                </h4>
-                                <div class="d-flex justify-content-between text-muted small">
-                                    <span>
-                                        <i class="ri-user-line me-1"></i>
-                                        Người gửi: <span
-                                            id="notificationDetailSender">{{ $notification->sender->name }}</span>
-                                    </span>
-                                    <span>
-                                        <i class="ri-time-line me-1"></i>
-                                        <span
-                                            id="notificationDetailDate">{{ $notification->created_at->format('d/m/Y H:i') }}</span>
-                                    </span>
-                                </div>
-                            </div>
-
-                            <div class="col-12 mb-3 border rounded p-3">
-                                <div class="text-center">
-                                    <img src="{{ asset('storage/' . $notification->image_path) }}"
-                                        alt="Hình ảnh thông báo" class="img-fluid rounded"
-                                        style="max-width: 100%; max-height: 300px;">
-
-                                </div>
-                                <div class="mt-3">{!! nl2br(e($notification->content)) !!}</div>
-                            </div>
-
-                            @if ($notification->files_path && count($notification->files_path) > 0)
-                                <div class="col-12 mb-3">
-                                    <label class="form-label fw-semibold">File đính kèm:</label>
-                                    @foreach ($notification->files_path as $file)
-                                        <div
-                                            class="d-flex align-items-center justify-content-between mb-2 p-2 border rounded">
-                                            <div class="d-flex align-items-center">
-                                                <i class="ti ti-file me-2 text-primary"></i>
-                                                <span>{{ $file['name'] }}</span>
-                                                <small
-                                                    class="text-muted ms-2">({{ number_format($file['size'] / 1024, 2) }}
-                                                    KB)</small>
-                                            </div>
-                                            <a href="{{ asset('storage/' . $file['path']) }}" target="_blank"
-                                                class="btn btn-sm btn-outline-primary">
-                                                <i class="ti ti-download me-1"></i>Tải xuống
-                                            </a>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            @endif
-
-
+        @if (auth()->user()->hasPermissionForModuleCode('notification_management', 'view', 'central'))
+            <div class="modal fade" id="viewNotificationModal{{ $notification->id }}" tabindex="-1"
+                aria-labelledby="viewNotificationModalLabel{{ $notification->id }}" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="viewNotificationModalLabel{{ $notification->id }}">
+                                <i class="ti ti-eye me-1"></i>Chi Tiết Thông Báo
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
                         </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Edit Notification Modal -->
-        <div class="modal fade" id="editNotificationModal{{ $notification->id }}" tabindex="-1"
-            aria-labelledby="editNotificationModalLabel{{ $notification->id }}" aria-hidden="true"
-            data-bs-backdrop="static" data-bs-keyboard="false">
-            <div class="modal-dialog modal-dialog-centered modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="editNotificationModalLabel{{ $notification->id }}">
-                            <i class="ti ti-edit me-1"></i>Cập Nhật Thông Báo
-                        </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <form method="POST" action="{{ route('backend.notifications.update', $notification->id) }}"
-                        enctype="multipart/form-data">
-                        @csrf
-                        @method('PUT')
                         <div class="modal-body">
                             <div class="row">
-                                <div class="col-12 mb-3">
-                                    <label for="edit_title_{{ $notification->id }}" class="form-label">Tiêu đề thông báo
-                                        <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="edit_title_{{ $notification->id }}"
-                                        name="title" value="{{ $notification->title }}" required>
-                                </div>
-
-                                <div class="col-12 mb-3">
-                                    <label for="edit_content_{{ $notification->id }}" class="form-label">Nội dung thông
-                                        báo <span class="text-danger">*</span></label>
-                                    <textarea class="form-control" id="edit_content_{{ $notification->id }}" name="content" rows="4" required>{{ $notification->content }}</textarea>
-                                </div>
-
-                                <div class="col-12 mb-3">
-                                    <label for="edit_image_{{ $notification->id }}" class="form-label">Hình ảnh (tùy
-                                        chọn)</label>
-                                    @if ($notification->image_path)
-                                        <div class="mb-2">
-                                            <img src="{{ asset('storage/' . $notification->image_path) }}"
-                                                alt="Hình ảnh hiện tại" class="img-fluid rounded"
-                                                style="max-width: 200px; max-height: 150px;">
-                                            <small class="d-block text-muted">Hình ảnh hiện tại</small>
-                                        </div>
-                                    @endif
-                                    <input type="file" class="form-control" id="edit_image_{{ $notification->id }}"
-                                        name="image" accept="image/*">
-                                    <small class="text-muted">Định dạng: JPEG, PNG, JPG, GIF, WEBP. Tối đa 2MB</small>
-                                </div>
-
-                                <div class="col-12 mb-3">
-                                    <label for="edit_files_{{ $notification->id }}" class="form-label">File đính kèm (tùy
-                                        chọn)</label>
-                                    @if ($notification->files_path && count($notification->files_path) > 0)
-                                        <div class="mb-2">
-                                            <label class="form-label fw-semibold">File hiện tại:</label>
-                                            @foreach ($notification->files_path as $index => $file)
-                                                <div
-                                                    class="d-flex align-items-center justify-content-between mb-1 p-2 border rounded">
-                                                    <div class="d-flex align-items-center">
-                                                        <i class="ti ti-file me-2 text-primary"></i>
-                                                        <span>{{ $file['name'] }}</span>
-                                                        <small
-                                                            class="text-muted ms-2">({{ number_format($file['size'] / 1024, 2) }}
-                                                            KB)</small>
-                                                    </div>
-                                                    <a href="{{ asset('storage/' . $file['path']) }}" target="_blank"
-                                                        class="btn btn-sm btn-outline-primary">
-                                                        <i class="ti ti-download me-1"></i>Tải xuống
-                                                    </a>
-                                                </div>
-                                            @endforeach
-                                        </div>
-                                    @endif
-                                    <input type="file" class="form-control" id="edit_files_{{ $notification->id }}"
-                                        name="files[]" multiple
-                                        accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar">
-                                    <small class="text-muted">Định dạng: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT, ZIP,
-                                        RAR. Tối đa 10MB/file</small>
-                                </div>
-
-                                <div class="col-12 mb-3">
-                                    <label for="edit_target_type_{{ $notification->id }}" class="form-label">Đối tượng
-                                        nhận thông báo <span class="text-danger">*</span></label>
-                                    <select class="form-select" id="edit_target_type_{{ $notification->id }}"
-                                        name="target_type" required>
-                                        <option value="all_clubs"
-                                            {{ $notification->target_type === 'all_clubs' ? 'selected' : '' }}>
-                                            Tất cả câu
-                                            lạc bộ</option>
-                                        <option value="specific_clubs"
-                                            {{ $notification->target_type === 'specific_clubs' ? 'selected' : '' }}>
-                                            Câu lạc
-                                            bộ cụ thể</option>
-                                    </select>
-                                </div>
-
-                                <div class="col-12 mb-3" id="edit_specific_clubs_section_{{ $notification->id }}"
-                                    style="display: {{ $notification->target_type === 'specific_clubs' ? 'block' : 'none' }};">
-                                    <label class="form-label">Chọn câu lạc bộ <span class="text-danger">*</span></label>
-                                    <div class="border rounded p-3 bg-light" style="max-height: 200px; overflow-y: auto;">
-                                        @foreach ($clubs ?? [] as $club)
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="target_club_ids[]"
-                                                    value="{{ $club->id }}"
-                                                    id="edit_club_{{ $notification->id }}_{{ $club->id }}"
-                                                    {{ in_array($club->id, $notification->target_club_ids ?? []) ? 'checked' : '' }}>
-                                                <label class="form-check-label"
-                                                    for="edit_club_{{ $notification->id }}_{{ $club->id }}">
-                                                    {{ $club->name }}
-                                                </label>
-                                            </div>
-                                        @endforeach
+                                <!-- Notification Header -->
+                                <div class="mb-3">
+                                    <h4 id="notificationDetailTitle" class="text-primary mb-2">{{ $notification->title }}
+                                    </h4>
+                                    <div class="d-flex justify-content-between text-muted small">
+                                        <span>
+                                            <i class="ri-user-line me-1"></i>
+                                            Người gửi: <span
+                                                id="notificationDetailSender">{{ $notification->sender->name }}</span>
+                                        </span>
+                                        <span>
+                                            <i class="ri-time-line me-1"></i>
+                                            <span
+                                                id="notificationDetailDate">{{ $notification->created_at->format('d/m/Y H:i') }}</span>
+                                        </span>
                                     </div>
                                 </div>
 
-                                <div class="col-12 mb-3">
-                                    <label for="edit_status_{{ $notification->id }}" class="form-label">Trạng thái <span
-                                            class="text-danger">*</span></label>
-                                    <select class="form-select" id="edit_status_{{ $notification->id }}" name="status"
-                                        required>
-                                        <option value="active" {{ $notification->status === 'active' ? 'selected' : '' }}>
-                                            Hoạt động</option>
-                                        <option value="inactive"
-                                            {{ $notification->status === 'inactive' ? 'selected' : '' }}>
-                                            Vô
-                                            hiệu</option>
-                                    </select>
+                                <div class="col-12 mb-3 border rounded p-3">
+                                    <div class="text-center">
+                                        <img src="{{ asset('storage/' . $notification->image_path) }}"
+                                            alt="Hình ảnh thông báo" class="img-fluid rounded"
+                                            style="max-width: 100%; max-height: 300px;">
+
+                                    </div>
+                                    <div class="mt-3">{!! nl2br(e($notification->content)) !!}</div>
                                 </div>
+
+                                @if ($notification->files_path && count($notification->files_path) > 0)
+                                    <div class="col-12 mb-3">
+                                        <label class="form-label fw-semibold">File đính kèm:</label>
+                                        @foreach ($notification->files_path as $file)
+                                            <div
+                                                class="d-flex align-items-center justify-content-between mb-2 p-2 border rounded">
+                                                <div class="d-flex align-items-center">
+                                                    <i class="ti ti-file me-2 text-primary"></i>
+                                                    <span>{{ $file['name'] }}</span>
+                                                    <small
+                                                        class="text-muted ms-2">({{ number_format($file['size'] / 1024, 2) }}
+                                                        KB)</small>
+                                                </div>
+                                                <a href="{{ asset('storage/' . $file['path']) }}" target="_blank"
+                                                    class="btn btn-sm btn-outline-primary">
+                                                    <i class="ti ti-download me-1"></i>Tải xuống
+                                                </a>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endif
+
+
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                            <button type="submit" class="btn btn-warning">
-                                <i class="ti ti-device-floppy me-1"></i>Cập Nhật
-                            </button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
                         </div>
-                    </form>
+                    </div>
                 </div>
             </div>
-        </div>
+        @endif
+
+        <!-- Edit Notification Modal -->
+        @if (auth()->user()->hasPermissionForModuleCode('notification_management', 'edit', 'central'))
+            <div class="modal fade" id="editNotificationModal{{ $notification->id }}" tabindex="-1"
+                aria-labelledby="editNotificationModalLabel{{ $notification->id }}" aria-hidden="true"
+                data-bs-backdrop="static" data-bs-keyboard="false">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="editNotificationModalLabel{{ $notification->id }}">
+                                <i class="ti ti-edit me-1"></i>Cập Nhật Thông Báo
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                        </div>
+                        <form method="POST" action="{{ route('backend.notifications.update', $notification->id) }}"
+                            enctype="multipart/form-data">
+                            @csrf
+                            @method('PUT')
+                            <div class="modal-body">
+                                <div class="row">
+                                    <div class="col-12 mb-3">
+                                        <label for="edit_title_{{ $notification->id }}" class="form-label">Tiêu đề thông
+                                            báo
+                                            <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control"
+                                            id="edit_title_{{ $notification->id }}" name="title"
+                                            value="{{ $notification->title }}" required>
+                                    </div>
+
+                                    <div class="col-12 mb-3">
+                                        <label for="edit_content_{{ $notification->id }}" class="form-label">Nội dung
+                                            thông
+                                            báo <span class="text-danger">*</span></label>
+                                        <textarea class="form-control" id="edit_content_{{ $notification->id }}" name="content" rows="4" required>{{ $notification->content }}</textarea>
+                                    </div>
+
+                                    <div class="col-12 mb-3">
+                                        <label for="edit_image_{{ $notification->id }}" class="form-label">Hình ảnh (tùy
+                                            chọn)</label>
+                                        @if ($notification->image_path)
+                                            <div class="mb-2">
+                                                <img src="{{ asset('storage/' . $notification->image_path) }}"
+                                                    alt="Hình ảnh hiện tại" class="img-fluid rounded"
+                                                    style="max-width: 200px; max-height: 150px;">
+                                                <small class="d-block text-muted">Hình ảnh hiện tại</small>
+                                            </div>
+                                        @endif
+                                        <input type="file" class="form-control"
+                                            id="edit_image_{{ $notification->id }}" name="image" accept="image/*">
+                                        <small class="text-muted">Định dạng: JPEG, PNG, JPG, GIF, WEBP. Tối đa 2MB</small>
+                                    </div>
+
+                                    <div class="col-12 mb-3">
+                                        <label for="edit_files_{{ $notification->id }}" class="form-label">File đính kèm
+                                            (tùy
+                                            chọn)</label>
+                                        @if ($notification->files_path && count($notification->files_path) > 0)
+                                            <div class="mb-2">
+                                                <label class="form-label fw-semibold">File hiện tại:</label>
+                                                @foreach ($notification->files_path as $index => $file)
+                                                    <div
+                                                        class="d-flex align-items-center justify-content-between mb-1 p-2 border rounded">
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="ti ti-file me-2 text-primary"></i>
+                                                            <span>{{ $file['name'] }}</span>
+                                                            <small
+                                                                class="text-muted ms-2">({{ number_format($file['size'] / 1024, 2) }}
+                                                                KB)</small>
+                                                        </div>
+                                                        <a href="{{ asset('storage/' . $file['path']) }}" target="_blank"
+                                                            class="btn btn-sm btn-outline-primary">
+                                                            <i class="ti ti-download me-1"></i>Tải xuống
+                                                        </a>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        @endif
+                                        <input type="file" class="form-control"
+                                            id="edit_files_{{ $notification->id }}" name="files[]" multiple
+                                            accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar">
+                                        <small class="text-muted">Định dạng: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT,
+                                            ZIP,
+                                            RAR. Tối đa 10MB/file</small>
+                                    </div>
+
+                                    <div class="col-12 mb-3">
+                                        <label for="edit_target_type_{{ $notification->id }}" class="form-label">Đối
+                                            tượng
+                                            nhận thông báo <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="edit_target_type_{{ $notification->id }}"
+                                            name="target_type" required>
+                                            <option value="all_clubs"
+                                                {{ $notification->target_type === 'all_clubs' ? 'selected' : '' }}>
+                                                Tất cả câu
+                                                lạc bộ</option>
+                                            <option value="specific_clubs"
+                                                {{ $notification->target_type === 'specific_clubs' ? 'selected' : '' }}>
+                                                Câu lạc
+                                                bộ cụ thể</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-12 mb-3" id="edit_specific_clubs_section_{{ $notification->id }}"
+                                        style="display: {{ $notification->target_type === 'specific_clubs' ? 'block' : 'none' }};">
+                                        <label class="form-label">Chọn câu lạc bộ <span
+                                                class="text-danger">*</span></label>
+                                        <div class="border rounded p-3 bg-light"
+                                            style="max-height: 200px; overflow-y: auto;">
+                                            @foreach ($clubs ?? [] as $club)
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox"
+                                                        name="target_club_ids[]" value="{{ $club->id }}"
+                                                        id="edit_club_{{ $notification->id }}_{{ $club->id }}"
+                                                        {{ in_array($club->id, $notification->target_club_ids ?? []) ? 'checked' : '' }}>
+                                                    <label class="form-check-label"
+                                                        for="edit_club_{{ $notification->id }}_{{ $club->id }}">
+                                                        {{ $club->name }}
+                                                    </label>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 mb-3">
+                                        <label for="edit_status_{{ $notification->id }}" class="form-label">Trạng thái
+                                            <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="edit_status_{{ $notification->id }}"
+                                            name="status" required>
+                                            <option value="active"
+                                                {{ $notification->status === 'active' ? 'selected' : '' }}>
+                                                Hoạt động</option>
+                                            <option value="inactive"
+                                                {{ $notification->status === 'inactive' ? 'selected' : '' }}>
+                                                Vô
+                                                hiệu</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                <button type="submit" class="btn btn-warning">
+                                    <i class="ti ti-device-floppy me-1"></i>Cập Nhật
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @endif
 
         <!-- Delete Notification Modal -->
-        <div class="modal fade" id="deleteNotificationModal{{ $notification->id }}" tabindex="-1"
-            aria-labelledby="deleteNotificationModalLabel{{ $notification->id }}" aria-hidden="true"
-            data-bs-backdrop="static" data-bs-keyboard="false">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title text-danger" id="deleteNotificationModalLabel{{ $notification->id }}">
-                            Xác Nhận Xóa
-                        </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="text-center mb-3">
-                            <i class="ti ti-trash text-danger" style="font-size: 2.5rem;"></i>
+        @if (auth()->user()->hasPermissionForModuleCode('notification_management', 'delete', 'central'))
+            <div class="modal fade" id="deleteNotificationModal{{ $notification->id }}" tabindex="-1"
+                aria-labelledby="deleteNotificationModalLabel{{ $notification->id }}" aria-hidden="true"
+                data-bs-backdrop="static" data-bs-keyboard="false">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title text-danger" id="deleteNotificationModalLabel{{ $notification->id }}">
+                                Xác Nhận Xóa
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
                         </div>
-                        <p class="text-center mb-2">Bạn có chắc chắn muốn xóa thông báo <span
-                                class="fw-bold text-danger">{{ $notification->title }}</span> không?
-                        </p>
-                        <div class="alert alert-warning">
-                            <div class="d-flex align-items-start">
-                                <i class="ti ti-info-circle text-warning me-2 mt-1"></i>
-                                <div>
-                                    <strong>Người gửi:</strong> {{ $notification->sender->name }}<br>
-                                    <strong>Ngày gửi:</strong> {{ $notification->created_at->format('d/m/Y H:i') }}
+                        <div class="modal-body">
+                            <div class="text-center mb-3">
+                                <i class="ti ti-trash text-danger" style="font-size: 2.5rem;"></i>
+                            </div>
+                            <p class="text-center mb-2">Bạn có chắc chắn muốn xóa thông báo <span
+                                    class="fw-bold text-danger">{{ $notification->title }}</span> không?
+                            </p>
+                            <div class="alert alert-warning">
+                                <div class="d-flex align-items-start">
+                                    <i class="ti ti-info-circle text-warning me-2 mt-1"></i>
+                                    <div>
+                                        <strong>Người gửi:</strong> {{ $notification->sender->name }}<br>
+                                        <strong>Ngày gửi:</strong> {{ $notification->created_at->format('d/m/Y H:i') }}
+                                    </div>
                                 </div>
                             </div>
+                            <p class="text-muted text-center small mb-0">
+                                <i class="ti ti-alert-circle me-1"></i>
+                                Hành động này không thể hoàn tác!
+                            </p>
                         </div>
-                        <p class="text-muted text-center small mb-0">
-                            <i class="ti ti-alert-circle me-1"></i>
-                            Hành động này không thể hoàn tác!
-                        </p>
+                        <form method="POST" action="{{ route('backend.notifications.destroy', $notification->id) }}"
+                            id="deleteNotificationForm{{ $notification->id }}">
+                            @csrf
+                            @method('DELETE')
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                <button type="submit" class="btn btn-danger">Xóa</button>
+                            </div>
+                        </form>
                     </div>
-                    <form method="POST" action="{{ route('backend.notifications.destroy', $notification->id) }}"
-                        id="deleteNotificationForm{{ $notification->id }}">
-                        @csrf
-                        @method('DELETE')
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                            <button type="submit" class="btn btn-danger">Xóa</button>
-                        </div>
-                    </form>
                 </div>
             </div>
-        </div>
+        @endif
     @endforeach
 @endsection
 

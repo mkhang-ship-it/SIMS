@@ -1,10 +1,3 @@
-{{--
-    Updated: Đã chuyển layout sang dạng bảng giống mục tiêu (objectives),
-    hiển thị các trường: STT, Hạng mục hoạt động, Kết quả cần đạt, Chịu trách nhiệm, Thành viên phối hợp, Thao tác.
-    Đã bỏ phần timeline view, trình bày và logic giống file show-objectives.blade.php.
---}}
-
-<!-- 6. Kế hoạch hành động -->
 <div class="mb-0">
     <div class="d-flex align-items-center justify-content-between mb-4">
         <h6 class="fw-bold text-success mb-0">
@@ -85,7 +78,7 @@
                                             <div>{{ $member->name }}</div>
                                         @endforeach
                                     @else
-                                        <span class="text-muted">Không có</span>
+                                        <span class="text-muted">-</span>
                                     @endif
                                 </div>
                             </td>
@@ -94,7 +87,7 @@
                                     @if ($actionPlan->potential_risks)
                                         {{ $actionPlan->potential_risks }}
                                     @else
-                                        <span class="text-muted">Không có</span>
+                                        <span class="text-muted">-</span>
                                     @endif
                                 </div>
                             </td>
@@ -103,7 +96,7 @@
                                     @if ($actionPlan->risk_prevention_actions)
                                         {{ $actionPlan->risk_prevention_actions }}
                                     @else
-                                        <span class="text-muted">Không có</span>
+                                        <span class="text-muted">-</span>
                                     @endif
                                 </div>
                             </td>

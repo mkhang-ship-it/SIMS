@@ -99,130 +99,6 @@
                                                 </div>
                                             </td>
                                         </tr>
-
-                                        @if (auth()->user()->hasPermissionForModuleCode('semester_management', 'edit', 'central'))
-                                            <!-- Edit Semester Modal -->
-                                            <div class="modal fade" id="editSemesterModal{{ $semester->id }}" tabindex="-1"
-                                                aria-labelledby="editSemesterModalLabel{{ $semester->id }}"
-                                                aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-                                                <div class="modal-dialog modal-dialog-centered ">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title"
-                                                                id="editSemesterModalLabel{{ $semester->id }}">Chỉnh Sửa Học
-                                                                Kỳ
-                                                            </h5>
-                                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                                aria-label="Close"></button>
-                                                        </div>
-                                                        <form
-                                                            action="{{ route('backend.semesters.update', $semester->id) }}"
-                                                            method="POST" id="editSemesterForm{{ $semester->id }}">
-                                                            @csrf
-                                                            @method('PUT')
-                                                            <div class="modal-body">
-                                                                <div class="mb-3">
-                                                                    <label for="edit_name{{ $semester->id }}"
-                                                                        class="form-label">Tên Học Kỳ <span
-                                                                            class="text-danger">*</span></label>
-                                                                    <input type="text" class="form-control"
-                                                                        id="edit_name{{ $semester->id }}" name="name"
-                                                                        value="{{ $semester->name }}" required>
-                                                                </div>
-                                                                <div class="row">
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label for="edit_start_date{{ $semester->id }}"
-                                                                                class="form-label">Ngày
-                                                                                Bắt Đầu <span
-                                                                                    class="text-danger">*</span></label>
-                                                                            <input type="date" class="form-control"
-                                                                                id="edit_start_date{{ $semester->id }}"
-                                                                                name="start_date"
-                                                                                value="{{ $semester->start_date ? $semester->start_date->format('Y-m-d') : '' }}"
-                                                                                required>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label for="edit_end_date{{ $semester->id }}"
-                                                                                class="form-label">Ngày
-                                                                                Kết Thúc <span
-                                                                                    class="text-danger">*</span></label>
-                                                                            <input type="date" class="form-control"
-                                                                                id="edit_end_date{{ $semester->id }}"
-                                                                                name="end_date"
-                                                                                value="{{ $semester->end_date ? $semester->end_date->format('Y-m-d') : '' }}"
-                                                                                required>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="mb-3">
-                                                                    <label for="edit_status{{ $semester->id }}"
-                                                                        class="form-label">Trạng Thái <span
-                                                                            class="text-danger">*</span></label>
-                                                                    <select class="form-select"
-                                                                        id="edit_status{{ $semester->id }}"
-                                                                        name="status" required>
-                                                                        <option value="">Chọn trạng thái</option>
-                                                                        <option value="active"
-                                                                            {{ $semester->status == 'active' ? 'selected' : '' }}>
-                                                                            Hoạt Động</option>
-                                                                        <option value="inactive"
-                                                                            {{ $semester->status == 'inactive' ? 'selected' : '' }}>
-                                                                            Tạm Ngưng</option>
-                                                                    </select>
-                                                                </div>
-                                                            </div>
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary"
-                                                                    data-bs-dismiss="modal">Hủy</button>
-                                                                <button type="submit" class="btn btn-primary">Cập
-                                                                    Nhật</button>
-                                                            </div>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endif
-                                        @if (auth()->user()->hasPermissionForModuleCode('semester_management', 'delete', 'central'))
-                                            <!-- Delete Semester Modal -->
-                                            <div class="modal fade" id="deleteSemesterModal{{ $semester->id }}"
-                                                tabindex="-1"
-                                                aria-labelledby="deleteSemesterModalLabel{{ $semester->id }}"
-                                                aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-                                                <div class="modal-dialog modal-dialog-centered">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title text-danger"
-                                                                id="deleteSemesterModalLabel{{ $semester->id }}">
-                                                                Xác Nhận Xóa</h5>
-                                                            <button type="button" class="btn-close"
-                                                                data-bs-dismiss="modal" aria-label="Close"></button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <div class="text-center">
-                                                                <p class="mb-2">Bạn có chắc chắn muốn xóa học kỳ <span
-                                                                        class="fw-bold text-danger">{{ $semester->name }}</span>
-                                                                    không?
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                        <form
-                                                            action="{{ route('backend.semesters.destroy', $semester->id) }}"
-                                                            method="POST" id="deleteSemesterForm{{ $semester->id }}">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary"
-                                                                    data-bs-dismiss="modal">Hủy</button>
-                                                                <button type="submit" class="btn btn-danger">Xóa</button>
-                                                            </div>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endif
                                     @endforeach
                                 </tbody>
                             </table>
@@ -234,6 +110,113 @@
         <!--End::row-1 -->
 
     </div>
+
+    @foreach ($semesters as $semester)
+        @if (auth()->user()->hasPermissionForModuleCode('semester_management', 'edit', 'central'))
+            <!-- Edit Semester Modal -->
+            <div class="modal fade" id="editSemesterModal{{ $semester->id }}" tabindex="-1"
+                aria-labelledby="editSemesterModalLabel{{ $semester->id }}" aria-hidden="true" data-bs-backdrop="static"
+                data-bs-keyboard="false">
+                <div class="modal-dialog modal-dialog-centered ">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="editSemesterModalLabel{{ $semester->id }}">Chỉnh Sửa Học
+                                Kỳ
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form action="{{ route('backend.semesters.update', $semester->id) }}" method="POST"
+                            id="editSemesterForm{{ $semester->id }}">
+                            @csrf
+                            @method('PUT')
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label for="edit_name{{ $semester->id }}" class="form-label">Tên Học Kỳ <span
+                                            class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="edit_name{{ $semester->id }}"
+                                        name="name" value="{{ $semester->name }}" required>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="edit_start_date{{ $semester->id }}" class="form-label">Ngày
+                                                Bắt Đầu <span class="text-danger">*</span></label>
+                                            <input type="date" class="form-control"
+                                                id="edit_start_date{{ $semester->id }}" name="start_date"
+                                                value="{{ $semester->start_date ? $semester->start_date->format('Y-m-d') : '' }}"
+                                                required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="edit_end_date{{ $semester->id }}" class="form-label">Ngày
+                                                Kết Thúc <span class="text-danger">*</span></label>
+                                            <input type="date" class="form-control"
+                                                id="edit_end_date{{ $semester->id }}" name="end_date"
+                                                value="{{ $semester->end_date ? $semester->end_date->format('Y-m-d') : '' }}"
+                                                required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="edit_status{{ $semester->id }}" class="form-label">Trạng Thái <span
+                                            class="text-danger">*</span></label>
+                                    <select class="form-select" id="edit_status{{ $semester->id }}" name="status"
+                                        required>
+                                        <option value="">Chọn trạng thái</option>
+                                        <option value="active" {{ $semester->status == 'active' ? 'selected' : '' }}>
+                                            Hoạt Động</option>
+                                        <option value="inactive" {{ $semester->status == 'inactive' ? 'selected' : '' }}>
+                                            Tạm Ngưng</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                <button type="submit" class="btn btn-primary">Cập
+                                    Nhật</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @endif
+        @if (auth()->user()->hasPermissionForModuleCode('semester_management', 'delete', 'central'))
+            <!-- Delete Semester Modal -->
+            <div class="modal fade" id="deleteSemesterModal{{ $semester->id }}" tabindex="-1"
+                aria-labelledby="deleteSemesterModalLabel{{ $semester->id }}" aria-hidden="true"
+                data-bs-backdrop="static" data-bs-keyboard="false">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title text-danger" id="deleteSemesterModalLabel{{ $semester->id }}">
+                                Xác Nhận Xóa</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="text-center">
+                                <p class="mb-2">Bạn có chắc chắn muốn xóa học kỳ <span
+                                        class="fw-bold text-danger">{{ $semester->name }}</span>
+                                    không?
+                                </p>
+                            </div>
+                        </div>
+                        <form action="{{ route('backend.semesters.destroy', $semester->id) }}" method="POST"
+                            id="deleteSemesterForm{{ $semester->id }}">
+                            @csrf
+                            @method('DELETE')
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                <button type="submit" class="btn btn-danger">Xóa</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @endif
+    @endforeach
+
     @if (auth()->user()->hasPermissionForModuleCode('semester_management', 'create', 'central'))
         <!-- Add Semester Modal -->
         <div class="modal fade" id="addSemesterModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"

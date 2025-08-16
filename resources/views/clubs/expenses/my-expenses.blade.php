@@ -320,135 +320,6 @@
                                                 @endif
                                             </td>
                                         </tr>
-
-                                        <!-- Edit Expense Modal -->
-                                        @if (
-                                            $expense->status === 'pending' &&
-                                                auth()->user()->hasPermissionForModuleCode('expense_management', 'my_edit', 'branch'))
-                                            <div class="modal fade" id="editExpenseModal{{ $expense->id }}"
-                                                tabindex="-1" aria-labelledby="editExpenseModalLabel{{ $expense->id }}"
-                                                aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-                                                <div class="modal-dialog modal-dialog-centered modal-lg">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title"
-                                                                id="editExpenseModalLabel{{ $expense->id }}">
-                                                                Chỉnh Sửa Yêu Cầu Chi Phí
-                                                            </h5>
-                                                            <button type="button" class="btn-close"
-                                                                data-bs-dismiss="modal" aria-label="Close"></button>
-                                                        </div>
-                                                        <form
-                                                            action="{{ route('backend.club.expenses.my-update', $expense) }}"
-                                                            method="POST" id="editExpenseForm{{ $expense->id }}">
-                                                            @csrf
-                                                            @method('PUT')
-                                                            <div class="modal-body">
-                                                                <div class="row">
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label class="form-label">Tên Chi Phí <span
-                                                                                    class="text-danger">*</span></label>
-                                                                            <input type="text" class="form-control"
-                                                                                name="name"
-                                                                                value="{{ $expense->name }}" required>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label class="form-label">Số Tiền <span
-                                                                                    class="text-danger">*</span></label>
-                                                                            <input type="number" class="form-control"
-                                                                                name="amount"
-                                                                                value="{{ $expense->amount }}"
-                                                                                min="0" step="0.01" required>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label class="form-label">Học Kỳ <span
-                                                                                    class="text-danger">*</span></label>
-                                                                            <select class="form-select" name="semester_id"
-                                                                                required>
-                                                                                @foreach ($semesters as $semester)
-                                                                                    <option value="{{ $semester->id }}"
-                                                                                        {{ $expense->semester_id == $semester->id ? 'selected' : '' }}>
-                                                                                        {{ $semester->name }}
-                                                                                    </option>
-                                                                                @endforeach
-                                                                            </select>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label class="form-label">Người Yêu Cầu</label>
-                                                                            <input type="text" class="form-control"
-                                                                                value="{{ $expense->requestedBy->name ?? 'N/A' }}"
-                                                                                readonly>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-12">
-                                                                        <div class="mb-3">
-                                                                            <label class="form-label">Mô Tả</label>
-                                                                            <textarea class="form-control" name="description" rows="3" maxlength="1000">{{ $expense->description }}</textarea>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary"
-                                                                    data-bs-dismiss="modal">Hủy</button>
-                                                                <button type="submit" class="btn btn-primary">Cập
-                                                                    Nhật</button>
-                                                            </div>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endif
-
-                                        <!-- Delete Expense Modal -->
-                                        @if (
-                                            $expense->status === 'pending' &&
-                                                auth()->user()->hasPermissionForModuleCode('expense_management', 'my_delete', 'branch'))
-                                            <div class="modal fade" id="deleteExpenseModal{{ $expense->id }}"
-                                                tabindex="-1"
-                                                aria-labelledby="deleteExpenseModalLabel{{ $expense->id }}"
-                                                aria-hidden="true">
-                                                <div class="modal-dialog modal-dialog-centered">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title"
-                                                                id="deleteExpenseModalLabel{{ $expense->id }}">
-                                                                Xác Nhận Xóa
-                                                            </h5>
-                                                            <button type="button" class="btn-close"
-                                                                data-bs-dismiss="modal" aria-label="Close"></button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <p>Bạn có chắc chắn muốn xóa yêu cầu chi phí
-                                                                <strong>{{ $expense->name }}</strong>?
-                                                            </p>
-                                                            <div class="alert alert-warning">
-                                                                <i class="ti ti-alert-triangle"></i>
-                                                                Hành động này không thể hoàn tác!
-                                                            </div>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary"
-                                                                data-bs-dismiss="modal">Hủy</button>
-                                                            <form
-                                                                action="{{ route('backend.club.expenses.my-destroy', $expense) }}"
-                                                                method="POST" style="display: inline;">
-                                                                @csrf
-                                                                @method('DELETE')
-                                                                <button type="submit" class="btn btn-danger">Xóa</button>
-                                                            </form>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endif
                                     @endforeach
                                 </tbody>
                             </table>
@@ -460,6 +331,122 @@
         <!-- End::row-1 -->
 
     </div>
+
+    @foreach ($expenses as $expense)
+        <!-- Edit Expense Modal -->
+        @if (
+            $expense->status === 'pending' &&
+                auth()->user()->hasPermissionForModuleCode('expense_management', 'my_edit', 'branch'))
+            <div class="modal fade" id="editExpenseModal{{ $expense->id }}" tabindex="-1"
+                aria-labelledby="editExpenseModalLabel{{ $expense->id }}" aria-hidden="true" data-bs-backdrop="static"
+                data-bs-keyboard="false">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="editExpenseModalLabel{{ $expense->id }}">
+                                Chỉnh Sửa Yêu Cầu Chi Phí
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                        </div>
+                        <form action="{{ route('backend.club.expenses.my-update', $expense) }}" method="POST"
+                            id="editExpenseForm{{ $expense->id }}">
+                            @csrf
+                            @method('PUT')
+                            <div class="modal-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Tên Chi Phí <span
+                                                    class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" name="name"
+                                                value="{{ $expense->name }}" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Số Tiền <span class="text-danger">*</span></label>
+                                            <input type="number" class="form-control" name="amount"
+                                                value="{{ $expense->amount }}" min="0" step="0.01" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Học Kỳ <span class="text-danger">*</span></label>
+                                            <select class="form-select" name="semester_id" required>
+                                                @foreach ($semesters as $semester)
+                                                    <option value="{{ $semester->id }}"
+                                                        {{ $expense->semester_id == $semester->id ? 'selected' : '' }}>
+                                                        {{ $semester->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Người Yêu Cầu</label>
+                                            <input type="text" class="form-control"
+                                                value="{{ $expense->requestedBy->name ?? 'N/A' }}" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="mb-3">
+                                            <label class="form-label">Mô Tả</label>
+                                            <textarea class="form-control" name="description" rows="3" maxlength="1000">{{ $expense->description }}</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                <button type="submit" class="btn btn-primary">Cập
+                                    Nhật</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        <!-- Delete Expense Modal -->
+        @if (
+            $expense->status === 'pending' &&
+                auth()->user()->hasPermissionForModuleCode('expense_management', 'my_delete', 'branch'))
+            <div class="modal fade" id="deleteExpenseModal{{ $expense->id }}" tabindex="-1"
+                aria-labelledby="deleteExpenseModalLabel{{ $expense->id }}" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="deleteExpenseModalLabel{{ $expense->id }}">
+                                Xác Nhận Xóa
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Bạn có chắc chắn muốn xóa yêu cầu chi phí
+                                <strong>{{ $expense->name }}</strong>?
+                            </p>
+                            <div class="alert alert-warning">
+                                <i class="ti ti-alert-triangle"></i>
+                                Hành động này không thể hoàn tác!
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                            <form action="{{ route('backend.club.expenses.my-destroy', $expense) }}" method="POST"
+                                style="display: inline;">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-danger">Xóa</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+    @endforeach
 
     <!-- Add Expense Modal -->
     @if (auth()->user()->hasPermissionForModuleCode('expense_management', 'my_create', 'branch'))

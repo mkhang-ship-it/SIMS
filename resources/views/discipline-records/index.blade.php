@@ -186,7 +186,7 @@ Central Discipline Records Index - Xem điểm thành viên toàn hệ thống
                                                     {{ $record->applied_date->format('d/m/Y') }}
                                                 </td>
                                                 <td>
-                                                    <small>{{ $record->appliedBy->name ?? 'N/A' }}</small>
+                                                    <small>{{ $record->appliedBy->name ?? '-' }}</small>
                                                 </td>
                                                 <td class="text-center">
                                                     <span

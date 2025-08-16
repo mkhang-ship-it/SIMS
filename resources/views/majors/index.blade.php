@@ -47,8 +47,8 @@
                         </div>
                     </div>
                     <!--
-                        Đã bỏ hiển thị status, chuyên ngành nào bị disable (inactive) thì tên sẽ có màu đỏ.
-                    -->
+                            Đã bỏ hiển thị status, chuyên ngành nào bị disable (inactive) thì tên sẽ có màu đỏ.
+                        -->
                     <div class="card-body">
                         <div class="tree-view">
                             @php
@@ -70,7 +70,8 @@
                                     }
 
                                     // Nếu status là inactive thì cho tên màu đỏ, ngược lại giữ mặc định
-                                    $labelClass = $major->status === 'inactive' ? 'tree-label text-danger fw-bold' : 'tree-label';
+                                    $labelClass =
+                                        $major->status === 'inactive' ? 'tree-label text-danger fw-bold' : 'tree-label';
                                     echo '<span class="' . $labelClass . '">' . $major->name . '</span>';
 
                                     echo '</div>';
@@ -165,127 +166,6 @@
                                                 </div>
                                             </td>
                                         </tr>
-
-                                        <!-- Edit Major Modal -->
-                                        @if (auth()->user()->hasPermissionForModuleCode('major_management', 'edit', 'central'))
-                                            <div class="modal fade" id="editMajorModal{{ $major->id }}" tabindex="-1"
-                                                aria-labelledby="editMajorModalLabel{{ $major->id }}" aria-hidden="true"
-                                                data-bs-backdrop="static" data-bs-keyboard="false">
-                                                <div class="modal-dialog modal-dialog-centered ">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title"
-                                                                id="editMajorModalLabel{{ $major->id }}">Chỉnh Sửa Chuyên
-                                                                Ngành
-                                                            </h5>
-                                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                                aria-label="Close"></button>
-                                                        </div>
-                                                        <form action="{{ route('backend.majors.update', $major->id) }}"
-                                                            method="POST" id="editMajorForm{{ $major->id }}">
-                                                            @csrf
-                                                            @method('PUT')
-                                                            <div class="modal-body">
-                                                                <div class="mb-3">
-                                                                    <label for="edit_name{{ $major->id }}"
-                                                                        class="form-label">Tên Chuyên Ngành <span
-                                                                            class="text-danger">*</span></label>
-                                                                    <input type="text" class="form-control"
-                                                                        id="edit_name{{ $major->id }}" name="name"
-                                                                        value="{{ $major->name }}" required>
-                                                                </div>
-                                                                <div class="mb-3">
-                                                                    <label for="edit_parent_id{{ $major->id }}"
-                                                                        class="form-label">Phân Ngành Cấp Trên</label>
-                                                                    <select class="form-select"
-                                                                        id="edit_parent_id{{ $major->id }}"
-                                                                        name="parent_id">
-                                                                        <option value="">-- Không có phân ngành cấp
-                                                                            trên
-                                                                            --</option>
-                                                                        @foreach ($allMajors->whereNull('parent_id') as $parentMajor)
-                                                                            @if ($parentMajor->id !== $major->id)
-                                                                                <option value="{{ $parentMajor->id }}"
-                                                                                    {{ $major->parent_id == $parentMajor->id ? 'selected' : '' }}>
-                                                                                    {{ $parentMajor->name }}
-                                                                                </option>
-                                                                            @endif
-                                                                        @endforeach
-                                                                    </select>
-                                                                </div>
-                                                                <div class="mb-3">
-                                                                    <label for="edit_status{{ $major->id }}"
-                                                                        class="form-label">Trạng Thái <span
-                                                                            class="text-danger">*</span></label>
-                                                                    <select class="form-select"
-                                                                        id="edit_status{{ $major->id }}"
-                                                                        name="status" required>
-                                                                        <option value="">Chọn trạng thái</option>
-                                                                        <option value="active"
-                                                                            {{ $major->status == 'active' ? 'selected' : '' }}>
-                                                                            Hoạt Động</option>
-                                                                        <option value="inactive"
-                                                                            {{ $major->status == 'inactive' ? 'selected' : '' }}>
-                                                                            Tạm Ngưng</option>
-                                                                    </select>
-                                                                </div>
-                                                            </div>
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary"
-                                                                    data-bs-dismiss="modal">Hủy</button>
-                                                                <button type="submit" class="btn btn-primary">Cập
-                                                                    Nhật</button>
-                                                            </div>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endif
-                                        <!-- Delete Major Modal -->
-                                        @if (auth()->user()->hasPermissionForModuleCode('major_management', 'delete', 'central'))
-                                            <div class="modal fade" id="deleteMajorModal{{ $major->id }}"
-                                                tabindex="-1" aria-labelledby="deleteMajorModalLabel{{ $major->id }}"
-                                                aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-                                                <div class="modal-dialog modal-dialog-centered">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title text-danger"
-                                                                id="deleteMajorModalLabel{{ $major->id }}">
-                                                                Xác Nhận Xóa</h5>
-                                                            <button type="button" class="btn-close"
-                                                                data-bs-dismiss="modal" aria-label="Close"></button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <div class="text-center">
-                                                                <p class="mb-2">Bạn có chắc chắn muốn xóa chuyên ngành
-                                                                    <span
-                                                                        class="fw-bold text-danger">{{ $major->name }}</span>
-                                                                    không?
-                                                                </p>
-                                                                @if ($major->children()->count() > 0)
-                                                                    <div class="alert alert-warning">
-                                                                        <small>Chuyên ngành này có
-                                                                            {{ $major->children()->count() }} chuyên ngành
-                                                                            con. Cần xóa các chuyên ngành con trước!</small>
-                                                                    </div>
-                                                                @endif
-                                                            </div>
-                                                        </div>
-                                                        <form action="{{ route('backend.majors.destroy', $major->id) }}"
-                                                            method="POST" id="deleteMajorForm{{ $major->id }}">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary"
-                                                                    data-bs-dismiss="modal">Hủy</button>
-                                                                <button type="submit" class="btn btn-danger"
-                                                                    {{ $major->children()->count() > 0 ? 'disabled' : '' }}>Xóa</button>
-                                                            </div>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endif
                                     @endforeach
                                 </tbody>
                             </table>
@@ -297,6 +177,115 @@
         <!--End::row-1 -->
 
     </div>
+
+    @foreach ($majors as $major)
+        <!-- Edit Major Modal -->
+        @if (auth()->user()->hasPermissionForModuleCode('major_management', 'edit', 'central'))
+            <div class="modal fade" id="editMajorModal{{ $major->id }}" tabindex="-1"
+                aria-labelledby="editMajorModalLabel{{ $major->id }}" aria-hidden="true" data-bs-backdrop="static"
+                data-bs-keyboard="false">
+                <div class="modal-dialog modal-dialog-centered ">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="editMajorModalLabel{{ $major->id }}">Chỉnh Sửa Chuyên
+                                Ngành
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form action="{{ route('backend.majors.update', $major->id) }}" method="POST"
+                            id="editMajorForm{{ $major->id }}">
+                            @csrf
+                            @method('PUT')
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label for="edit_name{{ $major->id }}" class="form-label">Tên Chuyên Ngành <span
+                                            class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="edit_name{{ $major->id }}"
+                                        name="name" value="{{ $major->name }}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="edit_parent_id{{ $major->id }}" class="form-label">Phân Ngành Cấp
+                                        Trên</label>
+                                    <select class="form-select" id="edit_parent_id{{ $major->id }}" name="parent_id">
+                                        <option value="">-- Không có phân ngành cấp
+                                            trên
+                                            --</option>
+                                        @foreach ($allMajors->whereNull('parent_id') as $parentMajor)
+                                            @if ($parentMajor->id !== $major->id)
+                                                <option value="{{ $parentMajor->id }}"
+                                                    {{ $major->parent_id == $parentMajor->id ? 'selected' : '' }}>
+                                                    {{ $parentMajor->name }}
+                                                </option>
+                                            @endif
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="edit_status{{ $major->id }}" class="form-label">Trạng Thái <span
+                                            class="text-danger">*</span></label>
+                                    <select class="form-select" id="edit_status{{ $major->id }}" name="status"
+                                        required>
+                                        <option value="">Chọn trạng thái</option>
+                                        <option value="active" {{ $major->status == 'active' ? 'selected' : '' }}>
+                                            Hoạt Động</option>
+                                        <option value="inactive" {{ $major->status == 'inactive' ? 'selected' : '' }}>
+                                            Tạm Ngưng</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                <button type="submit" class="btn btn-primary">Cập
+                                    Nhật</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @endif
+        <!-- Delete Major Modal -->
+        @if (auth()->user()->hasPermissionForModuleCode('major_management', 'delete', 'central'))
+            <div class="modal fade" id="deleteMajorModal{{ $major->id }}" tabindex="-1"
+                aria-labelledby="deleteMajorModalLabel{{ $major->id }}" aria-hidden="true" data-bs-backdrop="static"
+                data-bs-keyboard="false">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title text-danger" id="deleteMajorModalLabel{{ $major->id }}">
+                                Xác Nhận Xóa</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="text-center">
+                                <p class="mb-2">Bạn có chắc chắn muốn xóa chuyên ngành
+                                    <span class="fw-bold text-danger">{{ $major->name }}</span>
+                                    không?
+                                </p>
+                                @if ($major->children()->count() > 0)
+                                    <div class="alert alert-warning">
+                                        <small>Chuyên ngành này có
+                                            {{ $major->children()->count() }} chuyên ngành
+                                            con. Cần xóa các chuyên ngành con trước!</small>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                        <form action="{{ route('backend.majors.destroy', $major->id) }}" method="POST"
+                            id="deleteMajorForm{{ $major->id }}">
+                            @csrf
+                            @method('DELETE')
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                <button type="submit" class="btn btn-danger"
+                                    {{ $major->children()->count() > 0 ? 'disabled' : '' }}>Xóa</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @endif
+    @endforeach
 
     <!-- Add Major Modal -->
     @if (auth()->user()->hasPermissionForModuleCode('major_management', 'create', 'central'))

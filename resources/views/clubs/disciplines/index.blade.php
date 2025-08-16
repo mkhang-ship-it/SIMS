@@ -103,160 +103,6 @@
                                                 </div>
                                             </td>
                                         </tr>
-
-                                        <!-- Edit Discipline Modal -->
-                                        @if (auth()->user()->hasPermissionForModuleCode('discipline_management', 'edit', 'branch'))
-                                            <div class="modal fade" id="editDisciplineModal{{ $discipline->id }}"
-                                                tabindex="-1"
-                                                aria-labelledby="editDisciplineModalLabel{{ $discipline->id }}"
-                                                aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-                                                <div class="modal-dialog modal-dialog-centered">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title"
-                                                                id="editDisciplineModalLabel{{ $discipline->id }}">
-                                                                Chỉnh Sửa Kỷ Luật
-                                                            </h5>
-                                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                                aria-label="Close"></button>
-                                                        </div>
-                                                        <form
-                                                            action="{{ route('backend.club.disciplines.update', $discipline->id) }}"
-                                                            method="POST" id="editDisciplineForm{{ $discipline->id }}">
-                                                            @csrf
-                                                            @method('PUT')
-                                                            <div class="modal-body">
-                                                                <div class="row">
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label for="edit_name{{ $discipline->id }}"
-                                                                                class="form-label">
-                                                                                Tên Kỷ Luật <span
-                                                                                    class="text-danger">*</span>
-                                                                            </label>
-                                                                            <input type="text" class="form-control"
-                                                                                id="edit_name{{ $discipline->id }}"
-                                                                                name="name"
-                                                                                value="{{ $discipline->name }}" required>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label for="edit_code{{ $discipline->id }}"
-                                                                                class="form-label">
-                                                                                Mã Kỷ Luật
-                                                                            </label>
-                                                                            <input type="text" class="form-control"
-                                                                                id="edit_code{{ $discipline->id }}"
-                                                                                name="code"
-                                                                                value="{{ $discipline->code }}"
-                                                                                placeholder="Để trống để tự động tạo"
-                                                                                disabled>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="row">
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label
-                                                                                for="edit_discipline_points{{ $discipline->id }}"
-                                                                                class="form-label">
-                                                                                Điểm Kỷ Luật <span
-                                                                                    class="text-danger">*</span>
-                                                                            </label>
-                                                                            <input type="number" class="form-control"
-                                                                                id="edit_discipline_points{{ $discipline->id }}"
-                                                                                name="discipline_points"
-                                                                                value="{{ $discipline->discipline_points }}"
-                                                                                required>
-                                                                            <small class="form-text text-muted">Số dương để
-                                                                                tăng điểm, số âm để trừ điểm</small>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label for="edit_status{{ $discipline->id }}"
-                                                                                class="form-label">
-                                                                                Trạng Thái <span
-                                                                                    class="text-danger">*</span>
-                                                                            </label>
-                                                                            <select class="form-select"
-                                                                                id="edit_status{{ $discipline->id }}"
-                                                                                name="status" required>
-                                                                                <option value="active"
-                                                                                    {{ $discipline->status === 'active' ? 'selected' : '' }}>
-                                                                                    Hoạt động
-                                                                                </option>
-                                                                                <option value="inactive"
-                                                                                    {{ $discipline->status === 'inactive' ? 'selected' : '' }}>
-                                                                                    Không hoạt động
-                                                                                </option>
-                                                                            </select>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="mb-3">
-                                                                    <label for="edit_description{{ $discipline->id }}"
-                                                                        class="form-label">Mô Tả</label>
-                                                                    <textarea class="form-control" id="edit_description{{ $discipline->id }}" name="description" rows="3">{{ $discipline->description }}</textarea>
-                                                                </div>
-                                                            </div>
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-light"
-                                                                    data-bs-dismiss="modal">Hủy</button>
-                                                                <button type="submit" class="btn btn-primary">
-                                                                    <i class="ti ti-device-floppy"></i>
-                                                                    Cập Nhật
-                                                                </button>
-                                                            </div>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endif
-
-                                        <!-- Delete Discipline Modal -->
-                                        @if (auth()->user()->hasPermissionForModuleCode('discipline_management', 'delete', 'branch'))
-                                            <div class="modal fade" id="deleteDisciplineModal{{ $discipline->id }}"
-                                                tabindex="-1"
-                                                aria-labelledby="deleteDisciplineModalLabel{{ $discipline->id }}"
-                                                aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-                                                <div class="modal-dialog modal-dialog-centered">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title"
-                                                                id="deleteDisciplineModalLabel{{ $discipline->id }}">
-                                                                Xác Nhận Xóa
-                                                            </h5>
-                                                            <button type="button" class="btn-close"
-                                                                data-bs-dismiss="modal" aria-label="Close"></button>
-                                                        </div>
-                                                        <div class="modal-body text-center">
-                                                            <p class="mb-2">Bạn có chắc chắn muốn xóa kỷ luật
-                                                                <strong class="text-danger">
-                                                                    {{ $discipline->name }}
-                                                                </strong> này?
-                                                            </p>
-                                                            <p class="text-danger">
-                                                                <i class="ri-alert-line"></i>
-                                                                Thao tác này không thể hoàn tác.
-                                                            </p>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-light"
-                                                                data-bs-dismiss="modal">Hủy</button>
-                                                            <form
-                                                                action="{{ route('backend.club.disciplines.destroy', $discipline->id) }}"
-                                                                method="POST" style="display: inline;">
-                                                                @csrf
-                                                                @method('DELETE')
-                                                                <button type="submit" class="btn btn-danger">Xóa</button>
-                                                            </form>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endif
                                     @endforeach
                                 </tbody>
                             </table>
@@ -269,6 +115,136 @@
         <!--End::row-1 -->
 
     </div>
+
+    @foreach ($disciplines as $discipline)
+        <!-- Edit Discipline Modal -->
+        @if (auth()->user()->hasPermissionForModuleCode('discipline_management', 'edit', 'branch'))
+            <div class="modal fade" id="editDisciplineModal{{ $discipline->id }}" tabindex="-1"
+                aria-labelledby="editDisciplineModalLabel{{ $discipline->id }}" aria-hidden="true"
+                data-bs-backdrop="static" data-bs-keyboard="false">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="editDisciplineModalLabel{{ $discipline->id }}">
+                                Chỉnh Sửa Kỷ Luật
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form action="{{ route('backend.club.disciplines.update', $discipline->id) }}" method="POST"
+                            id="editDisciplineForm{{ $discipline->id }}">
+                            @csrf
+                            @method('PUT')
+                            <div class="modal-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="edit_name{{ $discipline->id }}" class="form-label">
+                                                Tên Kỷ Luật <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="text" class="form-control" id="edit_name{{ $discipline->id }}"
+                                                name="name" value="{{ $discipline->name }}" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="edit_code{{ $discipline->id }}" class="form-label">
+                                                Mã Kỷ Luật
+                                            </label>
+                                            <input type="text" class="form-control" id="edit_code{{ $discipline->id }}"
+                                                name="code" value="{{ $discipline->code }}"
+                                                placeholder="Để trống để tự động tạo" disabled>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="edit_discipline_points{{ $discipline->id }}" class="form-label">
+                                                Điểm Kỷ Luật <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="number" class="form-control"
+                                                id="edit_discipline_points{{ $discipline->id }}" name="discipline_points"
+                                                value="{{ $discipline->discipline_points }}" required>
+                                            <small class="form-text text-muted">Số dương để
+                                                tăng điểm, số âm để trừ điểm</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="edit_status{{ $discipline->id }}" class="form-label">
+                                                Trạng Thái <span class="text-danger">*</span>
+                                            </label>
+                                            <select class="form-select" id="edit_status{{ $discipline->id }}"
+                                                name="status" required>
+                                                <option value="active"
+                                                    {{ $discipline->status === 'active' ? 'selected' : '' }}>
+                                                    Hoạt động
+                                                </option>
+                                                <option value="inactive"
+                                                    {{ $discipline->status === 'inactive' ? 'selected' : '' }}>
+                                                    Không hoạt động
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="edit_description{{ $discipline->id }}" class="form-label">Mô Tả</label>
+                                    <textarea class="form-control" id="edit_description{{ $discipline->id }}" name="description" rows="3">{{ $discipline->description }}</textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="ti ti-device-floppy"></i>
+                                    Cập Nhật
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        <!-- Delete Discipline Modal -->
+        @if (auth()->user()->hasPermissionForModuleCode('discipline_management', 'delete', 'branch'))
+            <div class="modal fade" id="deleteDisciplineModal{{ $discipline->id }}" tabindex="-1"
+                aria-labelledby="deleteDisciplineModalLabel{{ $discipline->id }}" aria-hidden="true"
+                data-bs-backdrop="static" data-bs-keyboard="false">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="deleteDisciplineModalLabel{{ $discipline->id }}">
+                                Xác Nhận Xóa
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body text-center">
+                            <p class="mb-2">Bạn có chắc chắn muốn xóa kỷ luật
+                                <strong class="text-danger">
+                                    {{ $discipline->name }}
+                                </strong> này?
+                            </p>
+                            <p class="text-danger">
+                                <i class="ri-alert-line"></i>
+                                Thao tác này không thể hoàn tác.
+                            </p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
+                            <form action="{{ route('backend.club.disciplines.destroy', $discipline->id) }}"
+                                method="POST" style="display: inline;">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-danger">Xóa</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+    @endforeach
 
     <!-- Add Discipline Modal -->
     @if (auth()->user()->hasPermissionForModuleCode('discipline_management', 'create', 'branch'))

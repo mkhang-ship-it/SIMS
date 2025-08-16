@@ -1,12 +1,3 @@
-{{-- My Invoices Page - Hiển thị hóa đơn cá nhân cho thành viên câu lạc bộ --}}
-{{-- Updated: Thống kê Đã thanh toán/Chờ thanh toán dựa vào trạng thái hóa đơn, không dựa vào bảng transaction (giống trang index). Số tiền chờ thanh toán dùng statistics['pending_amount'] --}}
-{{-- Updated: Thêm modal QR Sepay cho mỗi hóa đơn chưa thanh toán, truyền thông tin ngân hàng từ $settings, cập nhật nút Tiến Hành Thanh Toán: ban đầu disabled, chỉ enable khi user chọn phương thức thanh toán. Khi chọn Sepay và nhấn nút, đóng modal chọn phương thức và mở modal QR. --}}
-{{-- Updated: Fixed layout issues - improved responsive design, moved modals outside table, fixed table structure, added proper chart spacing --}}
-{{-- Updated: Added payment method selection modal with three options (Sepay, PayOS, Paykit) for user to choose payment method --}}
-{{-- Updated: Bổ sung nút download ảnh QR Sepay với url download=true trong modal QR Sepay --}}
-{{-- Updated: Thêm polling kiểm tra trạng thái hóa đơn khi mở modal QR Sepay, nếu trả về 'paid' thì hiện modal thanh toán thành công --}}
-{{-- Features: Read-only view, statistics, payment history, filter functionality, payment processing --}}
-{{-- Layout: Responsive 3-9 column structure with statistics sidebar and ApexCharts --}}
 @extends('layouts.app')
 
 @section('content')
@@ -330,10 +321,7 @@
                 </div>
             </div>
         @endif
-    @endforeach
 
-    <!-- Payment Modal for each invoice -->
-    @foreach ($invoices as $invoice)
         @if ($invoice->status !== 'paid')
             <div class="modal fade" id="paymentModal{{ $invoice->id }}" tabindex="-1"
                 aria-labelledby="paymentModalLabel{{ $invoice->id }}" aria-hidden="true" data-bs-backdrop="static"
@@ -473,10 +461,7 @@
                 </div>
             </div>
         @endif
-    @endforeach
 
-    {{-- Modal QR Sepay --}}
-    @foreach ($invoices as $invoice)
         @if ($invoice->status !== 'paid')
             <div class="modal fade" id="sepayQrModal{{ $invoice->id }}" tabindex="-1"
                 aria-labelledby="sepayQrModalLabel{{ $invoice->id }}" aria-hidden="true" data-bs-backdrop="static"

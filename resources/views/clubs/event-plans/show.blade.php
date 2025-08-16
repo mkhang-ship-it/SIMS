@@ -1,18 +1,3 @@
-{{-- Event Plan Show View - Single Event Plan Display with Navigation Tabs
-Displays individual event plan in detailed format for specific event
-Updated: Changed from index view to show single event plan details
-Updated: Split into 6 nav tabs with separate files for better organization:
-- Tab 1: General information (show-general.blade.php) - Thông tin chung, Nội dung tổ chức, Hình thức tổ chức, Thành phần tổ chức
-- Tab 2: Objectives (show-objectives.blade.php) - Mục tiêu và các chỉ số đo lường display only
-- Tab 3: Action Plans (show-action-plans.blade.php) - Kế hoạch hành động chi tiết với timeline và quản lý rủi ro
-- Tab 4: Budget Items (show-budget-items.blade.php) - Quản lý ngân sách chi tiết với tính toán chi phí
-- Tab 5: Equipment (show-equipment.blade.php) - Quản lý vật dụng với thông tin tên, số lượng, loại (club/school)
-- Tab 6: Timeline (show-timeline.blade.php) - Quản lý timeline sự kiện với khả năng kéo thả để sắp xếp thứ tự
-Updated: ALL modals placed in main file after card to fix footer layout issues:
-- Edit Event Plan Modal, Add/Edit/Delete Objective Modals, Add/Edit/Delete Action Plan Modals, Add/Edit/Delete Budget Item Modals, Add/Edit/Delete Equipment Modals
-Updated: Added mobile-responsive nav tabs with horizontal scrolling capability
-Updated: Added Excel export button in header to export comprehensive event information to Excel format --}}
-
 @extends('layouts.app')
 
 @section('content')
@@ -39,13 +24,13 @@ Updated: Added Excel export button in header to export comprehensive event infor
                 <div class="card custom-card">
                     <div class="card-header d-flex align-items-center justify-content-between">
                         <div class="card-title">
-                            <h5 class="fw-semibold mb-0">{{ $eventPlan->event->name ?? 'Chưa có tên' }}</h5>
-                            <small class="text-muted">{{ $eventPlan->event->event_code ?? 'N/A' }}</small>
+                            <h5 class="fw-semibold mb-0">{{ $eventPlan->event->name ?? '-' }}</h5>
+                            <small class="text-muted">{{ $eventPlan->event->event_code ?? '-' }}</small>
                         </div>
                         <div class="d-flex align-items-center gap-2">
                             <div>
                                 <span class="badge bg-{{ $eventPlan->event->status_color ?? 'secondary' }} fs-12">
-                                    {{ $eventPlan->event->status_label ?? 'Chưa xác định' }}
+                                    {{ $eventPlan->event->status_label ?? '-' }}
                                 </span>
                             </div>
                             @if (auth()->user()->hasPermissionForModuleCode('event_plan_management', 'view', 'branch'))

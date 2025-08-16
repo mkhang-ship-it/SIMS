@@ -102,52 +102,6 @@
                                                 </div>
                                             </td>
                                         </tr>
-
-                                        <!-- Delete Role Modal -->
-                                        @if (auth()->user()->hasPermissionForModuleCode('role_management', 'delete', 'central'))
-                                            <div class="modal fade" id="deleteRoleModal{{ $role->id }}" tabindex="-1"
-                                                aria-labelledby="deleteRoleModalLabel{{ $role->id }}"
-                                                aria-hidden="true">
-                                                <div class="modal-dialog modal-dialog-centered">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title"
-                                                                id="deleteRoleModalLabel{{ $role->id }}">
-                                                                Xác Nhận Xóa
-                                                            </h5>
-                                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                                aria-label="Close"></button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <p>Bạn có chắc chắn muốn xóa vai trò
-                                                                <strong>{{ $role->name }}</strong>?
-                                                            </p>
-                                                            @if ($role->users->count() > 0)
-                                                                <div class="alert alert-warning">
-                                                                    <i class="ti ti-alert-triangle"></i>
-                                                                    Vai trò này đã được gán cho
-                                                                    {{ $role->users->count() }} người dùng. Không thể xóa!
-                                                                </div>
-                                                            @endif
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary"
-                                                                data-bs-dismiss="modal">Hủy</button>
-                                                            @if ($role->users->count() == 0)
-                                                                <form
-                                                                    action="{{ route('backend.roles.destroy', $role->id) }}"
-                                                                    method="POST" style="display: inline;">
-                                                                    @csrf
-                                                                    @method('DELETE')
-                                                                    <button type="submit"
-                                                                        class="btn btn-danger">Xóa</button>
-                                                                </form>
-                                                            @endif
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endif
                                     @endforeach
                                 </tbody>
                             </table>
@@ -159,4 +113,46 @@
         <!-- End::row-1 -->
 
     </div>
+
+    @foreach ($roles as $role)
+        <!-- Delete Role Modal -->
+        @if (auth()->user()->hasPermissionForModuleCode('role_management', 'delete', 'central'))
+            <div class="modal fade" id="deleteRoleModal{{ $role->id }}" tabindex="-1"
+                aria-labelledby="deleteRoleModalLabel{{ $role->id }}" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="deleteRoleModalLabel{{ $role->id }}">
+                                Xác Nhận Xóa
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Bạn có chắc chắn muốn xóa vai trò
+                                <strong>{{ $role->name }}</strong>?
+                            </p>
+                            @if ($role->users->count() > 0)
+                                <div class="alert alert-warning">
+                                    <i class="ti ti-alert-triangle"></i>
+                                    Vai trò này đã được gán cho
+                                    {{ $role->users->count() }} người dùng. Không thể xóa!
+                                </div>
+                            @endif
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                            @if ($role->users->count() == 0)
+                                <form action="{{ route('backend.roles.destroy', $role->id) }}" method="POST"
+                                    style="display: inline;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger">Xóa</button>
+                                </form>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+    @endforeach
 @endsection

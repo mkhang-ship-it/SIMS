@@ -111,152 +111,145 @@
                                                 </div>
                                             </td>
                                         </tr>
-
-                                        <!-- Edit ClassRoom Modal -->
-                                        @if (auth()->user()->hasPermissionForModuleCode('classroom_management', 'edit', 'central'))
-                                            <div class="modal fade" id="editClassRoomModal{{ $classroom->id }}"
-                                                tabindex="-1" aria-labelledby="editClassRoomModalLabel{{ $classroom->id }}"
-                                                aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-                                                <div class="modal-dialog modal-dialog-centered ">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title"
-                                                                id="editClassRoomModalLabel{{ $classroom->id }}">Chỉnh Sửa
-                                                                Phòng
-                                                                Học
-                                                            </h5>
-                                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                                aria-label="Close"></button>
-                                                        </div>
-                                                        <form
-                                                            action="{{ route('backend.classrooms.update', $classroom->id) }}"
-                                                            method="POST" id="editClassRoomForm{{ $classroom->id }}">
-                                                            @csrf
-                                                            @method('PUT')
-                                                            <div class="modal-body">
-                                                                <div class="mb-3">
-                                                                    <label for="edit_name{{ $classroom->id }}"
-                                                                        class="form-label">Tên Phòng Học <span
-                                                                            class="text-danger">*</span></label>
-                                                                    <input type="text" class="form-control"
-                                                                        id="edit_name{{ $classroom->id }}" name="name"
-                                                                        value="{{ $classroom->name }}" required>
-                                                                </div>
-                                                                <div class="mb-3">
-                                                                    <label for="edit_code{{ $classroom->id }}"
-                                                                        class="form-label">Mã Phòng</label>
-                                                                    <input type="text" class="form-control"
-                                                                        id="edit_code{{ $classroom->id }}"
-                                                                        value="{{ $classroom->code }}" disabled>
-                                                                </div>
-                                                                <div class="row">
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label for="edit_longitude{{ $classroom->id }}"
-                                                                                class="form-label">Kinh Độ <span
-                                                                                    class="text-danger">*</span></label>
-                                                                            <div class="input-group">
-                                                                                <input type="text" class="form-control"
-                                                                                    id="edit_longitude{{ $classroom->id }}"
-                                                                                    name="longitude"
-                                                                                    value="{{ $classroom->longitude }}"
-                                                                                    placeholder="Ví dụ: 105.851067"
-                                                                                    required>
-                                                                                <button class="btn btn-outline-success"
-                                                                                    type="button"
-                                                                                    onclick="getCurrentLocation('edit', '{{ $classroom->id }}')"
-                                                                                    title="Lấy vị trí hiện tại">
-                                                                                    <i class="ri-map-pin-line"></i>
-                                                                                </button>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label for="edit_latitude{{ $classroom->id }}"
-                                                                                class="form-label">Vĩ Độ <span
-                                                                                    class="text-danger">*</span></label>
-                                                                            <div class="input-group">
-                                                                                <input type="text" class="form-control"
-                                                                                    id="edit_latitude{{ $classroom->id }}"
-                                                                                    name="latitude"
-                                                                                    value="{{ $classroom->latitude }}"
-                                                                                    placeholder="Ví dụ: 21.034888"
-                                                                                    required>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="mb-3">
-                                                                    <label for="edit_status{{ $classroom->id }}"
-                                                                        class="form-label">Trạng Thái <span
-                                                                            class="text-danger">*</span></label>
-                                                                    <select class="form-select"
-                                                                        id="edit_status{{ $classroom->id }}"
-                                                                        name="status" required>
-                                                                        <option value="">Chọn trạng thái</option>
-                                                                        <option value="active"
-                                                                            {{ $classroom->status == 'active' ? 'selected' : '' }}>
-                                                                            Hoạt Động</option>
-                                                                        <option value="inactive"
-                                                                            {{ $classroom->status == 'inactive' ? 'selected' : '' }}>
-                                                                            Tạm Ngưng</option>
-                                                                    </select>
-                                                                </div>
-                                                            </div>
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary"
-                                                                    data-bs-dismiss="modal">Hủy</button>
-                                                                <button type="submit" class="btn btn-primary">Cập
-                                                                    Nhật</button>
-                                                            </div>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endif
-                                        <!-- Delete ClassRoom Modal -->
-                                        @if (auth()->user()->hasPermissionForModuleCode('classroom_management', 'delete', 'central'))
-                                            <div class="modal fade" id="deleteClassRoomModal{{ $classroom->id }}"
-                                                tabindex="-1"
-                                                aria-labelledby="deleteClassRoomModalLabel{{ $classroom->id }}"
-                                                aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-                                                <div class="modal-dialog modal-dialog-centered">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title text-danger"
-                                                                id="deleteClassRoomModalLabel{{ $classroom->id }}">
-                                                                Xác Nhận Xóa</h5>
-                                                            <button type="button" class="btn-close"
-                                                                data-bs-dismiss="modal" aria-label="Close"></button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <div class="text-center">
-                                                                <p class="mb-2">Bạn có chắc chắn muốn xóa phòng học <span
-                                                                        class="fw-bold text-danger">{{ $classroom->name }}</span>
-                                                                    không?
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                        <form
-                                                            action="{{ route('backend.classrooms.destroy', $classroom->id) }}"
-                                                            method="POST" id="deleteClassRoomForm{{ $classroom->id }}">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary"
-                                                                    data-bs-dismiss="modal">Hủy</button>
-                                                                <button type="submit" class="btn btn-danger">Xóa</button>
-                                                            </div>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endif
                                     @endforeach
                                 </tbody>
                             </table>
                         </div>
+                        @foreach ($classrooms as $classroom)
+                            <!-- Edit ClassRoom Modal -->
+                            @if (auth()->user()->hasPermissionForModuleCode('classroom_management', 'edit', 'central'))
+                                <div class="modal fade" id="editClassRoomModal{{ $classroom->id }}" tabindex="-1"
+                                    aria-labelledby="editClassRoomModalLabel{{ $classroom->id }}" aria-hidden="true"
+                                    data-bs-backdrop="static" data-bs-keyboard="false">
+                                    <div class="modal-dialog modal-dialog-centered ">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="editClassRoomModalLabel{{ $classroom->id }}">
+                                                    Chỉnh Sửa
+                                                    Phòng
+                                                    Học
+                                                </h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                    aria-label="Close"></button>
+                                            </div>
+                                            <form action="{{ route('backend.classrooms.update', $classroom->id) }}"
+                                                method="POST" id="editClassRoomForm{{ $classroom->id }}">
+                                                @csrf
+                                                @method('PUT')
+                                                <div class="modal-body">
+                                                    <div class="mb-3">
+                                                        <label for="edit_name{{ $classroom->id }}" class="form-label">Tên
+                                                            Phòng Học <span class="text-danger">*</span></label>
+                                                        <input type="text" class="form-control"
+                                                            id="edit_name{{ $classroom->id }}" name="name"
+                                                            value="{{ $classroom->name }}" required>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="edit_code{{ $classroom->id }}" class="form-label">Mã
+                                                            Phòng</label>
+                                                        <input type="text" class="form-control"
+                                                            id="edit_code{{ $classroom->id }}"
+                                                            value="{{ $classroom->code }}" disabled>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <div class="mb-3">
+                                                                <label for="edit_longitude{{ $classroom->id }}"
+                                                                    class="form-label">Kinh Độ <span
+                                                                        class="text-danger">*</span></label>
+                                                                <div class="input-group">
+                                                                    <input type="text" class="form-control"
+                                                                        id="edit_longitude{{ $classroom->id }}"
+                                                                        name="longitude"
+                                                                        value="{{ $classroom->longitude }}"
+                                                                        placeholder="Ví dụ: 105.851067" required>
+                                                                    <button class="btn btn-outline-success" type="button"
+                                                                        onclick="getCurrentLocation('edit', '{{ $classroom->id }}')"
+                                                                        title="Lấy vị trí hiện tại">
+                                                                        <i class="ri-map-pin-line"></i>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="mb-3">
+                                                                <label for="edit_latitude{{ $classroom->id }}"
+                                                                    class="form-label">Vĩ Độ <span
+                                                                        class="text-danger">*</span></label>
+                                                                <div class="input-group">
+                                                                    <input type="text" class="form-control"
+                                                                        id="edit_latitude{{ $classroom->id }}"
+                                                                        name="latitude"
+                                                                        value="{{ $classroom->latitude }}"
+                                                                        placeholder="Ví dụ: 21.034888" required>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="edit_status{{ $classroom->id }}"
+                                                            class="form-label">Trạng Thái <span
+                                                                class="text-danger">*</span></label>
+                                                        <select class="form-select" id="edit_status{{ $classroom->id }}"
+                                                            name="status" required>
+                                                            <option value="">Chọn trạng thái</option>
+                                                            <option value="active"
+                                                                {{ $classroom->status == 'active' ? 'selected' : '' }}>
+                                                                Hoạt Động</option>
+                                                            <option value="inactive"
+                                                                {{ $classroom->status == 'inactive' ? 'selected' : '' }}>
+                                                                Tạm Ngưng</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary"
+                                                        data-bs-dismiss="modal">Hủy</button>
+                                                    <button type="submit" class="btn btn-primary">Cập
+                                                        Nhật</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+                            <!-- Delete ClassRoom Modal -->
+                            @if (auth()->user()->hasPermissionForModuleCode('classroom_management', 'delete', 'central'))
+                                <div class="modal fade" id="deleteClassRoomModal{{ $classroom->id }}" tabindex="-1"
+                                    aria-labelledby="deleteClassRoomModalLabel{{ $classroom->id }}" aria-hidden="true"
+                                    data-bs-backdrop="static" data-bs-keyboard="false">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title text-danger"
+                                                    id="deleteClassRoomModalLabel{{ $classroom->id }}">
+                                                    Xác Nhận Xóa</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                    aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="text-center">
+                                                    <p class="mb-2">Bạn có chắc chắn muốn xóa phòng học <span
+                                                            class="fw-bold text-danger">{{ $classroom->name }}</span>
+                                                        không?
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <form action="{{ route('backend.classrooms.destroy', $classroom->id) }}"
+                                                method="POST" id="deleteClassRoomForm{{ $classroom->id }}">
+                                                @csrf
+                                                @method('DELETE')
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary"
+                                                        data-bs-dismiss="modal">Hủy</button>
+                                                    <button type="submit" class="btn btn-danger">Xóa</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+                        @endforeach
                     </div>
                 </div>
             </div>

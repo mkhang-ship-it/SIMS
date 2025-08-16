@@ -1,11 +1,3 @@
-{{--
-    Changes made:
-    - Updated notification modal layout to match admin design
-    - Improved visual presentation with better styling
-    - Enhanced image and file display sections
-    - Added proper modal header with notification details
-    - Maintained dynamic loading functionality via AJAX
---}}
 @extends('layouts.app')
 
 @section('content')

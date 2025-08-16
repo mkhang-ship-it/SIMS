@@ -101,9 +101,6 @@
                                                     @elseif ($event->status === 'active')
                                                         <span class="badge bg-success">Đã Duyệt</span>
                                                     @endif
-
-
-
                                                 </div>
                                             </td>
                                         </tr>

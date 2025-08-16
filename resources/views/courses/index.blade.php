@@ -98,130 +98,125 @@
                                                 </div>
                                             </td>
                                         </tr>
-
-                                        <!-- Edit Course Modal -->
-                                        @if (auth()->user()->hasPermissionForModuleCode('course_management', 'edit', 'central'))
-                                            <div class="modal fade" id="editCourseModal{{ $course->id }}" tabindex="-1"
-                                                aria-labelledby="editCourseModalLabel{{ $course->id }}" aria-hidden="true"
-                                                data-bs-backdrop="static" data-bs-keyboard="false">
-                                                <div class="modal-dialog modal-dialog-centered ">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title"
-                                                                id="editCourseModalLabel{{ $course->id }}">Chỉnh Sửa Khóa
-                                                                Học
-                                                            </h5>
-                                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                                aria-label="Close"></button>
-                                                        </div>
-                                                        <form action="{{ route('backend.courses.update', $course->id) }}"
-                                                            method="POST" id="editCourseForm{{ $course->id }}">
-                                                            @csrf
-                                                            @method('PUT')
-                                                            <div class="modal-body">
-                                                                <div class="mb-3">
-                                                                    <label for="edit_name{{ $course->id }}"
-                                                                        class="form-label">Tên Khóa Học <span
-                                                                            class="text-danger">*</span></label>
-                                                                    <input type="text" class="form-control"
-                                                                        id="edit_name{{ $course->id }}" name="name"
-                                                                        value="{{ $course->name }}" required>
-                                                                </div>
-                                                                <div class="row">
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label for="edit_start_date{{ $course->id }}"
-                                                                                class="form-label">Ngày
-                                                                                Bắt Đầu <span
-                                                                                    class="text-danger">*</span></label>
-                                                                            <input type="date" class="form-control"
-                                                                                id="edit_start_date{{ $course->id }}"
-                                                                                name="start_date"
-                                                                                value="{{ $course->start_date }}" required>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label for="edit_end_date{{ $course->id }}"
-                                                                                class="form-label">Ngày
-                                                                                Kết Thúc <span
-                                                                                    class="text-danger">*</span></label>
-                                                                            <input type="date" class="form-control"
-                                                                                id="edit_end_date{{ $course->id }}"
-                                                                                name="end_date"
-                                                                                value="{{ $course->end_date }}" required>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="mb-3">
-                                                                    <label for="edit_status{{ $course->id }}"
-                                                                        class="form-label">Trạng Thái <span
-                                                                            class="text-danger">*</span></label>
-                                                                    <select class="form-select"
-                                                                        id="edit_status{{ $course->id }}"
-                                                                        name="status" required>
-                                                                        <option value="">Chọn trạng thái</option>
-                                                                        <option value="active"
-                                                                            {{ $course->status == 'active' ? 'selected' : '' }}>
-                                                                            Hoạt Động</option>
-                                                                        <option value="inactive"
-                                                                            {{ $course->status == 'inactive' ? 'selected' : '' }}>
-                                                                            Tạm Ngưng</option>
-                                                                    </select>
-                                                                </div>
-                                                            </div>
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary"
-                                                                    data-bs-dismiss="modal">Hủy</button>
-                                                                <button type="submit" class="btn btn-primary">Cập
-                                                                    Nhật</button>
-                                                            </div>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endif
-                                        <!-- Delete Course Modal -->
-                                        @if (auth()->user()->hasPermissionForModuleCode('course_management', 'delete', 'central'))
-                                            <div class="modal fade" id="deleteCourseModal{{ $course->id }}"
-                                                tabindex="-1"
-                                                aria-labelledby="deleteCourseModalLabel{{ $course->id }}"
-                                                aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-                                                <div class="modal-dialog modal-dialog-centered">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title text-danger"
-                                                                id="deleteCourseModalLabel{{ $course->id }}">
-                                                                Xác Nhận Xóa</h5>
-                                                            <button type="button" class="btn-close"
-                                                                data-bs-dismiss="modal" aria-label="Close"></button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <div class="text-center">
-                                                                <p class="mb-2">Bạn có chắc chắn muốn xóa khóa học <span
-                                                                        class="fw-bold text-danger">{{ $course->name }}</span>
-                                                                    không?
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                        <form action="{{ route('backend.courses.destroy', $course->id) }}"
-                                                            method="POST" id="deleteCourseForm{{ $course->id }}">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary"
-                                                                    data-bs-dismiss="modal">Hủy</button>
-                                                                <button type="submit" class="btn btn-danger">Xóa</button>
-                                                            </div>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endif
                                     @endforeach
                                 </tbody>
                             </table>
                         </div>
+                        @foreach ($courses as $course)
+                            <!-- Edit Course Modal -->
+                            @if (auth()->user()->hasPermissionForModuleCode('course_management', 'edit', 'central'))
+                                <div class="modal fade" id="editCourseModal{{ $course->id }}" tabindex="-1"
+                                    aria-labelledby="editCourseModalLabel{{ $course->id }}" aria-hidden="true"
+                                    data-bs-backdrop="static" data-bs-keyboard="false">
+                                    <div class="modal-dialog modal-dialog-centered ">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="editCourseModalLabel{{ $course->id }}">Chỉnh
+                                                    Sửa Khóa
+                                                    Học
+                                                </h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                    aria-label="Close"></button>
+                                            </div>
+                                            <form action="{{ route('backend.courses.update', $course->id) }}"
+                                                method="POST" id="editCourseForm{{ $course->id }}">
+                                                @csrf
+                                                @method('PUT')
+                                                <div class="modal-body">
+                                                    <div class="mb-3">
+                                                        <label for="edit_name{{ $course->id }}" class="form-label">Tên
+                                                            Khóa Học <span class="text-danger">*</span></label>
+                                                        <input type="text" class="form-control"
+                                                            id="edit_name{{ $course->id }}" name="name"
+                                                            value="{{ $course->name }}" required>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <div class="mb-3">
+                                                                <label for="edit_start_date{{ $course->id }}"
+                                                                    class="form-label">Ngày
+                                                                    Bắt Đầu <span class="text-danger">*</span></label>
+                                                                <input type="date" class="form-control"
+                                                                    id="edit_start_date{{ $course->id }}"
+                                                                    name="start_date" value="{{ $course->start_date }}"
+                                                                    required>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="mb-3">
+                                                                <label for="edit_end_date{{ $course->id }}"
+                                                                    class="form-label">Ngày
+                                                                    Kết Thúc <span class="text-danger">*</span></label>
+                                                                <input type="date" class="form-control"
+                                                                    id="edit_end_date{{ $course->id }}" name="end_date"
+                                                                    value="{{ $course->end_date }}" required>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="edit_status{{ $course->id }}"
+                                                            class="form-label">Trạng Thái <span
+                                                                class="text-danger">*</span></label>
+                                                        <select class="form-select" id="edit_status{{ $course->id }}"
+                                                            name="status" required>
+                                                            <option value="">Chọn trạng thái</option>
+                                                            <option value="active"
+                                                                {{ $course->status == 'active' ? 'selected' : '' }}>
+                                                                Hoạt Động</option>
+                                                            <option value="inactive"
+                                                                {{ $course->status == 'inactive' ? 'selected' : '' }}>
+                                                                Tạm Ngưng</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary"
+                                                        data-bs-dismiss="modal">Hủy</button>
+                                                    <button type="submit" class="btn btn-primary">Cập
+                                                        Nhật</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+                            <!-- Delete Course Modal -->
+                            @if (auth()->user()->hasPermissionForModuleCode('course_management', 'delete', 'central'))
+                                <div class="modal fade" id="deleteCourseModal{{ $course->id }}" tabindex="-1"
+                                    aria-labelledby="deleteCourseModalLabel{{ $course->id }}" aria-hidden="true"
+                                    data-bs-backdrop="static" data-bs-keyboard="false">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title text-danger"
+                                                    id="deleteCourseModalLabel{{ $course->id }}">
+                                                    Xác Nhận Xóa</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                    aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="text-center">
+                                                    <p class="mb-2">Bạn có chắc chắn muốn xóa khóa học <span
+                                                            class="fw-bold text-danger">{{ $course->name }}</span>
+                                                        không?
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <form action="{{ route('backend.courses.destroy', $course->id) }}"
+                                                method="POST" id="deleteCourseForm{{ $course->id }}">
+                                                @csrf
+                                                @method('DELETE')
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary"
+                                                        data-bs-dismiss="modal">Hủy</button>
+                                                    <button type="submit" class="btn btn-danger">Xóa</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+                        @endforeach
                     </div>
                 </div>
             </div>

@@ -1,13 +1,3 @@
-{{--
-Updated: 2025-01-23
-Changes: Sửa lại giao diện tab Timeline theo mẫu tab Objectives (table layout, action buttons, empty state, permission checks, style đồng bộ)
-Updated: Thêm group timeline theo ngày - hiển thị phân chia rõ ràng khi có nhiều ngày khác nhau với header ngày, thời lượng hoạt động
-Updated: Thêm ID table động và DataTable initialization cho từng bảng timeline với disabled search, pagination, info display
-Updated: Đánh lại STT - mỗi ngày bắt đầu từ số 1 thay vì đánh liên tục toàn bộ timeline
-Updated: Hạn chế kéo thả chỉ trong cùng ngày - không cho phép kéo hoạt động từ ngày này sang ngày khác
---}}
-
-<!-- 6. Timeline Sự Kiện -->
 <div class="mb-0">
     <div class="d-flex align-items-center justify-content-between mb-4">
         <h6 class="fw-bold text-purple mb-0">
@@ -22,7 +12,8 @@ Updated: Hạn chế kéo thả chỉ trong cùng ngày - không cho phép kéo 
     <div class="mb-3">
         <small class="text-muted">
             <i class="ti ti-info-circle me-1"></i>
-            Kéo thả để thay đổi thứ tự timeline trong cùng ngày. Sự kiện này có {{ $eventPlan->timeline->count() }} timeline.
+            Kéo thả để thay đổi thứ tự timeline trong cùng ngày. Sự kiện này có {{ $eventPlan->timeline->count() }}
+            timeline.
         </small>
     </div>
 

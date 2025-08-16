@@ -194,396 +194,6 @@
                                                 </div>
                                             </td>
                                         </tr>
-                                        <!-- Edit Member Modal -->
-                                        @if (auth()->user()->hasPermissionForModuleCode('member_management', 'edit', 'branch'))
-                                            <div class="modal fade" id="editMemberModal{{ $member->user->id }}"
-                                                tabindex="-1"
-                                                aria-labelledby="editMemberModalLabel{{ $member->user->id }}"
-                                                aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-                                                <div
-                                                    class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title"
-                                                                id="editMemberModalLabel{{ $member->user->id }}">Chỉnh Sửa
-                                                                Thành
-                                                                Viên
-                                                            </h5>
-                                                            <button type="button" class="btn-close"
-                                                                data-bs-dismiss="modal" aria-label="Close"></button>
-                                                        </div>
-                                                        <form
-                                                            action="{{ route('backend.club.members.update', $member->user->id) }}"
-                                                            method="POST" id="editMemberForm{{ $member->user->id }}"
-                                                            enctype="multipart/form-data">
-                                                            @csrf
-                                                            @method('PUT')
-                                                            <div class="modal-body">
-                                                                <div class="row">
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label for="edit_name{{ $member->user->id }}"
-                                                                                class="form-label">Tên Thành Viên <span
-                                                                                    class="text-danger">*</span></label>
-                                                                            <input type="text" class="form-control"
-                                                                                id="edit_name{{ $member->user->id }}"
-                                                                                name="name"
-                                                                                value="{{ $member->user->name }}"
-                                                                                required>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label for="edit_email{{ $member->user->id }}"
-                                                                                class="form-label">Email <span
-                                                                                    class="text-danger">*</span></label>
-                                                                            <input type="email" class="form-control"
-                                                                                id="edit_email{{ $member->user->id }}"
-                                                                                name="email"
-                                                                                value="{{ $member->user->email }}"
-                                                                                required>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <!-- Thông tin cá nhân bổ sung -->
-                                                                <div class="row">
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label
-                                                                                for="edit_gender{{ $member->user->id }}"
-                                                                                class="form-label">Giới Tính <span
-                                                                                    class="text-danger">*</span></label>
-                                                                            <select class="form-select"
-                                                                                id="edit_gender{{ $member->user->id }}"
-                                                                                name="gender" required>
-                                                                                <option value="">Chọn giới tính
-                                                                                </option>
-                                                                                <option value="male"
-                                                                                    {{ $member->user->gender == 'male' ? 'selected' : '' }}>
-                                                                                    Nam</option>
-                                                                                <option value="female"
-                                                                                    {{ $member->user->gender == 'female' ? 'selected' : '' }}>
-                                                                                    Nữ</option>
-                                                                            </select>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label
-                                                                                for="edit_birthday{{ $member->user->id }}"
-                                                                                class="form-label">Ngày Sinh <span
-                                                                                    class="text-danger">*</span></label>
-                                                                            <input type="date" class="form-control"
-                                                                                id="edit_birthday{{ $member->user->id }}"
-                                                                                name="birthday"
-                                                                                value="{{ $member->user->birthday ? $member->user->birthday->format('Y-m-d') : '' }}"
-                                                                                required>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="row">
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label
-                                                                                for="edit_identity_card_code{{ $member->user->id }}"
-                                                                                class="form-label">CCCD/CMND <span
-                                                                                    class="text-danger">*</span></label>
-                                                                            <input type="text" class="form-control"
-                                                                                id="edit_identity_card_code{{ $member->user->id }}"
-                                                                                name="identity_card_code"
-                                                                                value="{{ $member->user->identity_card_code }}"
-                                                                                required>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label for="edit_phone{{ $member->user->id }}"
-                                                                                class="form-label">Số Điện Thoại <span
-                                                                                    class="text-danger">*</span></label>
-                                                                            <input type="text" class="form-control"
-                                                                                id="edit_phone{{ $member->user->id }}"
-                                                                                name="phone"
-                                                                                value="{{ $member->user->phone }}"
-                                                                                required>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <!-- Thông tin học tập -->
-                                                                <div class="row">
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label
-                                                                                for="edit_student_code{{ $member->user->id }}"
-                                                                                class="form-label">Mã Sinh Viên <span
-                                                                                    class="text-danger">*</span></label>
-                                                                            <input type="text" class="form-control"
-                                                                                id="edit_student_code{{ $member->user->id }}"
-                                                                                name="student_code"
-                                                                                value="{{ $member->user->student_code }}"
-                                                                                required>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label
-                                                                                for="edit_major_id{{ $member->user->id }}"
-                                                                                class="form-label">Chuyên Ngành <span
-                                                                                    class="text-danger">*</span></label>
-                                                                            <select class="form-select"
-                                                                                id="edit_major_id{{ $member->user->id }}"
-                                                                                name="major_id" required>
-                                                                                <option value="">Chọn chuyên ngành
-                                                                                </option>
-                                                                                @foreach ($majors as $major)
-                                                                                    <option value="{{ $major->id }}"
-                                                                                        {{ $member->user->major_id == $major->id ? 'selected' : '' }}>
-                                                                                        {{ $major->name }}
-                                                                                    </option>
-                                                                                @endforeach
-                                                                            </select>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="row">
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label
-                                                                                for="edit_course_id{{ $member->user->id }}"
-                                                                                class="form-label">Khóa Học <span
-                                                                                    class="text-danger">*</span></label>
-                                                                            <select class="form-select"
-                                                                                id="edit_course_id{{ $member->user->id }}"
-                                                                                name="course_id" required>
-                                                                                <option value="">Chọn khóa học
-                                                                                </option>
-                                                                                @foreach ($courses as $course)
-                                                                                    <option value="{{ $course->id }}"
-                                                                                        {{ $member->user->course_id == $course->id ? 'selected' : '' }}>
-                                                                                        {{ $course->name }}
-                                                                                    </option>
-                                                                                @endforeach
-                                                                            </select>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label
-                                                                                for="edit_avatar{{ $member->user->id }}"
-                                                                                class="form-label">Avatar <small
-                                                                                    class="text-muted">Để trống nếu không
-                                                                                    muốn thay đổi.</small></label>
-
-                                                                            <input type="file" class="form-control"
-                                                                                id="edit_avatar{{ $member->user->id }}"
-                                                                                name="avatar"
-                                                                                accept="image/jpeg,image/png,image/jpg,image/gif">
-                                                                            <small class="text-muted">Tối đa 2MB. Định
-                                                                                dạng:
-                                                                                JPG, PNG, GIF</small>
-
-                                                                            @if ($member->user->avatar)
-                                                                                <div class="mb-2">
-                                                                                    <img src="{{ asset('storage/' . $member->user->avatar) }}"
-                                                                                        alt="Current avatar"
-                                                                                        class="img-thumbnail"
-                                                                                        style="width: 80px; height: 80px; object-fit: cover;">
-                                                                                    <small
-                                                                                        class="text-muted d-block">Avatar
-                                                                                        hiện tại</small>
-                                                                                </div>
-                                                                            @endif
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <!-- Vai trò và trạng thái -->
-                                                                <div class="row">
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label
-                                                                                for="edit_role_id{{ $member->user->id }}"
-                                                                                class="form-label">Vai Trò <span
-                                                                                    class="text-danger">*</span></label>
-                                                                            <select class="form-select"
-                                                                                id="edit_role_id{{ $member->user->id }}"
-                                                                                name="role_id" required>
-                                                                                <option value="">Chọn vai trò
-                                                                                </option>
-                                                                                @foreach ($roles as $role)
-                                                                                    <option value="{{ $role->id }}"
-                                                                                        {{ $member->role_id == $role->id ? 'selected' : '' }}>
-                                                                                        {{ $role->name }}
-                                                                                    </option>
-                                                                                @endforeach
-                                                                            </select>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label
-                                                                                for="edit_status{{ $member->user->id }}"
-                                                                                class="form-label">Trạng Thái <span
-                                                                                    class="text-danger">*</span></label>
-                                                                            <select class="form-select"
-                                                                                id="edit_status{{ $member->user->id }}"
-                                                                                name="status" required>
-                                                                                <option value="">Chọn trạng thái
-                                                                                </option>
-                                                                                <option value="active"
-                                                                                    {{ $member->user->status == 'active' ? 'selected' : '' }}>
-                                                                                    Hoạt Động</option>
-                                                                                <option value="inactive"
-                                                                                    {{ $member->user->status == 'inactive' ? 'selected' : '' }}>
-                                                                                    Tạm Ngưng</option>
-                                                                            </select>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="mb-3">
-                                                                    <label for="edit_password{{ $member->user->id }}"
-                                                                        class="form-label">Mật Khẩu Mới
-                                                                        <small class="text-muted">Để trống nếu không muốn
-                                                                            thay
-                                                                            đổi. Tối thiểu 8 ký tự</small>
-                                                                    </label>
-                                                                    <input type="password" class="form-control"
-                                                                        id="edit_password{{ $member->user->id }}"
-                                                                        name="password">
-
-                                                                </div>
-                                                            </div>
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary"
-                                                                    data-bs-dismiss="modal">Hủy</button>
-                                                                <button type="submit" class="btn btn-primary">Cập
-                                                                    Nhật</button>
-                                                            </div>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endif
-
-                                        <!-- Delete Member Modal -->
-                                        @if (auth()->user()->hasPermissionForModuleCode('member_management', 'delete', 'branch'))
-                                            <div class="modal fade" id="deleteMemberModal{{ $member->user->id }}"
-                                                tabindex="-1"
-                                                aria-labelledby="deleteMemberModalLabel{{ $member->user->id }}"
-                                                aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-                                                <div class="modal-dialog modal-dialog-centered">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title text-danger"
-                                                                id="deleteMemberModalLabel{{ $member->user->id }}">
-                                                                Xác Nhận Xóa</h5>
-                                                            <button type="button" class="btn-close"
-                                                                data-bs-dismiss="modal" aria-label="Close"></button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <div class="text-center">
-                                                                <p class="mb-2">Bạn có chắc chắn muốn xóa thành viên
-                                                                    <span
-                                                                        class="fw-bold text-danger">{{ $member->user->name }}</span>
-                                                                    khỏi câu lạc bộ không?
-                                                                </p>
-                                                                <p class="text-muted small">Email:
-                                                                    {{ $member->user->email }}
-                                                                </p>
-                                                                <div class="alert alert-warning mt-3">
-                                                                    <i class="ri-information-line me-2"></i>
-                                                                    <strong>Lưu ý:</strong> Thành viên sẽ chỉ bị xóa khỏi
-                                                                    câu lạc bộ này. Tài khoản của họ vẫn tồn tại trong hệ
-                                                                    thống.
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <form
-                                                            action="{{ route('backend.club.members.destroy', $member->user->id) }}"
-                                                            method="POST" id="deleteMemberForm{{ $member->user->id }}">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary"
-                                                                    data-bs-dismiss="modal">Hủy</button>
-                                                                <button type="submit" class="btn btn-danger">Xóa</button>
-                                                            </div>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endif
-
-                                        <!-- Impersonate Modal -->
-                                        @php
-                                            $canImpersonate =
-                                                !\App\Http\Controllers\ImpersonationController::isImpersonating() &&
-                                                $member->user->id !== auth()->user()->id;
-                                            $currentUserRole = auth()
-                                                ->user()
-                                                ->userClubRoles()
-                                                ->where('club_id', session('club_id'))
-                                                ->with('role')
-                                                ->first();
-                                            $isClubAdmin =
-                                                $currentUserRole &&
-                                                $currentUserRole->role &&
-                                                $currentUserRole->role->is_admin;
-                                        @endphp
-
-                                        @if ($canImpersonate && $isClubAdmin && $member->role && !$member->role->is_admin)
-                                            <div class="modal fade" id="impersonateModal{{ $member->user->id }}"
-                                                tabindex="-1"
-                                                aria-labelledby="impersonateModalLabel{{ $member->user->id }}"
-                                                aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-                                                <div class="modal-dialog modal-dialog-centered">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title text-warning"
-                                                                id="impersonateModalLabel{{ $member->user->id }}">
-                                                                <i class="ri-user-shared-line me-2"></i>
-                                                                Xác Nhận Mạo Danh
-                                                            </h5>
-                                                            <button type="button" class="btn-close"
-                                                                data-bs-dismiss="modal" aria-label="Close"></button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <div class="text-center">
-                                                                <div
-                                                                    class="avatar avatar-xl avatar-rounded bg-warning-transparent mb-3">
-                                                                    <i class="ri-user-shared-line fs-2"></i>
-                                                                </div>
-                                                                <h6 class="mb-2">Đăng nhập mạo danh</h6>
-                                                                <p class="mb-2">
-                                                                    Bạn có chắc chắn muốn đăng nhập với tài khoản của
-                                                                    <strong>{{ $member->user->name }}</strong>?
-                                                                </p>
-                                                                <p class="text-muted small mb-2">Email:
-                                                                    {{ $member->user->email }}</p>
-                                                                <div class="alert alert-warning mt-3">
-                                                                    <i class="ri-information-line me-2"></i>
-                                                                    <strong>Lưu ý:</strong> Bạn sẽ được chuyển đến phiên làm
-                                                                    việc của thành viên này.
-                                                                    Để quay lại tài khoản của mình, hãy sử dụng nút "Thoát
-                                                                    mạo danh" trên thanh công cụ.
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary"
-                                                                data-bs-dismiss="modal">Hủy</button>
-                                                            <form
-                                                                action="{{ route('backend.impersonate.start', $member->user->id) }}"
-                                                                method="POST" style="display: inline;">
-                                                                @csrf
-                                                                <button type="submit" class="btn btn-warning">
-                                                                    <i class="ri-user-shared-line me-2"></i>
-                                                                    Mạo Danh
-                                                                </button>
-                                                            </form>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endif
                                     @endforeach
                                 </tbody>
                             </table>
@@ -595,6 +205,339 @@
         <!--End::row-1 -->
 
     </div>
+
+    @foreach ($members as $member)
+        <!-- Edit Member Modal -->
+        @if (auth()->user()->hasPermissionForModuleCode('member_management', 'edit', 'branch'))
+            <div class="modal fade" id="editMemberModal{{ $member->user->id }}" tabindex="-1"
+                aria-labelledby="editMemberModalLabel{{ $member->user->id }}" aria-hidden="true"
+                data-bs-backdrop="static" data-bs-keyboard="false">
+                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="editMemberModalLabel{{ $member->user->id }}">Chỉnh Sửa
+                                Thành
+                                Viên
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                        </div>
+                        <form action="{{ route('backend.club.members.update', $member->user->id) }}" method="POST"
+                            id="editMemberForm{{ $member->user->id }}" enctype="multipart/form-data">
+                            @csrf
+                            @method('PUT')
+                            <div class="modal-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="edit_name{{ $member->user->id }}" class="form-label">Tên Thành
+                                                Viên <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control"
+                                                id="edit_name{{ $member->user->id }}" name="name"
+                                                value="{{ $member->user->name }}" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="edit_email{{ $member->user->id }}" class="form-label">Email <span
+                                                    class="text-danger">*</span></label>
+                                            <input type="email" class="form-control"
+                                                id="edit_email{{ $member->user->id }}" name="email"
+                                                value="{{ $member->user->email }}" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Thông tin cá nhân bổ sung -->
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="edit_gender{{ $member->user->id }}" class="form-label">Giới Tính
+                                                <span class="text-danger">*</span></label>
+                                            <select class="form-select" id="edit_gender{{ $member->user->id }}"
+                                                name="gender" required>
+                                                <option value="">Chọn giới tính
+                                                </option>
+                                                <option value="male"
+                                                    {{ $member->user->gender == 'male' ? 'selected' : '' }}>
+                                                    Nam</option>
+                                                <option value="female"
+                                                    {{ $member->user->gender == 'female' ? 'selected' : '' }}>
+                                                    Nữ</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="edit_birthday{{ $member->user->id }}" class="form-label">Ngày
+                                                Sinh <span class="text-danger">*</span></label>
+                                            <input type="date" class="form-control"
+                                                id="edit_birthday{{ $member->user->id }}" name="birthday"
+                                                value="{{ $member->user->birthday ? $member->user->birthday->format('Y-m-d') : '' }}"
+                                                required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="edit_identity_card_code{{ $member->user->id }}"
+                                                class="form-label">CCCD/CMND <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control"
+                                                id="edit_identity_card_code{{ $member->user->id }}"
+                                                name="identity_card_code" value="{{ $member->user->identity_card_code }}"
+                                                required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="edit_phone{{ $member->user->id }}" class="form-label">Số Điện
+                                                Thoại <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control"
+                                                id="edit_phone{{ $member->user->id }}" name="phone"
+                                                value="{{ $member->user->phone }}" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Thông tin học tập -->
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="edit_student_code{{ $member->user->id }}" class="form-label">Mã
+                                                Sinh Viên <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control"
+                                                id="edit_student_code{{ $member->user->id }}" name="student_code"
+                                                value="{{ $member->user->student_code }}" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="edit_major_id{{ $member->user->id }}" class="form-label">Chuyên
+                                                Ngành <span class="text-danger">*</span></label>
+                                            <select class="form-select" id="edit_major_id{{ $member->user->id }}"
+                                                name="major_id" required>
+                                                <option value="">Chọn chuyên ngành
+                                                </option>
+                                                @foreach ($majors as $major)
+                                                    <option value="{{ $major->id }}"
+                                                        {{ $member->user->major_id == $major->id ? 'selected' : '' }}>
+                                                        {{ $major->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="edit_course_id{{ $member->user->id }}" class="form-label">Khóa
+                                                Học <span class="text-danger">*</span></label>
+                                            <select class="form-select" id="edit_course_id{{ $member->user->id }}"
+                                                name="course_id" required>
+                                                <option value="">Chọn khóa học
+                                                </option>
+                                                @foreach ($courses as $course)
+                                                    <option value="{{ $course->id }}"
+                                                        {{ $member->user->course_id == $course->id ? 'selected' : '' }}>
+                                                        {{ $course->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="edit_avatar{{ $member->user->id }}" class="form-label">Avatar
+                                                <small class="text-muted">Để trống nếu không
+                                                    muốn thay đổi.</small></label>
+
+                                            <input type="file" class="form-control"
+                                                id="edit_avatar{{ $member->user->id }}" name="avatar"
+                                                accept="image/jpeg,image/png,image/jpg,image/gif">
+                                            <small class="text-muted">Tối đa 2MB. Định
+                                                dạng:
+                                                JPG, PNG, GIF</small>
+
+                                            @if ($member->user->avatar)
+                                                <div class="mb-2">
+                                                    <img src="{{ asset('storage/' . $member->user->avatar) }}"
+                                                        alt="Current avatar" class="img-thumbnail"
+                                                        style="width: 80px; height: 80px; object-fit: cover;">
+                                                    <small class="text-muted d-block">Avatar
+                                                        hiện tại</small>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Vai trò và trạng thái -->
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="edit_role_id{{ $member->user->id }}" class="form-label">Vai Trò
+                                                <span class="text-danger">*</span></label>
+                                            <select class="form-select" id="edit_role_id{{ $member->user->id }}"
+                                                name="role_id" required>
+                                                <option value="">Chọn vai trò
+                                                </option>
+                                                @foreach ($roles as $role)
+                                                    <option value="{{ $role->id }}"
+                                                        {{ $member->role_id == $role->id ? 'selected' : '' }}>
+                                                        {{ $role->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="edit_status{{ $member->user->id }}" class="form-label">Trạng Thái
+                                                <span class="text-danger">*</span></label>
+                                            <select class="form-select" id="edit_status{{ $member->user->id }}"
+                                                name="status" required>
+                                                <option value="">Chọn trạng thái
+                                                </option>
+                                                <option value="active"
+                                                    {{ $member->user->status == 'active' ? 'selected' : '' }}>
+                                                    Hoạt Động</option>
+                                                <option value="inactive"
+                                                    {{ $member->user->status == 'inactive' ? 'selected' : '' }}>
+                                                    Tạm Ngưng</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="edit_password{{ $member->user->id }}" class="form-label">Mật Khẩu Mới
+                                        <small class="text-muted">Để trống nếu không muốn
+                                            thay
+                                            đổi. Tối thiểu 8 ký tự</small>
+                                    </label>
+                                    <input type="password" class="form-control"
+                                        id="edit_password{{ $member->user->id }}" name="password">
+
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                <button type="submit" class="btn btn-primary">Cập
+                                    Nhật</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        <!-- Delete Member Modal -->
+        @if (auth()->user()->hasPermissionForModuleCode('member_management', 'delete', 'branch'))
+            <div class="modal fade" id="deleteMemberModal{{ $member->user->id }}" tabindex="-1"
+                aria-labelledby="deleteMemberModalLabel{{ $member->user->id }}" aria-hidden="true"
+                data-bs-backdrop="static" data-bs-keyboard="false">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title text-danger" id="deleteMemberModalLabel{{ $member->user->id }}">
+                                Xác Nhận Xóa</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="text-center">
+                                <p class="mb-2">Bạn có chắc chắn muốn xóa thành viên
+                                    <span class="fw-bold text-danger">{{ $member->user->name }}</span>
+                                    khỏi câu lạc bộ không?
+                                </p>
+                                <p class="text-muted small">Email:
+                                    {{ $member->user->email }}
+                                </p>
+                                <div class="alert alert-warning mt-3">
+                                    <i class="ri-information-line me-2"></i>
+                                    <strong>Lưu ý:</strong> Thành viên sẽ chỉ bị xóa khỏi
+                                    câu lạc bộ này. Tài khoản của họ vẫn tồn tại trong hệ
+                                    thống.
+                                </div>
+                            </div>
+                        </div>
+                        <form action="{{ route('backend.club.members.destroy', $member->user->id) }}" method="POST"
+                            id="deleteMemberForm{{ $member->user->id }}">
+                            @csrf
+                            @method('DELETE')
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                <button type="submit" class="btn btn-danger">Xóa</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        <!-- Impersonate Modal -->
+        @php
+            $canImpersonate =
+                !\App\Http\Controllers\ImpersonationController::isImpersonating() &&
+                $member->user->id !== auth()->user()->id;
+            $currentUserRole = auth()
+                ->user()
+                ->userClubRoles()
+                ->where('club_id', session('club_id'))
+                ->with('role')
+                ->first();
+            $isClubAdmin = $currentUserRole && $currentUserRole->role && $currentUserRole->role->is_admin;
+        @endphp
+
+        @if ($canImpersonate && $isClubAdmin && $member->role && !$member->role->is_admin)
+            <div class="modal fade" id="impersonateModal{{ $member->user->id }}" tabindex="-1"
+                aria-labelledby="impersonateModalLabel{{ $member->user->id }}" aria-hidden="true"
+                data-bs-backdrop="static" data-bs-keyboard="false">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title text-warning" id="impersonateModalLabel{{ $member->user->id }}">
+                                <i class="ri-user-shared-line me-2"></i>
+                                Xác Nhận Mạo Danh
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="text-center">
+                                <div class="avatar avatar-xl avatar-rounded bg-warning-transparent mb-3">
+                                    <i class="ri-user-shared-line fs-2"></i>
+                                </div>
+                                <h6 class="mb-2">Đăng nhập mạo danh</h6>
+                                <p class="mb-2">
+                                    Bạn có chắc chắn muốn đăng nhập với tài khoản của
+                                    <strong>{{ $member->user->name }}</strong>?
+                                </p>
+                                <p class="text-muted small mb-2">Email:
+                                    {{ $member->user->email }}</p>
+                                <div class="alert alert-warning mt-3">
+                                    <i class="ri-information-line me-2"></i>
+                                    <strong>Lưu ý:</strong> Bạn sẽ được chuyển đến phiên làm
+                                    việc của thành viên này.
+                                    Để quay lại tài khoản của mình, hãy sử dụng nút "Thoát
+                                    mạo danh" trên thanh công cụ.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                            <form action="{{ route('backend.impersonate.start', $member->user->id) }}" method="POST"
+                                style="display: inline;">
+                                @csrf
+                                <button type="submit" class="btn btn-warning">
+                                    <i class="ri-user-shared-line me-2"></i>
+                                    Mạo Danh
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+    @endforeach
 
     <!-- Add Member Modal -->
     @if (auth()->user()->hasPermissionForModuleCode('member_management', 'create', 'branch'))

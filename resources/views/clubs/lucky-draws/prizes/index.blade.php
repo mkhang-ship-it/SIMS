@@ -1,7 +1,7 @@
 {{-- Updated: Added prize availability tracking and winner validation for lucky draw system - includes remaining quantity display, availability badges, and winner count tracking --}}
 @extends('layouts.app')
 
-@section('styles')
+{{-- @section('styles')
     <style>
         .sortable-ghost {
             opacity: 0.5;
@@ -29,7 +29,7 @@
             transition: background-color 0.2s ease;
         }
     </style>
-@endsection
+@endsection --}}
 
 @section('content')
     <div class="container-fluid">

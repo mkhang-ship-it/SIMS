@@ -1,8 +1,3 @@
-{{-- Equipment Tab
-Contains: Quản lý vật dụng với chức năng CRUD, trình bày dạng bảng
-Created: Equipment management for event plans with name, quantity, type (club/school)
---}}
-
 <div class="mb-0">
     <div class="d-flex align-items-center justify-content-between mb-4">
         <h6 class="fw-bold text-info mb-0">

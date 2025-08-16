@@ -154,388 +154,6 @@
                                                 </div>
                                             </td>
                                         </tr>
-
-                                        <!-- Edit Event Modal -->
-                                        @if (auth()->user()->hasPermissionForModuleCode('event_management', 'edit', 'branch') && $event->canBeEdited())
-                                            @php
-                                                $availableStatuses = $event->getAvailableStatusOptions(
-                                                    auth()->user(),
-                                                    true,
-                                                );
-                                            @endphp
-                                            <div class="modal fade" id="editEventModal{{ $event->id }}" tabindex="-1"
-                                                aria-labelledby="editEventModalLabel{{ $event->id }}" aria-hidden="true"
-                                                data-bs-backdrop="static" data-bs-keyboard="false">
-                                                <div class="modal-dialog modal-dialog-centered modal-lg">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title"
-                                                                id="editEventModalLabel{{ $event->id }}">
-                                                                Chỉnh Sửa Sự Kiện
-                                                            </h5>
-                                                            <button type="button" class="btn-close"
-                                                                data-bs-dismiss="modal" aria-label="Close"></button>
-                                                        </div>
-                                                        <form
-                                                            action="{{ route('backend.club.events.update', $event->id) }}"
-                                                            method="POST" enctype="multipart/form-data">
-                                                            @csrf
-                                                            @method('PUT')
-                                                            <div class="modal-body">
-                                                                <div class="row">
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label for="edit_name{{ $event->id }}"
-                                                                                class="form-label">
-                                                                                Tên Sự Kiện <span
-                                                                                    class="text-danger">*</span>
-                                                                            </label>
-                                                                            <input type="text" class="form-control"
-                                                                                id="edit_name{{ $event->id }}"
-                                                                                name="name"
-                                                                                value="{{ $event->name }}" required>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label
-                                                                                for="edit_semester_id{{ $event->id }}"
-                                                                                class="form-label">
-                                                                                Học Kỳ <span class="text-danger">*</span>
-                                                                            </label>
-                                                                            <select class="form-select"
-                                                                                id="edit_semester_id{{ $event->id }}"
-                                                                                name="semester_id" required>
-                                                                                @foreach ($semesters as $semester)
-                                                                                    <option value="{{ $semester->id }}"
-                                                                                        {{ $event->semester_id === $semester->id ? 'selected' : '' }}>
-                                                                                        {{ $semester->name }}
-                                                                                    </option>
-                                                                                @endforeach
-                                                                            </select>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="row">
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label
-                                                                                for="edit_event_date{{ $event->id }}"
-                                                                                class="form-label">
-                                                                                Ngày Diễn Ra <span
-                                                                                    class="text-danger">*</span>
-                                                                            </label>
-                                                                            <input type="date" class="form-control"
-                                                                                id="edit_event_date{{ $event->id }}"
-                                                                                name="event_date"
-                                                                                value="{{ $event->event_date ? $event->event_date->format('Y-m-d') : '' }}"
-                                                                                required onkeydown="return false"
-                                                                                oninput="this.value = this.value"
-                                                                                onpaste="return false"
-                                                                                ondrop="return false" autocomplete="off">
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label for="edit_slot_id{{ $event->id }}"
-                                                                                class="form-label">
-                                                                                Thời Gian Diễn Ra <span
-                                                                                    class="text-danger">*</span>
-                                                                            </label>
-                                                                            <select class="form-select"
-                                                                                id="edit_slot_id{{ $event->id }}"
-                                                                                name="slot_id" required>
-                                                                                @foreach ($slots as $slot)
-                                                                                    <option value="{{ $slot->id }}"
-                                                                                        {{ $event->slot_id === $slot->id ? 'selected' : '' }}>
-                                                                                        {{ $slot->name }}
-                                                                                        ({{ $slot->start_time }} -
-                                                                                        {{ $slot->end_time }})
-                                                                                    </option>
-                                                                                @endforeach
-                                                                            </select>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="row">
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label
-                                                                                for="edit_class_room_id{{ $event->id }}"
-                                                                                class="form-label">
-                                                                                Địa Điểm <span class="text-danger">*</span>
-                                                                            </label>
-                                                                            <select class="form-select"
-                                                                                id="edit_class_room_id{{ $event->id }}"
-                                                                                name="class_room_id" required>
-                                                                                @foreach ($classRooms as $classRoom)
-                                                                                    <option value="{{ $classRoom->id }}"
-                                                                                        {{ $event->class_room_id === $classRoom->id ? 'selected' : '' }}>
-                                                                                        {{ $classRoom->name }}
-                                                                                    </option>
-                                                                                @endforeach
-                                                                            </select>
-                                                                        </div>
-                                                                    </div>
-                                                                    @if (!empty($availableStatuses))
-                                                                        <div class="col-md-6">
-                                                                            <div class="mb-3">
-                                                                                <label
-                                                                                    for="edit_status{{ $event->id }}"
-                                                                                    class="form-label">
-                                                                                    Trạng Thái <span
-                                                                                        class="text-danger">*</span>
-                                                                                </label>
-                                                                                <select class="form-select"
-                                                                                    id="edit_status{{ $event->id }}"
-                                                                                    name="status" required>
-                                                                                    @foreach ($availableStatuses as $statusValue => $statusLabel)
-                                                                                        <option
-                                                                                            value="{{ $statusValue }}"
-                                                                                            {{ $event->status === $statusValue ? 'selected' : '' }}>
-                                                                                            {{ $statusLabel }}
-                                                                                        </option>
-                                                                                    @endforeach
-                                                                                </select>
-                                                                            </div>
-                                                                        </div>
-                                                                    @else
-                                                                        <div class="col-md-6">
-                                                                            <div class="mb-3">
-                                                                                <label class="form-label">
-                                                                                    Trạng Thái
-                                                                                </label>
-                                                                                <div class="form-control-plaintext">
-                                                                                    <span
-                                                                                        class="badge bg-{{ $event->status_color }}">
-                                                                                        {{ $event->status_label }}
-                                                                                    </span>
-                                                                                    <small class="text-muted d-block mt-1">
-                                                                                        Không thể thay đổi trạng thái
-                                                                                    </small>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    @endif
-                                                                </div>
-                                                                <div class="mb-3">
-                                                                    <label for="edit_description{{ $event->id }}"
-                                                                        class="form-label">Mô Tả Chi Tiết</label>
-                                                                    <textarea class="form-control" id="edit_description{{ $event->id }}" name="description" rows="3">{{ $event->description }}</textarea>
-                                                                </div>
-                                                                @if ($event->status === 'pending')
-                                                                    <div class="mb-3">
-                                                                        <div class="form-group">
-                                                                            <label
-                                                                                for="edit_requires_approval{{ $event->id }}">
-                                                                                <strong>Phê duyệt từ Phòng Công tác Sinh
-                                                                                    viên</strong>
-                                                                            </label>
-                                                                            <select class="form-select"
-                                                                                id="edit_requires_approval{{ $event->id }}"
-                                                                                name="requires_approval">
-                                                                                <option value="yes"
-                                                                                    {{ $event->requires_approval === 'yes' ? 'selected' : '' }}>
-                                                                                    Cần phê duyệt</option>
-                                                                                <option value="no"
-                                                                                    {{ $event->requires_approval === 'no' ? 'selected' : '' }}>
-                                                                                    Tự phê duyệt</option>
-                                                                            </select>
-                                                                            <small class="text-muted">
-                                                                                Nếu chọn "Tự phê duyệt", sự kiện sẽ được tự
-                                                                                động
-                                                                                phê duyệt và câu lạc bộ sẽ tự chịu trách
-                                                                                nhiệm.
-                                                                            </small>
-                                                                        </div>
-                                                                    </div>
-                                                                @elseif ($event->status === 'active' && $event->requires_approval === 'no')
-                                                                    <div class="mb-3">
-                                                                        <div class="form-group">
-                                                                            <label
-                                                                                for="edit_requires_approval{{ $event->id }}">
-                                                                                <strong>Phê duyệt từ Phòng Công tác Sinh
-                                                                                    viên</strong>
-                                                                            </label>
-                                                                            <select class="form-select"
-                                                                                id="edit_requires_approval{{ $event->id }}"
-                                                                                name="requires_approval">
-                                                                                <option value="yes"
-                                                                                    {{ $event->requires_approval === 'yes' ? 'selected' : '' }}>
-                                                                                    Cần phê duyệt</option>
-                                                                                <option value="no"
-                                                                                    {{ $event->requires_approval === 'no' ? 'selected' : '' }}>
-                                                                                    Tự phê duyệt</option>
-                                                                            </select>
-                                                                            <small class="text-muted">
-                                                                                Nếu chọn "Cần phê duyệt", sự kiện sẽ chuyển
-                                                                                về trạng thái chờ duyệt.
-                                                                            </small>
-                                                                        </div>
-                                                                    </div>
-                                                                @endif
-                                                                <div class="mb-3">
-                                                                    <label for="edit_image{{ $event->id }}"
-                                                                        class="form-label">Hình
-                                                                        Ảnh</label>
-                                                                    <input type="file" class="form-control"
-                                                                        id="edit_image{{ $event->id }}" name="image"
-                                                                        accept="image/*">
-                                                                    @if ($event->image)
-                                                                        <div class="mt-2">
-                                                                            <small class="text-muted">Hình ảnh hiện
-                                                                                tại:</small>
-                                                                            <br>
-                                                                            <img src="{{ asset('storage/' . $event->image) }}"
-                                                                                alt="Current image" class="img-thumbnail"
-                                                                                style="max-width: 150px;">
-                                                                        </div>
-                                                                    @endif
-                                                                </div>
-
-                                                            </div>
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary"
-                                                                    data-bs-dismiss="modal">Hủy</button>
-                                                                <button type="submit" class="btn btn-primary">
-                                                                    <i class="ti ti-device-floppy"></i>
-                                                                    Cập Nhật
-                                                                </button>
-                                                            </div>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endif
-
-                                        <!-- Delete Event Modal -->
-                                        @if (auth()->user()->hasPermissionForModuleCode('event_management', 'delete', 'branch') && $event->canBeDeleted())
-                                            <div class="modal fade" id="deleteEventModal{{ $event->id }}"
-                                                tabindex="-1" aria-labelledby="deleteEventModalLabel{{ $event->id }}"
-                                                aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-                                                <div class="modal-dialog modal-dialog-centered">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title text-danger"
-                                                                id="deleteEventModalLabel{{ $event->id }}">
-                                                                Xác Nhận Xóa
-                                                            </h5>
-                                                            <button type="button" class="btn-close"
-                                                                data-bs-dismiss="modal" aria-label="Close"></button>
-                                                        </div>
-                                                        <div class="modal-body text-center">
-                                                            <p class="mb-2">Bạn có chắc chắn muốn xóa sự kiện
-                                                                <strong class="text-danger">
-                                                                    {{ $event->name }}
-                                                                </strong> này?
-                                                            </p>
-                                                            <p class="text-danger">
-                                                                <i class="ri-alert-line"></i>
-                                                                Thao tác này không thể hoàn tác và sẽ xóa tất cả thông tin
-                                                                liên quan.
-                                                            </p>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary"
-                                                                data-bs-dismiss="modal">Hủy</button>
-                                                            <form
-                                                                action="{{ route('backend.club.events.destroy', $event->id) }}"
-                                                                method="POST" style="display: inline;">
-                                                                @csrf
-                                                                @method('DELETE')
-                                                                <button type="submit" class="btn btn-danger">Xóa</button>
-                                                            </form>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endif
-
-                                        <!-- QR Code Modal -->
-                                        <div class="modal fade" id="qrCodeModal{{ $event->id }}" tabindex="-1"
-                                            aria-labelledby="qrCodeModalLabel{{ $event->id }}" aria-hidden="true"
-                                            data-bs-backdrop="static" data-bs-keyboard="false">
-                                            <div class="modal-dialog modal-dialog-centered">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title" id="qrCodeModalLabel{{ $event->id }}">
-                                                            QR Code Check-in -
-                                                            {{ $event->name }}
-                                                        </h5>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                            aria-label="Close"></button>
-                                                    </div>
-                                                    <div class="modal-body text-center">
-                                                        @if ($event->shouldShowQRCode())
-                                                            <!-- Show QR Code when event is active and within time range -->
-                                                            <div class="alert alert-success mb-4">
-                                                                <i class="bi bi-check-circle me-2"></i>
-                                                                <strong>Sự kiện đang diễn ra!</strong>
-                                                                Quét mã QR bên dưới để check-in.
-                                                            </div>
-
-                                                            <div class="qr-code-container">
-                                                                <img src="{{ route('backend.club.events.qrcode', $event->id) }}"
-                                                                    alt="QR Code cho {{ $event->name }}"
-                                                                    class="img-fluid border rounded shadow-sm"
-                                                                    style="max-width: 300px; width: 100%;">
-                                                            </div>
-                                                        @else
-                                                            <!-- Show message when event is not available for QR code -->
-                                                            @if ($event->status !== 'active')
-                                                                <div class="alert alert-warning">
-                                                                    <i class="bi bi-exclamation-triangle me-2"></i>
-                                                                    <strong>Sự kiện chưa được duyệt!</strong><br>
-                                                                    QR Code chỉ hiển thị khi sự kiện đã được duyệt và trong
-                                                                    thời gian diễn ra.
-                                                                </div>
-                                                            @elseif($event->event_date && $event->slot)
-                                                                @php
-                                                                    $now = \Carbon\Carbon::now();
-                                                                    $eventDate = \Carbon\Carbon::parse(
-                                                                        $event->event_date,
-                                                                    );
-                                                                    $eventStartTime = \Carbon\Carbon::parse(
-                                                                        $eventDate->format('Y-m-d') .
-                                                                            ' ' .
-                                                                            $event->slot->start_time,
-                                                                    );
-                                                                    $eventEndTime = \Carbon\Carbon::parse(
-                                                                        $eventDate->format('Y-m-d') .
-                                                                            ' ' .
-                                                                            $event->slot->end_time,
-                                                                    );
-                                                                @endphp
-
-                                                                @if ($now->isBefore($eventStartTime))
-                                                                    <div class="alert alert-info">
-                                                                        <i class="bi bi-clock me-2"></i>
-                                                                        <strong>Sự kiện chưa bắt đầu!</strong><br>
-                                                                        QR Code sẽ khả dụng từ
-                                                                        <strong>{{ $event->slot->start_time }}</strong>
-                                                                        ngày
-                                                                        <strong>{{ $event->formatted_event_date }}</strong>.
-                                                                    </div>
-                                                                @elseif($now->isAfter($eventEndTime))
-                                                                    <div class="alert alert-secondary">
-                                                                        <i class="bi bi-clock-history me-2"></i>
-                                                                        <strong>Sự kiện đã kết thúc!</strong><br>
-                                                                        Thời gian check-in đã hết lúc
-                                                                        <strong>{{ $event->slot->end_time }}</strong>
-                                                                        ngày
-                                                                        <strong>{{ $event->formatted_event_date }}</strong>.
-                                                                    </div>
-                                                                @endif
-                                                            @endif
-                                                        @endif
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary"
-                                                            data-bs-dismiss="modal">Đóng</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
                                     @endforeach
                                 </tbody>
                             </table>
@@ -547,6 +165,339 @@
         <!--End::row-1 -->
 
     </div>
+
+    @foreach ($events as $event)
+        <!-- Edit Event Modal -->
+        @if (auth()->user()->hasPermissionForModuleCode('event_management', 'edit', 'branch') && $event->canBeEdited())
+            @php
+                $availableStatuses = $event->getAvailableStatusOptions(auth()->user(), true);
+            @endphp
+            <div class="modal fade" id="editEventModal{{ $event->id }}" tabindex="-1"
+                aria-labelledby="editEventModalLabel{{ $event->id }}" aria-hidden="true" data-bs-backdrop="static"
+                data-bs-keyboard="false">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="editEventModalLabel{{ $event->id }}">
+                                Chỉnh Sửa Sự Kiện
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form action="{{ route('backend.club.events.update', $event->id) }}" method="POST"
+                            enctype="multipart/form-data">
+                            @csrf
+                            @method('PUT')
+                            <div class="modal-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="edit_name{{ $event->id }}" class="form-label">
+                                                Tên Sự Kiện <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="text" class="form-control" id="edit_name{{ $event->id }}"
+                                                name="name" value="{{ $event->name }}" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="edit_semester_id{{ $event->id }}" class="form-label">
+                                                Học Kỳ <span class="text-danger">*</span>
+                                            </label>
+                                            <select class="form-select" id="edit_semester_id{{ $event->id }}"
+                                                name="semester_id" required>
+                                                @foreach ($semesters as $semester)
+                                                    <option value="{{ $semester->id }}"
+                                                        {{ $event->semester_id === $semester->id ? 'selected' : '' }}>
+                                                        {{ $semester->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="edit_event_date{{ $event->id }}" class="form-label">
+                                                Ngày Diễn Ra <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="date" class="form-control"
+                                                id="edit_event_date{{ $event->id }}" name="event_date"
+                                                value="{{ $event->event_date ? $event->event_date->format('Y-m-d') : '' }}"
+                                                required onkeydown="return false" oninput="this.value = this.value"
+                                                onpaste="return false" ondrop="return false" autocomplete="off">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="edit_slot_id{{ $event->id }}" class="form-label">
+                                                Thời Gian Diễn Ra <span class="text-danger">*</span>
+                                            </label>
+                                            <select class="form-select" id="edit_slot_id{{ $event->id }}"
+                                                name="slot_id" required>
+                                                @foreach ($slots as $slot)
+                                                    <option value="{{ $slot->id }}"
+                                                        {{ $event->slot_id === $slot->id ? 'selected' : '' }}>
+                                                        {{ $slot->name }}
+                                                        ({{ $slot->start_time }} -
+                                                        {{ $slot->end_time }})
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="edit_class_room_id{{ $event->id }}" class="form-label">
+                                                Địa Điểm <span class="text-danger">*</span>
+                                            </label>
+                                            <select class="form-select" id="edit_class_room_id{{ $event->id }}"
+                                                name="class_room_id" required>
+                                                @foreach ($classRooms as $classRoom)
+                                                    <option value="{{ $classRoom->id }}"
+                                                        {{ $event->class_room_id === $classRoom->id ? 'selected' : '' }}>
+                                                        {{ $classRoom->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+                                    @if (!empty($availableStatuses))
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="edit_status{{ $event->id }}" class="form-label">
+                                                    Trạng Thái <span class="text-danger">*</span>
+                                                </label>
+                                                <select class="form-select" id="edit_status{{ $event->id }}"
+                                                    name="status" required>
+                                                    @foreach ($availableStatuses as $statusValue => $statusLabel)
+                                                        <option value="{{ $statusValue }}"
+                                                            {{ $event->status === $statusValue ? 'selected' : '' }}>
+                                                            {{ $statusLabel }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        </div>
+                                    @else
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">
+                                                    Trạng Thái
+                                                </label>
+                                                <div class="form-control-plaintext">
+                                                    <span class="badge bg-{{ $event->status_color }}">
+                                                        {{ $event->status_label }}
+                                                    </span>
+                                                    <small class="text-muted d-block mt-1">
+                                                        Không thể thay đổi trạng thái
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
+                                </div>
+                                <div class="mb-3">
+                                    <label for="edit_description{{ $event->id }}" class="form-label">Mô Tả Chi
+                                        Tiết</label>
+                                    <textarea class="form-control" id="edit_description{{ $event->id }}" name="description" rows="3">{{ $event->description }}</textarea>
+                                </div>
+                                @if ($event->status === 'pending')
+                                    <div class="mb-3">
+                                        <div class="form-group">
+                                            <label for="edit_requires_approval{{ $event->id }}">
+                                                <strong>Phê duyệt từ Phòng Công tác Sinh
+                                                    viên</strong>
+                                            </label>
+                                            <select class="form-select" id="edit_requires_approval{{ $event->id }}"
+                                                name="requires_approval">
+                                                <option value="yes"
+                                                    {{ $event->requires_approval === 'yes' ? 'selected' : '' }}>
+                                                    Cần phê duyệt</option>
+                                                <option value="no"
+                                                    {{ $event->requires_approval === 'no' ? 'selected' : '' }}>
+                                                    Tự phê duyệt</option>
+                                            </select>
+                                            <small class="text-muted">
+                                                Nếu chọn "Tự phê duyệt", sự kiện sẽ được tự
+                                                động
+                                                phê duyệt và câu lạc bộ sẽ tự chịu trách
+                                                nhiệm.
+                                            </small>
+                                        </div>
+                                    </div>
+                                @elseif ($event->status === 'active' && $event->requires_approval === 'no')
+                                    <div class="mb-3">
+                                        <div class="form-group">
+                                            <label for="edit_requires_approval{{ $event->id }}">
+                                                <strong>Phê duyệt từ Phòng Công tác Sinh
+                                                    viên</strong>
+                                            </label>
+                                            <select class="form-select" id="edit_requires_approval{{ $event->id }}"
+                                                name="requires_approval">
+                                                <option value="yes"
+                                                    {{ $event->requires_approval === 'yes' ? 'selected' : '' }}>
+                                                    Cần phê duyệt</option>
+                                                <option value="no"
+                                                    {{ $event->requires_approval === 'no' ? 'selected' : '' }}>
+                                                    Tự phê duyệt</option>
+                                            </select>
+                                            <small class="text-muted">
+                                                Nếu chọn "Cần phê duyệt", sự kiện sẽ chuyển
+                                                về trạng thái chờ duyệt.
+                                            </small>
+                                        </div>
+                                    </div>
+                                @endif
+                                <div class="mb-3">
+                                    <label for="edit_image{{ $event->id }}" class="form-label">Hình
+                                        Ảnh</label>
+                                    <input type="file" class="form-control" id="edit_image{{ $event->id }}"
+                                        name="image" accept="image/*">
+                                    @if ($event->image)
+                                        <div class="mt-2">
+                                            <small class="text-muted">Hình ảnh hiện
+                                                tại:</small>
+                                            <br>
+                                            <img src="{{ asset('storage/' . $event->image) }}" alt="Current image"
+                                                class="img-thumbnail" style="max-width: 150px;">
+                                        </div>
+                                    @endif
+                                </div>
+
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="ti ti-device-floppy"></i>
+                                    Cập Nhật
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        <!-- Delete Event Modal -->
+        @if (auth()->user()->hasPermissionForModuleCode('event_management', 'delete', 'branch') && $event->canBeDeleted())
+            <div class="modal fade" id="deleteEventModal{{ $event->id }}" tabindex="-1"
+                aria-labelledby="deleteEventModalLabel{{ $event->id }}" aria-hidden="true" data-bs-backdrop="static"
+                data-bs-keyboard="false">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title text-danger" id="deleteEventModalLabel{{ $event->id }}">
+                                Xác Nhận Xóa
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body text-center">
+                            <p class="mb-2">Bạn có chắc chắn muốn xóa sự kiện
+                                <strong class="text-danger">
+                                    {{ $event->name }}
+                                </strong> này?
+                            </p>
+                            <p class="text-danger">
+                                <i class="ri-alert-line"></i>
+                                Thao tác này không thể hoàn tác và sẽ xóa tất cả thông tin
+                                liên quan.
+                            </p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                            <form action="{{ route('backend.club.events.destroy', $event->id) }}" method="POST"
+                                style="display: inline;">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-danger">Xóa</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        <!-- QR Code Modal -->
+        <div class="modal fade" id="qrCodeModal{{ $event->id }}" tabindex="-1"
+            aria-labelledby="qrCodeModalLabel{{ $event->id }}" aria-hidden="true" data-bs-backdrop="static"
+            data-bs-keyboard="false">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="qrCodeModalLabel{{ $event->id }}">
+                            QR Code Check-in -
+                            {{ $event->name }}
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        @if ($event->shouldShowQRCode())
+                            <!-- Show QR Code when event is active and within time range -->
+                            <div class="alert alert-success mb-4">
+                                <i class="bi bi-check-circle me-2"></i>
+                                <strong>Sự kiện đang diễn ra!</strong>
+                                Quét mã QR bên dưới để check-in.
+                            </div>
+
+                            <div class="qr-code-container">
+                                <img src="{{ route('backend.club.events.qrcode', $event->id) }}"
+                                    alt="QR Code cho {{ $event->name }}" class="img-fluid border rounded shadow-sm"
+                                    style="max-width: 300px; width: 100%;">
+                            </div>
+                        @else
+                            <!-- Show message when event is not available for QR code -->
+                            @if ($event->status !== 'active')
+                                <div class="alert alert-warning">
+                                    <i class="bi bi-exclamation-triangle me-2"></i>
+                                    <strong>Sự kiện chưa được duyệt!</strong><br>
+                                    QR Code chỉ hiển thị khi sự kiện đã được duyệt và trong
+                                    thời gian diễn ra.
+                                </div>
+                            @elseif($event->event_date && $event->slot)
+                                @php
+                                    $now = \Carbon\Carbon::now();
+                                    $eventDate = \Carbon\Carbon::parse($event->event_date);
+                                    $eventStartTime = \Carbon\Carbon::parse(
+                                        $eventDate->format('Y-m-d') . ' ' . $event->slot->start_time,
+                                    );
+                                    $eventEndTime = \Carbon\Carbon::parse(
+                                        $eventDate->format('Y-m-d') . ' ' . $event->slot->end_time,
+                                    );
+                                @endphp
+
+                                @if ($now->isBefore($eventStartTime))
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-clock me-2"></i>
+                                        <strong>Sự kiện chưa bắt đầu!</strong><br>
+                                        QR Code sẽ khả dụng từ
+                                        <strong>{{ $event->slot->start_time }}</strong>
+                                        ngày
+                                        <strong>{{ $event->formatted_event_date }}</strong>.
+                                    </div>
+                                @elseif($now->isAfter($eventEndTime))
+                                    <div class="alert alert-secondary">
+                                        <i class="bi bi-clock-history me-2"></i>
+                                        <strong>Sự kiện đã kết thúc!</strong><br>
+                                        Thời gian check-in đã hết lúc
+                                        <strong>{{ $event->slot->end_time }}</strong>
+                                        ngày
+                                        <strong>{{ $event->formatted_event_date }}</strong>.
+                                    </div>
+                                @endif
+                            @endif
+                        @endif
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endforeach
 
     <!-- Add Event Modal -->
     @if (auth()->user()->hasPermissionForModuleCode('event_management', 'create', 'branch'))

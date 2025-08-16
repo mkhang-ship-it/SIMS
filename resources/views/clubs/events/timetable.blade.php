@@ -1,8 +1,3 @@
-{{-- Club events timetable view - Shows events for specific club in calendar format
-Features: View club events in timetable format, filter by week, check-in button for active events
-Updated: Added check-in button for active events that links to scanner page with event hash
-Updated: Show check-in button only for users who haven't joined the event yet, display "Đã tham gia" badge for users who already checked in --}}
-
 @extends('layouts.app')
 
 @section('content')

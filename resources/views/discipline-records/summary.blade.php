@@ -178,124 +178,107 @@ Central Discipline Records Summary - Tổng hợp điểm thành viên toàn h�
                         </div>
                     </div>
                     <div class="card-body">
-                        @if (count($membersSummary) > 0)
-                            <div class="table-responsive mb-4">
-                                <table class="table text-nowrap table-bordered">
-                                    <thead>
+                        <div class="table-responsive mb-4">
+                            <table class="table text-nowrap table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th style="text-align: center !important;">STT</th>
+                                        <th>Thành Viên</th>
+                                        @if (!$selectedClub)
+                                            <th>Câu Lạc Bộ</th>
+                                        @endif
+                                        <th>Vai Trò</th>
+                                        <th style="text-align: center !important;">Điểm Club</th>
+                                        <th style="text-align: center !important;">Điểm Trường</th>
+                                        <th style="text-align: center !important;">Thứ Hạng</th>
+                                        <th>Điểm Gần Đây</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($membersSummary as $index => $memberData)
+                                        @php
+                                            $member = $memberData['member'];
+                                            $totalPoints = $memberData['total_points'];
+                                            $recentRecords = $memberData['recent_records'];
+
+                                            // Calculate actual rank
+                                            $actualRank = 1;
+                                            foreach ($membersSummary as $compareData) {
+                                                if ($compareData['total_points'] > $totalPoints) {
+                                                    $actualRank++;
+                                                }
+                                            }
+
+                                            // Determine rank color
+                                            $rankDisplayColor = 'primary';
+                                            if ($actualRank <= 3) {
+                                                $rankDisplayColor = 'warning'; // Top 3 - gold-like
+                                            } elseif ($actualRank <= 10) {
+                                                $rankDisplayColor = 'info'; // Top 10 - silver-like
+                                            }
+                                        @endphp
                                         <tr>
-                                            <th style="text-align: center !important;">STT</th>
-                                            <th>Thành Viên</th>
-                                            @if (!$selectedClub)
-                                                <th>Câu Lạc Bộ</th>
-                                            @endif
-                                            <th>Vai Trò</th>
-                                            <th style="text-align: center !important;">Điểm Club</th>
-                                            <th style="text-align: center !important;">Điểm Trường</th>
-                                            <th style="text-align: center !important;">Thứ Hạng</th>
-                                            <th>Điểm Gần Đây</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($membersSummary as $index => $memberData)
-                                            @php
-                                                $member = $memberData['member'];
-                                                $totalPoints = $memberData['total_points'];
-                                                $recentRecords = $memberData['recent_records'];
-
-                                                // Calculate actual rank
-                                                $actualRank = 1;
-                                                foreach ($membersSummary as $compareData) {
-                                                    if ($compareData['total_points'] > $totalPoints) {
-                                                        $actualRank++;
-                                                    }
-                                                }
-
-                                                // Determine rank color
-                                                $rankDisplayColor = 'primary';
-                                                if ($actualRank <= 3) {
-                                                    $rankDisplayColor = 'warning'; // Top 3 - gold-like
-                                                } elseif ($actualRank <= 10) {
-                                                    $rankDisplayColor = 'info'; // Top 10 - silver-like
-                                                }
-                                            @endphp
-                                            <tr>
-                                                <td class="text-center">{{ $index + 1 }}</td>
-                                                <td>
-                                                    <div class="d-flex align-items-center">
-                                                        <div>
-                                                            <strong>{{ $member->user->name }}</strong><br>
-                                                            <small class="text-muted">{{ $member->user->email }}</small>
-                                                        </div>
+                                            <td class="text-center">{{ $index + 1 }}</td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div>
+                                                        <strong>{{ $member->user->name }}</strong><br>
+                                                        <small class="text-muted">{{ $member->user->email }}</small>
                                                     </div>
-                                                </td>
-                                                @if (!$selectedClub)
-                                                    <td>
-                                                        <span class="badge bg-info">{{ $member->club->name }}</span>
-                                                    </td>
-                                                @endif
+                                                </div>
+                                            </td>
+                                            @if (!$selectedClub)
                                                 <td>
-                                                    <span
-                                                        class="badge bg-secondary">{{ $member->role->name ?? '-' }}</span>
+                                                    <span class="badge bg-info">{{ $member->club->name }}</span>
                                                 </td>
-                                                <td class="text-center">
-                                                    <span
-                                                        class="badge bg-{{ $totalPoints < 0 ? 'danger' : ($totalPoints > 0 ? 'success' : 'secondary') }} fs-6">
-                                                        {{ $totalPoints > 0 ? '+' . $totalPoints : $totalPoints }}
-                                                    </span>
-                                                </td>
-                                                <td class="text-center">
-                                                    <span class="badge bg-info fs-6">
-                                                        {{ number_format($memberData['school_points'], 1) }}
-                                                    </span>
-                                                </td>
-                                                <td class="text-center">
-                                                    <span class="badge bg-{{ $rankDisplayColor }} fs-6">
-                                                        #{{ $actualRank }}
-                                                        @if ($actualRank == 1)
-                                                            <i class="ti ti-trophy"></i>
-                                                        @elseif($actualRank <= 3)
-                                                            <i class="ti ti-medal"></i>
-                                                        @endif
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    @if ($recentRecords->count() > 0)
-                                                        @foreach ($recentRecords->take(2) as $record)
-                                                            <div class="mb-1">
-                                                                <small
-                                                                    class="text-muted">{{ $record->applied_date->format('d/m') }}:</small>
-                                                                <span
-                                                                    class="badge {{ $record->discipline->discipline_points > 0 ? 'bg-success-transparent' : 'bg-danger-transparent' }}">{{ $record->discipline->name }}</span>
-                                                            </div>
-                                                        @endforeach
-                                                        @if ($recentRecords->count() > 2)
-                                                            <small class="text-muted">và {{ $recentRecords->count() - 2 }}
-                                                                điểm khác...</small>
-                                                        @endif
-                                                    @else
-                                                        <span class="text-muted">-</span>
+                                            @endif
+                                            <td>
+                                                <span class="badge bg-secondary">{{ $member->role->name ?? '-' }}</span>
+                                            </td>
+                                            <td class="text-center">
+                                                <span
+                                                    class="badge bg-{{ $totalPoints < 0 ? 'danger' : ($totalPoints > 0 ? 'success' : 'secondary') }} fs-6">
+                                                    {{ $totalPoints > 0 ? '+' . $totalPoints : $totalPoints }}
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge bg-info fs-6">
+                                                    {{ number_format($memberData['school_points'], 1) }}
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge bg-{{ $rankDisplayColor }} fs-6">
+                                                    #{{ $actualRank }}
+                                                    @if ($actualRank == 1)
+                                                        <i class="ti ti-trophy"></i>
+                                                    @elseif($actualRank <= 3)
+                                                        <i class="ti ti-medal"></i>
                                                     @endif
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                        @else
-                            <div class="text-center py-5">
-                                <img src="{{ asset('assets/images/media/media-67.svg') }}" alt="No data" class="mb-3"
-                                    style="max-height: 120px;">
-                                <h5 class="text-muted">Không tìm thấy dữ liệu</h5>
-                                <p class="text-muted">
-                                    @if ($selectedClub)
-                                        Câu lạc bộ {{ $selectedClub->name }} chưa có thành viên nào có điểm trong học kỳ
-                                        {{ $selectedSemester->name }}
-                                    @else
-                                        Chưa có dữ liệu điểm thành viên trong học kỳ {{ $selectedSemester->name }}
-                                    @endif
-                                </p>
-                            </div>
-                        @endif
+                                                </span>
+                                            </td>
+                                            <td>
+                                                @if ($recentRecords->count() > 0)
+                                                    @foreach ($recentRecords->take(2) as $record)
+                                                        <div class="mb-1">
+                                                            <small
+                                                                class="text-muted">{{ $record->applied_date->format('d/m') }}:</small>
+                                                            <span
+                                                                class="badge {{ $record->discipline->discipline_points > 0 ? 'bg-success-transparent' : 'bg-danger-transparent' }}">{{ $record->discipline->name }}</span>
+                                                        </div>
+                                                    @endforeach
+                                                    @if ($recentRecords->count() > 2)
+                                                        <small class="text-muted">và {{ $recentRecords->count() - 2 }}
+                                                            điểm khác...</small>
+                                                    @endif
+                                                @else
+                                                    <span class="text-muted">-</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>

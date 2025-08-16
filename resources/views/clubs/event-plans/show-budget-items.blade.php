@@ -1,7 +1,3 @@
-{{-- Budget Items Tab
-Contains: Dự toán chi phí (Budget Items) với chức năng CRUD, trình bày dạng bảng
-Updated: Đổi sang trình bày dạng bảng giống mục tiêu, đơn giản hóa theo format objectives, thêm cột tổng tiền và tổng tất cả --}}
-
 <div class="mb-0">
     <div class="d-flex align-items-center justify-content-between mb-4">
         <h6 class="fw-bold text-purple mb-0">

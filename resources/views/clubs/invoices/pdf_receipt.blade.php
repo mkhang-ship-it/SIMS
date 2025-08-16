@@ -1,18 +1,5 @@
 <?php
-// Updated: Replaced hardcoded invoice data with dynamic data from $invoice and $club variables
-// Maintained original layout structure while inserting real invoice information
-// Added proper date formatting, invoice details, club and member information
-// Updated totals calculation to use actual invoice amounts
-// Fixed: Added Vietnamese font support and proper encoding for PDF generation
-// Updated: Changed font from Arial Unicode MS to DejaVuSans for better Vietnamese support
-// Updated: Added UTF-8 encoding meta tag and improved font configuration
-// Updated: Centered and enlarged the invoice title and invoice number for better visual hierarchy
-// Updated: Fixed font rendering issue for invoice number by using inline styles and DejaVuSans font
-// Updated: Added payment terms and conditions section on page 2 with proper page break
-// Added comprehensive terms covering payment scope, methods, deadlines, and contact information
-// Updated: Added CSS styles for list formatting and proper spacing in terms section
-// Updated: Improved terms layout with two-column grid design for better readability and even distribution
-// Added professional styling with left borders, justified text, and organized contact information cards
+
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -927,7 +914,7 @@
                 </div>
             @endif
 
-            <!-- Page break for terms and conditions -->
+            {{-- <!-- Page break for terms and conditions -->
             <div style="page-break-before: always;"></div>
 
             <!-- Payment Terms and Conditions -->
@@ -1070,7 +1057,7 @@
                         Chủ Nhiệm.
                     </p>
                 </div>
-            </div>
+            </div> --}}
 
             <footer class="fixed bottom-0 left-0 bg-slate-100 w-full text-neutral-600 text-center text-xs py-3">
                 {{ $club->name ?? '-' }}

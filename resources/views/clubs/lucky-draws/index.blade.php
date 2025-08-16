@@ -10,10 +10,12 @@
 
             <!-- Nút trên desktop -->
             <div class="d-none d-md-block">
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addLuckyDrawModal">
-                    <i class="ti ti-plus"></i>
-                    Tạo Lucky Draw mới
-                </button>
+                @if (auth()->user()->hasPermissionForModuleCode('lucky_draw_management', 'create', 'branch'))
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addLuckyDrawModal">
+                        <i class="ti ti-plus"></i>
+                        Tạo Lucky Draw mới
+                    </button>
+                @endif
             </div>
             <!-- Dropdown trên mobile -->
             <div class="dropdown d-md-none">
@@ -22,11 +24,14 @@
                     Hành động
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
-                    <li>
-                        <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#addLuckyDrawModal">
-                            <i class="ti ti-plus"></i> Tạo Lucky Draw mới
-                        </a>
-                    </li>
+                    @if (auth()->user()->hasPermissionForModuleCode('lucky_draw_management', 'create', 'branch'))
+                        <li>
+                            <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                data-bs-target="#addLuckyDrawModal">
+                                <i class="ti ti-plus"></i> Tạo Lucky Draw mới
+                            </a>
+                        </li>
+                    @endif
                 </ul>
             </div>
         </div>
@@ -121,270 +126,39 @@
                                     --}}
                                                 <td class="text-center">
                                                     <div class="gap-2 fs-15">
-                                                        <a href="{{ route('backend.club.lucky-draws.show', $luckyDraw->slug) }}"
-                                                            class="btn btn-icon btn-sm btn-info-light" title="Xem chi tiết">
-                                                            <i class="ri-eye-line"></i>
-                                                        </a>
-                                                        <button class="btn btn-icon btn-sm btn-warning-light"
-                                                            data-bs-toggle="modal"
-                                                            data-bs-target="#editLuckyDrawModal{{ $luckyDraw->id }}"
-                                                            title="Chỉnh sửa">
-                                                            <i class="ri-edit-line"></i>
-                                                        </button>
-                                                        <a href="{{ route('backend.club.lucky-draws.prizes.index', $luckyDraw) }}"
-                                                            class="btn btn-icon btn-sm btn-info-light"
-                                                            title="Quản lý giải thưởng">
-                                                            <i class="ri-gift-line"></i>
-                                                        </a>
-                                                        <button class="btn btn-icon btn-sm btn-danger-light"
-                                                            data-bs-toggle="modal"
-                                                            data-bs-target="#deleteLuckyDrawModal{{ $luckyDraw->id }}"
-                                                            title="Xóa">
-                                                            <i class="ri-delete-bin-line"></i>
-                                                        </button>
+                                                        @if (auth()->user()->hasPermissionForModuleCode('lucky_draw_management', 'view', 'branch'))
+                                                            <a href="{{ route('backend.club.lucky-draws.show', $luckyDraw->slug) }}"
+                                                                class="btn btn-icon btn-sm btn-info-light"
+                                                                title="Xem chi tiết">
+                                                                <i class="ri-eye-line"></i>
+                                                            </a>
+                                                        @endif
+                                                        @if (auth()->user()->hasPermissionForModuleCode('lucky_draw_management', 'edit', 'branch'))
+                                                            <button class="btn btn-icon btn-sm btn-warning-light"
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#editLuckyDrawModal{{ $luckyDraw->id }}"
+                                                                title="Chỉnh sửa">
+                                                                <i class="ri-edit-line"></i>
+                                                            </button>
+                                                        @endif
+                                                        @if (auth()->user()->hasPermissionForModuleCode('lucky_draw_management', 'view', 'branch'))
+                                                            <a href="{{ route('backend.club.lucky-draws.prizes.index', $luckyDraw) }}"
+                                                                class="btn btn-icon btn-sm btn-info-light"
+                                                                title="Quản lý giải thưởng">
+                                                                <i class="ri-gift-line"></i>
+                                                            </a>
+                                                        @endif
+                                                        @if (auth()->user()->hasPermissionForModuleCode('lucky_draw_management', 'delete', 'branch'))
+                                                            <button class="btn btn-icon btn-sm btn-danger-light"
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#deleteLuckyDrawModal{{ $luckyDraw->id }}"
+                                                                title="Xóa">
+                                                                <i class="ri-delete-bin-line"></i>
+                                                            </button>
+                                                        @endif
                                                     </div>
                                                 </td>
                                             </tr>
-
-                                            <!-- Edit Lucky Draw Modal -->
-                                            <div class="modal fade" id="editLuckyDrawModal{{ $luckyDraw->id }}"
-                                                tabindex="-1"
-                                                aria-labelledby="editLuckyDrawModalLabel{{ $luckyDraw->id }}"
-                                                aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-                                                <div
-                                                    class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title"
-                                                                id="editLuckyDrawModalLabel{{ $luckyDraw->id }}">
-                                                                Chỉnh sửa Lucky Draw
-                                                            </h5>
-                                                            <button type="button" class="btn-close"
-                                                                data-bs-dismiss="modal" aria-label="Close"></button>
-                                                        </div>
-                                                        <form
-                                                            action="{{ route('backend.club.lucky-draws.update', $luckyDraw) }}"
-                                                            method="POST" id="editLuckyDrawForm{{ $luckyDraw->id }}"
-                                                            enctype="multipart/form-data">
-                                                            @csrf
-                                                            @method('PUT')
-                                                            <div class="modal-body">
-                                                                <div class="row">
-                                                                    <div class="col-md-12">
-                                                                        <div class="mb-3">
-                                                                            <label for="edit_title{{ $luckyDraw->id }}"
-                                                                                class="form-label">Tiêu đề <span
-                                                                                    class="text-danger">*</span></label>
-                                                                            <input type="text" class="form-control"
-                                                                                id="edit_title{{ $luckyDraw->id }}"
-                                                                                name="title"
-                                                                                value="{{ $luckyDraw->title }}" required>
-                                                                        </div>
-
-                                                                        <div class="mb-3">
-                                                                            <label
-                                                                                for="edit_security_code{{ $luckyDraw->id }}"
-                                                                                class="form-label">Mã bảo mật</label>
-                                                                            <div class="input-group">
-                                                                                <input type="text" class="form-control"
-                                                                                    id="edit_security_code{{ $luckyDraw->id }}"
-                                                                                    name="security_code"
-                                                                                    value="{{ $luckyDraw->security_code }}">
-                                                                                <button class="btn btn-outline-secondary"
-                                                                                    type="button"
-                                                                                    onclick="generateSecurityCode('edit_security_code{{ $luckyDraw->id }}')">
-                                                                                    <i class="ti ti-refresh"></i> Tạo tự
-                                                                                    động
-                                                                                </button>
-                                                                            </div>
-                                                                            <small class="form-text text-danger">Mã bảo mật
-                                                                                để truy cập modal setting ở trang quay
-                                                                                thưởng, bỏ trống nếu không cần mã bảo
-                                                                                mật.</small>
-                                                                        </div>
-
-                                                                        <div class="row">
-                                                                            <div class="col-md-6">
-                                                                                <div class="mb-3">
-                                                                                    <label
-                                                                                        for="edit_background_image{{ $luckyDraw->id }}"
-                                                                                        class="form-label">Hình nền</label>
-                                                                                    <input type="file"
-                                                                                        class="form-control"
-                                                                                        id="edit_background_image{{ $luckyDraw->id }}"
-                                                                                        name="background_image"
-                                                                                        accept="image/*">
-                                                                                    <small class="form-text text-muted">Để
-                                                                                        trống
-                                                                                        nếu không muốn thay đổi hình
-                                                                                        nền</small>
-
-                                                                                    @if ($luckyDraw->background_image)
-                                                                                        <div class="mt-2">
-                                                                                            <label class="form-label">Hình
-                                                                                                nền hiện
-                                                                                                tại:</label>
-                                                                                            <img src="{{ asset('storage/' . $luckyDraw->background_image) }}"
-                                                                                                alt="Current background"
-                                                                                                class="img-thumbnail rounded"
-                                                                                                style="max-width: 200px; max-height: 120px; object-fit: cover;">
-                                                                                        </div>
-                                                                                    @endif
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="col-md-6">
-                                                                                <div class="mb-3">
-                                                                                    <label
-                                                                                        for="edit_modal_background_image{{ $luckyDraw->id }}"
-                                                                                        class="form-label">Hình nền modal
-                                                                                        quay
-                                                                                        thưởng</label>
-                                                                                    <input type="file"
-                                                                                        class="form-control"
-                                                                                        id="edit_modal_background_image{{ $luckyDraw->id }}"
-                                                                                        name="modal_background_image"
-                                                                                        accept="image/*">
-                                                                                    <small class="form-text text-muted">Để
-                                                                                        trống
-                                                                                        nếu không muốn thay đổi hình nền
-                                                                                        modal quay thưởng.</small>
-
-                                                                                    @if ($luckyDraw->modal_background_image)
-                                                                                        <div class="mt-2">
-                                                                                            <label class="form-label">Hình
-                                                                                                nền
-                                                                                                modal hiện
-                                                                                                tại:</label>
-                                                                                            <img src="{{ asset('storage/' . $luckyDraw->modal_background_image) }}"
-                                                                                                alt="Current modal background"
-                                                                                                class="img-thumbnail rounded"
-                                                                                                style="max-width: 200px; max-height: 120px; object-fit: cover;">
-                                                                                        </div>
-                                                                                    @endif
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-
-                                                                        <div class="row">
-                                                                            <div class="col-md-6">
-                                                                                <div class="mb-3">
-                                                                                    <label
-                                                                                        for="edit_start_date{{ $luckyDraw->id }}"
-                                                                                        class="form-label">Thời gian bắt
-                                                                                        đầu <span
-                                                                                            class="text-danger">*</span></label>
-                                                                                    <input type="datetime-local"
-                                                                                        class="form-control"
-                                                                                        id="edit_start_date{{ $luckyDraw->id }}"
-                                                                                        name="start_date"
-                                                                                        value="{{ $luckyDraw->start_date->format('Y-m-d\TH:i') }}"
-                                                                                        required>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="col-md-6">
-                                                                                <div class="mb-3">
-                                                                                    <label
-                                                                                        for="edit_end_date{{ $luckyDraw->id }}"
-                                                                                        class="form-label">Thời gian kết
-                                                                                        thúc <span
-                                                                                            class="text-danger">*</span></label>
-                                                                                    <input type="datetime-local"
-                                                                                        class="form-control"
-                                                                                        id="edit_end_date{{ $luckyDraw->id }}"
-                                                                                        name="end_date"
-                                                                                        value="{{ $luckyDraw->end_date->format('Y-m-d\TH:i') }}"
-                                                                                        required>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-
-                                                                <div class="mb-3">
-                                                                    <label for="edit_participants{{ $luckyDraw->id }}"
-                                                                        class="form-label">
-                                                                        <i class="ti ti-users text-success"></i>
-                                                                        Danh sách người tham gia
-                                                                    </label>
-                                                                    <textarea class="form-control" id="edit_participants{{ $luckyDraw->id }}" name="participants" rows="8"
-                                                                        placeholder="Mỗi người tham gia một dòng">{{ $luckyDraw->participants ? implode("\n", $luckyDraw->participants) : '' }}</textarea>
-                                                                    <small class="form-text text-muted">Mỗi người
-                                                                        tham gia trên một dòng</small>
-                                                                </div>
-                                                            </div>
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary"
-                                                                    data-bs-dismiss="modal">Hủy</button>
-                                                                <button type="submit" class="btn btn-warning">
-                                                                    <i class="ti ti-device-floppy"></i> Cập nhật Lucky Draw
-                                                                </button>
-                                                            </div>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <!-- Delete Lucky Draw Modal -->
-                                            <div class="modal fade" id="deleteLuckyDrawModal{{ $luckyDraw->id }}"
-                                                tabindex="-1"
-                                                aria-labelledby="deleteLuckyDrawModalLabel{{ $luckyDraw->id }}"
-                                                aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-                                                <div class="modal-dialog modal-dialog-centered">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title text-danger"
-                                                                id="deleteLuckyDrawModalLabel{{ $luckyDraw->id }}">
-                                                                Xác nhận xóa
-                                                            </h5>
-                                                            <button type="button" class="btn-close"
-                                                                data-bs-dismiss="modal" aria-label="Close"></button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <div class="text-center mb-3">
-                                                                <i class="ti ti-alert-triangle text-danger"
-                                                                    style="font-size: 2.5rem;"></i>
-                                                            </div>
-                                                            <p class="text-center mb-2">Bạn có chắc chắn muốn xóa Lucky
-                                                                Draw <span
-                                                                    class="fw-bold text-danger">{{ $luckyDraw->title }}</span>?
-                                                            </p>
-                                                            <div class="alert alert-warning">
-                                                                <div class="d-flex align-items-start">
-                                                                    <i
-                                                                        class="ti ti-info-circle text-warning me-2 mt-1"></i>
-                                                                    <div>
-                                                                        <strong>Người tạo:</strong>
-                                                                        {{ $luckyDraw->creator->name ?? 'N/A' }}<br>
-                                                                        <strong>Ngày tạo:</strong>
-                                                                        {{ $luckyDraw->created_at->format('d/m/Y H:i') }}<br>
-                                                                        <strong>Người tham gia:</strong>
-                                                                        {{ count($luckyDraw->participants ?? []) }}<br>
-                                                                        <strong>Người trúng thưởng:</strong>
-                                                                        {{ count($luckyDraw->winners ?? []) }}
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <p class="text-muted text-center small mb-0">
-                                                                <i class="ti ti-alert-circle me-1"></i>
-                                                                Hành động này không thể hoàn tác!
-                                                            </p>
-                                                        </div>
-                                                        <form
-                                                            action="{{ route('backend.club.lucky-draws.destroy', $luckyDraw) }}"
-                                                            method="POST">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary"
-                                                                    data-bs-dismiss="modal">Hủy</button>
-                                                                <button type="submit" class="btn btn-danger">
-                                                                    <i class="ti ti-trash"></i> Xóa
-                                                                </button>
-                                                            </div>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
                                         @endforeach
                                     </tbody>
                                 </table>
@@ -394,8 +168,7 @@
                                 <i class="ti ti-dice fa-3x text-muted mb-3"></i>
                                 <h5 class="text-muted">Chưa có Lucky Draw nào</h5>
                                 <p class="text-muted">Tạo Lucky Draw đầu tiên để bắt đầu tổ chức quay số may mắn!</p>
-                                <button class="btn btn-primary" data-bs-toggle="modal"
-                                    data-bs-target="#addLuckyDrawModal">
+                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addLuckyDrawModal">
                                     <i class="ti ti-plus"></i> Tạo Lucky Draw mới
                                 </button>
                             </div>
@@ -407,6 +180,218 @@
         <!--End::row-1 -->
 
     </div>
+
+    @foreach ($luckyDraws as $luckyDraw)
+        @if (auth()->user()->hasPermissionForModuleCode('lucky_draw_management', 'edit', 'branch'))
+            <!-- Edit Lucky Draw Modal -->
+            <div class="modal fade" id="editLuckyDrawModal{{ $luckyDraw->id }}" tabindex="-1"
+                aria-labelledby="editLuckyDrawModalLabel{{ $luckyDraw->id }}" aria-hidden="true"
+                data-bs-backdrop="static" data-bs-keyboard="false">
+                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="editLuckyDrawModalLabel{{ $luckyDraw->id }}">
+                                Chỉnh sửa Lucky Draw
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                        </div>
+                        <form action="{{ route('backend.club.lucky-draws.update', $luckyDraw) }}" method="POST"
+                            id="editLuckyDrawForm{{ $luckyDraw->id }}" enctype="multipart/form-data">
+                            @csrf
+                            @method('PUT')
+                            <div class="modal-body">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="mb-3">
+                                            <label for="edit_title{{ $luckyDraw->id }}" class="form-label">Tiêu đề <span
+                                                    class="text-danger">*</span></label>
+                                            <input type="text" class="form-control"
+                                                id="edit_title{{ $luckyDraw->id }}" name="title"
+                                                value="{{ $luckyDraw->title }}" required>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="edit_security_code{{ $luckyDraw->id }}" class="form-label">Mã bảo
+                                                mật</label>
+                                            <div class="input-group">
+                                                <input type="text" class="form-control"
+                                                    id="edit_security_code{{ $luckyDraw->id }}" name="security_code"
+                                                    value="{{ $luckyDraw->security_code }}">
+                                                <button class="btn btn-outline-secondary" type="button"
+                                                    onclick="generateSecurityCode('edit_security_code{{ $luckyDraw->id }}')">
+                                                    <i class="ti ti-refresh"></i> Tạo tự
+                                                    động
+                                                </button>
+                                            </div>
+                                            <small class="form-text text-danger">Mã bảo mật
+                                                để truy cập modal setting ở trang quay
+                                                thưởng, bỏ trống nếu không cần mã bảo
+                                                mật.</small>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="edit_background_image{{ $luckyDraw->id }}"
+                                                        class="form-label">Hình nền</label>
+                                                    <input type="file" class="form-control"
+                                                        id="edit_background_image{{ $luckyDraw->id }}"
+                                                        name="background_image" accept="image/*">
+                                                    <small class="form-text text-muted">Để
+                                                        trống
+                                                        nếu không muốn thay đổi hình
+                                                        nền</small>
+
+                                                    @if ($luckyDraw->background_image)
+                                                        <div class="mt-2">
+                                                            <label class="form-label">Hình
+                                                                nền hiện
+                                                                tại:</label>
+                                                            <img src="{{ asset('storage/' . $luckyDraw->background_image) }}"
+                                                                alt="Current background" class="img-thumbnail rounded"
+                                                                style="max-width: 200px; max-height: 120px; object-fit: cover;">
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="edit_modal_background_image{{ $luckyDraw->id }}"
+                                                        class="form-label">Hình nền modal
+                                                        quay
+                                                        thưởng</label>
+                                                    <input type="file" class="form-control"
+                                                        id="edit_modal_background_image{{ $luckyDraw->id }}"
+                                                        name="modal_background_image" accept="image/*">
+                                                    <small class="form-text text-muted">Để
+                                                        trống
+                                                        nếu không muốn thay đổi hình nền
+                                                        modal quay thưởng.</small>
+
+                                                    @if ($luckyDraw->modal_background_image)
+                                                        <div class="mt-2">
+                                                            <label class="form-label">Hình
+                                                                nền
+                                                                modal hiện
+                                                                tại:</label>
+                                                            <img src="{{ asset('storage/' . $luckyDraw->modal_background_image) }}"
+                                                                alt="Current modal background"
+                                                                class="img-thumbnail rounded"
+                                                                style="max-width: 200px; max-height: 120px; object-fit: cover;">
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="edit_start_date{{ $luckyDraw->id }}"
+                                                        class="form-label">Thời
+                                                        gian bắt
+                                                        đầu <span class="text-danger">*</span></label>
+                                                    <input type="datetime-local" class="form-control"
+                                                        id="edit_start_date{{ $luckyDraw->id }}" name="start_date"
+                                                        value="{{ $luckyDraw->start_date->format('Y-m-d\TH:i') }}"
+                                                        required>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="edit_end_date{{ $luckyDraw->id }}"
+                                                        class="form-label">Thời
+                                                        gian kết
+                                                        thúc <span class="text-danger">*</span></label>
+                                                    <input type="datetime-local" class="form-control"
+                                                        id="edit_end_date{{ $luckyDraw->id }}" name="end_date"
+                                                        value="{{ $luckyDraw->end_date->format('Y-m-d\TH:i') }}" required>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="edit_participants{{ $luckyDraw->id }}" class="form-label">
+                                        <i class="ti ti-users text-success"></i>
+                                        Danh sách người tham gia
+                                    </label>
+                                    <textarea class="form-control" id="edit_participants{{ $luckyDraw->id }}" name="participants" rows="8"
+                                        placeholder="Mỗi người tham gia một dòng">{{ $luckyDraw->participants ? implode("\n", $luckyDraw->participants) : '' }}</textarea>
+                                    <small class="form-text text-muted">Mỗi người
+                                        tham gia trên một dòng</small>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                <button type="submit" class="btn btn-warning">
+                                    <i class="ti ti-device-floppy"></i> Cập nhật Lucky Draw
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        @if (auth()->user()->hasPermissionForModuleCode('lucky_draw_management', 'delete', 'branch'))
+            <!-- Delete Lucky Draw Modal -->
+            <div class="modal fade" id="deleteLuckyDrawModal{{ $luckyDraw->id }}" tabindex="-1"
+                aria-labelledby="deleteLuckyDrawModalLabel{{ $luckyDraw->id }}" aria-hidden="true"
+                data-bs-backdrop="static" data-bs-keyboard="false">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title text-danger" id="deleteLuckyDrawModalLabel{{ $luckyDraw->id }}">
+                                Xác nhận xóa
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="text-center mb-3">
+                                <i class="ti ti-alert-triangle text-danger" style="font-size: 2.5rem;"></i>
+                            </div>
+                            <p class="text-center mb-2">Bạn có chắc chắn muốn xóa Lucky
+                                Draw <span class="fw-bold text-danger">{{ $luckyDraw->title }}</span>?
+                            </p>
+                            <div class="alert alert-warning">
+                                <div class="d-flex align-items-start">
+                                    <i class="ti ti-info-circle text-warning me-2 mt-1"></i>
+                                    <div>
+                                        <strong>Người tạo:</strong>
+                                        {{ $luckyDraw->creator->name ?? 'N/A' }}<br>
+                                        <strong>Ngày tạo:</strong>
+                                        {{ $luckyDraw->created_at->format('d/m/Y H:i') }}<br>
+                                        <strong>Người tham gia:</strong>
+                                        {{ count($luckyDraw->participants ?? []) }}<br>
+                                        <strong>Người trúng thưởng:</strong>
+                                        {{ count($luckyDraw->winners ?? []) }}
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-muted text-center small mb-0">
+                                <i class="ti ti-alert-circle me-1"></i>
+                                Hành động này không thể hoàn tác!
+                            </p>
+                        </div>
+                        <form action="{{ route('backend.club.lucky-draws.destroy', $luckyDraw) }}" method="POST">
+                            @csrf
+                            @method('DELETE')
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="ti ti-trash"></i> Xóa
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @endif
+    @endforeach
 
     <!-- Add Lucky Draw Modal -->
     <div class="modal fade" id="addLuckyDrawModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"

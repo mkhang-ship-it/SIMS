@@ -1,4 +1,3 @@
-{{-- Created: Trang xem ảnh sự kiện với filter học kỳ và sự kiện, chỉ cho phép xem và tải ảnh, không có upload/xóa. Giao diện dựa trên gallary.blade.php, chỉ giữ phần filter, gallery grid, và nút tải ảnh. --}}
 @extends('layouts.app')
 
 @section('content')

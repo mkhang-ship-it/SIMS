@@ -77,32 +77,23 @@ foreach ($htmlAttributes as $key => $value) {
 
         @if (!empty($externalBgSettings['external_bg_image']))
             <style>
-                /* Desktop and tablet background */
-                @media (min-width: 768px) {
-                    body {
-                        background-image: url('{{ Storage::url($externalBgSettings['external_bg_image']) }}');
-                        background-size: cover;
-                        background-position: center;
-                        background-repeat: no-repeat;
-                        background-attachment: fixed;
-                        position: relative;
-                    }
+                /* Tầng nền cố định, hoạt động trên mọi thiết bị */
+                body.has-background::before {
+                    content: '';
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background-image: url('{{ Storage::url($externalBgSettings['external_bg_image']) }}');
+                    background-size: cover;
+                    background-position: center;
+                    background-repeat: no-repeat;
+                    z-index: -2;
                 }
 
-                /* Mobile background - without fixed attachment */
-                @media (max-width: 767.98px) {
-                    body {
-                        background-image: url('{{ Storage::url($externalBgSettings['external_bg_image']) }}');
-                        background-size: cover;
-                        background-position: center;
-                        background-repeat: no-repeat;
-                        background-attachment: scroll;
-                        position: relative;
-                        min-height: 100vh;
-                    }
-                }
-
-                body::before {
+                /* Lớp phủ (overlay) mờ phía trên ảnh nền */
+                body.has-background::after {
                     content: '';
                     position: fixed;
                     top: 0;
@@ -114,6 +105,7 @@ foreach ($htmlAttributes as $key => $value) {
                     z-index: -1;
                 }
 
+                /* Lớp nội dung chính giữ ở trên cùng */
                 .authentication {
                     position: relative;
                     z-index: 1;
@@ -122,13 +114,14 @@ foreach ($htmlAttributes as $key => $value) {
                     align-items: center;
                 }
 
+                /* Hiệu ứng thẻ card nổi và làm mờ nền */
                 .card {
                     background-color: rgba(255, 255, 255, 0.95);
                     backdrop-filter: blur(10px);
                     border: 1px solid rgba(255, 255, 255, 0.2);
                 }
 
-                /* Additional mobile optimizations */
+                /* Responsive cho thiết bị nhỏ */
                 @media (max-width: 575.98px) {
                     .container {
                         padding-left: 15px;
@@ -138,18 +131,13 @@ foreach ($htmlAttributes as $key => $value) {
                     .card-body {
                         padding: 2rem !important;
                     }
-
-                    body {
-                        background-size: cover;
-                        background-position: center center;
-                    }
                 }
             </style>
         @endif
 
     </head>
 
-    <body>
+    <body class="has-background">
 
         <div class="container">
             <div class="row justify-content-center align-items-center authentication authentication-basic h-100">

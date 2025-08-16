@@ -1,7 +1,3 @@
-{{-- Admin events index view - Shows all events from all clubs system-wide
-Features: View all events, approve pending events only
-Admin can only approve events, no other actions allowed --}}
-
 @extends('layouts.app')
 
 @section('content')
@@ -114,6 +110,5 @@ Admin can only approve events, no other actions allowed --}}
             </div>
         </div>
         <!-- End::row-1 -->
-
     </div>
 @endsection

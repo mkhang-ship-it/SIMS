@@ -1,11 +1,3 @@
-{{-- Invoice Show Page - Following show_example.blade.php pattern --}}
-{{-- Updated: Redesigned with detailed layout, transaction history, and payment interface --}}
-{{-- Fixed: Corrected route name from 'backend.club.invoices.store-transaction' to 'backend.club.invoices.transactions.store' --}}
-{{-- Updated: Fixed payment amount to remaining amount and payment method to Cash (Tiền Mặt) for payment recording form --}}
-{{-- Updated: Limited payment date selection from invoice creation date to due date --}}
-{{-- Updated: Changed all date inputs to datetime-local for due_date and payment_date to support time selection --}}
-{{-- Updated: Thêm nút Xuất PDF (gọi route export PDF) vào giao diện chi tiết hóa đơn --}}
-{{-- Updated: Fixed payment form indentation and validation issues --}}
 @extends('layouts.app')
 
 @section('content')

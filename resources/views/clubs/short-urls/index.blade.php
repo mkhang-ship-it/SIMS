@@ -431,85 +431,84 @@
                     </div>
                 </div>
             </div>
-        @endforeach
 
-        <!-- Edit Modals -->
-        @foreach ($shortUrls as $shortUrl)
-            <div class="modal fade" id="editShortUrlModal{{ $shortUrl->id }}" tabindex="-1" aria-hidden="true"
-                data-bs-backdrop="static" data-bs-keyboard="false">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Chỉnh Sửa URL Shortener</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                aria-label="Close"></button>
-                        </div>
-                        <form action="{{ route('backend.club.short-urls.update', $shortUrl->id) }}" method="POST">
-                            @csrf
-                            @method('PUT')
-                            <div class="modal-body">
-                                <div class="row">
-                                    <div class="col-md-12 mb-3">
-                                        <label for="title_{{ $shortUrl->id }}" class="form-label">Tiêu Đề</label>
-                                        <input type="text" class="form-control" id="title_{{ $shortUrl->id }}"
-                                            name="title" value="{{ $shortUrl->title }}"
-                                            placeholder="Mô tả ngắn cho URL">
-                                    </div>
-                                    <div class="col-md-12 mb-3">
-                                        <label for="original_url_{{ $shortUrl->id }}" class="form-label">URL Gốc <span
-                                                class="text-danger">*</span></label>
-                                        <input type="url" class="form-control" id="original_url_{{ $shortUrl->id }}"
-                                            name="original_url" value="{{ $shortUrl->original_url }}"
-                                            placeholder="https://example.com" required>
-                                    </div>
-                                    <div class="col-md-12 mb-3">
-                                        <label for="expires_at_{{ $shortUrl->id }}" class="form-label">Ngày Hết
-                                            Hạn</label>
-                                        <input type="datetime-local" class="form-control"
-                                            id="expires_at_{{ $shortUrl->id }}" name="expires_at"
-                                            value="{{ $shortUrl->expires_at ? $shortUrl->expires_at->format('Y-m-d\TH:i') : '' }}">
-                                        <div class="form-text">Để trống nếu không muốn đặt thời gian hết hạn.</div>
+            @if (auth()->user()->hasPermissionForModuleCode('short_url_management', 'edit', 'branch'))
+                <div class="modal fade" id="editShortUrlModal{{ $shortUrl->id }}" tabindex="-1" aria-hidden="true"
+                    data-bs-backdrop="static" data-bs-keyboard="false">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Chỉnh Sửa URL Shortener</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <form action="{{ route('backend.club.short-urls.update', $shortUrl->id) }}" method="POST">
+                                @csrf
+                                @method('PUT')
+                                <div class="modal-body">
+                                    <div class="row">
+                                        <div class="col-md-12 mb-3">
+                                            <label for="title_{{ $shortUrl->id }}" class="form-label">Tiêu Đề</label>
+                                            <input type="text" class="form-control" id="title_{{ $shortUrl->id }}"
+                                                name="title" value="{{ $shortUrl->title }}"
+                                                placeholder="Mô tả ngắn cho URL">
+                                        </div>
+                                        <div class="col-md-12 mb-3">
+                                            <label for="original_url_{{ $shortUrl->id }}" class="form-label">URL Gốc
+                                                <span class="text-danger">*</span></label>
+                                            <input type="url" class="form-control"
+                                                id="original_url_{{ $shortUrl->id }}" name="original_url"
+                                                value="{{ $shortUrl->original_url }}" placeholder="https://example.com"
+                                                required>
+                                        </div>
+                                        <div class="col-md-12 mb-3">
+                                            <label for="expires_at_{{ $shortUrl->id }}" class="form-label">Ngày Hết
+                                                Hạn</label>
+                                            <input type="datetime-local" class="form-control"
+                                                id="expires_at_{{ $shortUrl->id }}" name="expires_at"
+                                                value="{{ $shortUrl->expires_at ? $shortUrl->expires_at->format('Y-m-d\TH:i') : '' }}">
+                                            <div class="form-text">Để trống nếu không muốn đặt thời gian hết hạn.</div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                                <button type="submit" class="btn btn-primary">Cập Nhật</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        @endforeach
-
-        <!-- Delete Modals -->
-        @foreach ($shortUrls as $shortUrl)
-            <div class="modal fade" id="deleteShortUrlModal{{ $shortUrl->id }}" tabindex="-1" aria-hidden="true"
-                data-bs-backdrop="static" data-bs-keyboard="false">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Xác Nhận Xóa</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <p>Bạn có chắc chắn muốn xóa URL rút gọn này?</p>
-                            <p><strong>Tiêu đề:</strong> {{ $shortUrl->title ?: 'Không có tiêu đề' }}</p>
-                            <p><strong>URL gốc:</strong> {{ $shortUrl->original_url }}</p>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                            <form action="{{ route('backend.club.short-urls.destroy', $shortUrl->id) }}" method="POST"
-                                class="d-inline">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-danger">Xóa</button>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Đóng</button>
+                                    <button type="submit" class="btn btn-primary">Cập Nhật</button>
+                                </div>
                             </form>
                         </div>
                     </div>
                 </div>
-            </div>
+            @endif
+            @if (auth()->user()->hasPermissionForModuleCode('short_url_management', 'delete', 'branch'))
+                <div class="modal fade" id="deleteShortUrlModal{{ $shortUrl->id }}" tabindex="-1" aria-hidden="true"
+                    data-bs-backdrop="static" data-bs-keyboard="false">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Xác Nhận Xóa</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Bạn có chắc chắn muốn xóa URL rút gọn này?</p>
+                                <p><strong>Tiêu đề:</strong> {{ $shortUrl->title ?: 'Không có tiêu đề' }}</p>
+                                <p><strong>URL gốc:</strong> {{ $shortUrl->original_url }}</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                                <form action="{{ route('backend.club.short-urls.destroy', $shortUrl->id) }}"
+                                    method="POST" class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger">Xóa</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
         @endforeach
     </div>
 

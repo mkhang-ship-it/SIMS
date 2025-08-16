@@ -1,10 +1,3 @@
-{{-- Invoice Index Page - Updated for UserClubRole member selection (multi-club)
-     Changed member selection in create modal to use UserClubRole (member_ids[]), display member name/email via $member->user --}}
-{{-- Updated: Month/year filter now only shows months/years within the selected semester (dynamic JS filtering) --}}
-{{-- Updated: New layout with 3-9 column structure, statistics sidebar, and ApexCharts --}}
-{{-- Features: Modal-based CRUD operations, payment recording, bulk operations --}}
-{{-- Fixed: Mobile bulk delete button functionality, select all checkbox state management, individual checkbox display, and bulk delete button visibility --}}
-{{-- Fixed: Statistics bug for Đã thanh toán and Chờ thanh toán (now uses invoice status, not transaction table, for calculation; pending amount uses statistics['pending_amount']) --}}
 @extends('layouts.app')
 
 @section('content')
@@ -322,193 +315,6 @@
                                                 @endif
                                             </td>
                                         </tr>
-
-                                        <!-- Edit Invoice Modal -->
-                                        @if ($invoice->canBeEdited() && auth()->user()->hasPermissionForModuleCode('invoice_management', 'edit', 'branch'))
-                                            <div class="modal fade" id="editInvoiceModal{{ $invoice->id }}"
-                                                tabindex="-1" aria-labelledby="editInvoiceModalLabel{{ $invoice->id }}"
-                                                aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-                                                <div class="modal-dialog modal-dialog-centered modal-lg">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title"
-                                                                id="editInvoiceModalLabel{{ $invoice->id }}">
-                                                                Chỉnh Sửa Hóa Đơn - {{ $invoice->invoice_code }}
-                                                            </h5>
-                                                            <button type="button" class="btn-close"
-                                                                data-bs-dismiss="modal" aria-label="Close"></button>
-                                                        </div>
-                                                        <form
-                                                            action="{{ route('backend.club.invoices.update', $invoice) }}"
-                                                            method="POST" id="editInvoiceForm{{ $invoice->id }}">
-                                                            @csrf
-                                                            @method('PUT')
-                                                            <div class="modal-body">
-                                                                <div class="row">
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label class="form-label">Tên Hóa Đơn <span
-                                                                                    class="text-danger">*</span></label>
-                                                                            <input type="text" class="form-control"
-                                                                                name="name"
-                                                                                value="{{ $invoice->name }}" required>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label class="form-label">Số Tiền <span
-                                                                                    class="text-danger">*</span></label>
-                                                                            <input type="number" class="form-control"
-                                                                                name="total_amount"
-                                                                                value="{{ $invoice->total_amount }}"
-                                                                                min="0" step="0.01" required>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label class="form-label">Hạn Thanh Toán <span
-                                                                                    class="text-danger">*</span></label>
-                                                                            <input type="datetime-local"
-                                                                                class="form-control" name="due_date"
-                                                                                value="{{ $invoice->due_date->format('Y-m-d\TH:i') }}"
-                                                                                required>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label class="form-label">Thành Viên</label>
-                                                                            <input type="text" class="form-control"
-                                                                                value="{{ $invoice->user->name ?? 'N/A' }}"
-                                                                                readonly>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-12">
-                                                                        <div class="mb-3">
-                                                                            <label class="form-label">Ghi Chú</label>
-                                                                            <textarea class="form-control" name="note" rows="3" maxlength="1000">{{ $invoice->note }}</textarea>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary"
-                                                                    data-bs-dismiss="modal">Hủy</button>
-                                                                <button type="submit" class="btn btn-primary">Cập
-                                                                    Nhật</button>
-                                                            </div>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endif
-
-                                        <!-- Delete Invoice Modal -->
-                                        @if ($invoice->canBeDeleted() && auth()->user()->hasPermissionForModuleCode('invoice_management', 'delete', 'branch'))
-                                            <div class="modal fade" id="deleteInvoiceModal{{ $invoice->id }}"
-                                                tabindex="-1"
-                                                aria-labelledby="deleteInvoiceModalLabel{{ $invoice->id }}"
-                                                aria-hidden="true">
-                                                <div class="modal-dialog modal-dialog-centered">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title"
-                                                                id="deleteInvoiceModalLabel{{ $invoice->id }}">
-                                                                Xác Nhận Xóa
-                                                            </h5>
-                                                            <button type="button" class="btn-close"
-                                                                data-bs-dismiss="modal" aria-label="Close"></button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <p>Bạn có chắc chắn muốn xóa hóa đơn
-                                                                <strong>{{ $invoice->invoice_code }}</strong>?
-                                                            </p>
-                                                            <div class="alert alert-warning">
-                                                                <i class="ti ti-alert-triangle"></i>
-                                                                Hành động này không thể hoàn tác!
-                                                            </div>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary"
-                                                                data-bs-dismiss="modal">Hủy</button>
-                                                            <form
-                                                                action="{{ route('backend.club.invoices.destroy', $invoice) }}"
-                                                                method="POST" style="display: inline;">
-                                                                @csrf
-                                                                @method('DELETE')
-                                                                <button type="submit" class="btn btn-danger">Xóa</button>
-                                                            </form>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endif
-
-                                        <!-- Add Payment Modal -->
-                                        @if (
-                                            ($invoice->status === 'pending' || $invoice->status === 'overdue') &&
-                                                auth()->user()->hasPermissionForModuleCode('invoice_management', 'mark_as_paid', 'branch'))
-                                            <div class="modal fade" id="addPaymentModal{{ $invoice->id }}"
-                                                tabindex="-1" aria-labelledby="addPaymentModalLabel{{ $invoice->id }}"
-                                                aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-                                                <div class="modal-dialog modal-dialog-centered">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title"
-                                                                id="addPaymentModalLabel{{ $invoice->id }}">Ghi Nhận
-                                                                Thanh Toán</h5>
-                                                            <button type="button" class="btn-close"
-                                                                data-bs-dismiss="modal" aria-label="Close"></button>
-                                                        </div>
-                                                        <form
-                                                            action="{{ route('backend.club.invoices.transactions.mark-as-paid', $invoice) }}"
-                                                            method="POST">
-                                                            @csrf
-                                                            <div class="modal-body">
-                                                                <div class="mb-3">
-                                                                    <label class="form-label">Số Tiền Thanh Toán <span
-                                                                            class="text-danger">*</span></label>
-                                                                    <input type="number" class="form-control"
-                                                                        name="paid_amount"
-                                                                        value="{{ $invoice->remaining_amount }}" readonly
-                                                                        required>
-                                                                </div>
-                                                                <div class="mb-3">
-                                                                    <label class="form-label">Ngày Thanh Toán <span
-                                                                            class="text-danger">*</span></label>
-                                                                    <input type="datetime-local" class="form-control"
-                                                                        name="payment_date"
-                                                                        value="{{ date('Y-m-d\TH:i') }}"
-                                                                        min="{{ $invoice->created_at->format('Y-m-d\TH:i') }}"
-                                                                        max="{{ $invoice->due_date->format('Y-m-d\TH:i') }}"
-                                                                        required>
-                                                                    <small class="text-muted">Từ
-                                                                        {{ $invoice->created_at->format('d/m/Y H:i') }} đến
-                                                                        {{ $invoice->due_date->format('d/m/Y H:i') }}</small>
-                                                                </div>
-                                                                <div class="mb-3">
-                                                                    <label class="form-label">Phương Thức Thanh Toán <span
-                                                                            class="text-danger">*</span></label>
-                                                                    <input type="text" class="form-control"
-                                                                        value="Tiền Mặt" readonly>
-                                                                    <input type="hidden" name="payment_method"
-                                                                        value="Cash" required>
-                                                                </div>
-                                                                <div class="mb-3">
-                                                                    <label class="form-label">Ghi Chú</label>
-                                                                    <textarea class="form-control" name="note" rows="3" maxlength="500"></textarea>
-                                                                </div>
-                                                            </div>
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary"
-                                                                    data-bs-dismiss="modal">Hủy</button>
-                                                                <button type="submit" class="btn btn-success">Ghi
-                                                                    Nhận</button>
-                                                            </div>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endif
                                     @endforeach
                                 </tbody>
                             </table>
@@ -518,6 +324,173 @@
             </div>
         </div>
         <!--End::row-1 -->
+
+        @foreach ($invoices as $invoice)
+            <!-- Edit Invoice Modal -->
+            @if ($invoice->canBeEdited() && auth()->user()->hasPermissionForModuleCode('invoice_management', 'edit', 'branch'))
+                <div class="modal fade" id="editInvoiceModal{{ $invoice->id }}" tabindex="-1"
+                    aria-labelledby="editInvoiceModalLabel{{ $invoice->id }}" aria-hidden="true"
+                    data-bs-backdrop="static" data-bs-keyboard="false">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editInvoiceModalLabel{{ $invoice->id }}">
+                                    Chỉnh Sửa Hóa Đơn - {{ $invoice->invoice_code }}
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <form action="{{ route('backend.club.invoices.update', $invoice) }}" method="POST"
+                                id="editInvoiceForm{{ $invoice->id }}">
+                                @csrf
+                                @method('PUT')
+                                <div class="modal-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Tên Hóa Đơn <span
+                                                        class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" name="name"
+                                                    value="{{ $invoice->name }}" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Số Tiền <span
+                                                        class="text-danger">*</span></label>
+                                                <input type="number" class="form-control" name="total_amount"
+                                                    value="{{ $invoice->total_amount }}" min="0" step="0.01"
+                                                    required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Hạn Thanh Toán <span
+                                                        class="text-danger">*</span></label>
+                                                <input type="datetime-local" class="form-control" name="due_date"
+                                                    value="{{ $invoice->due_date->format('Y-m-d\TH:i') }}" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Thành Viên</label>
+                                                <input type="text" class="form-control"
+                                                    value="{{ $invoice->user->name ?? 'N/A' }}" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="mb-3">
+                                                <label class="form-label">Ghi Chú</label>
+                                                <textarea class="form-control" name="note" rows="3" maxlength="1000">{{ $invoice->note }}</textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                    <button type="submit" class="btn btn-primary">Cập
+                                        Nhật</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            <!-- Delete Invoice Modal -->
+            @if ($invoice->canBeDeleted() && auth()->user()->hasPermissionForModuleCode('invoice_management', 'delete', 'branch'))
+                <div class="modal fade" id="deleteInvoiceModal{{ $invoice->id }}" tabindex="-1"
+                    aria-labelledby="deleteInvoiceModalLabel{{ $invoice->id }}" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="deleteInvoiceModalLabel{{ $invoice->id }}">
+                                    Xác Nhận Xóa
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Bạn có chắc chắn muốn xóa hóa đơn
+                                    <strong>{{ $invoice->invoice_code }}</strong>?
+                                </p>
+                                <div class="alert alert-warning">
+                                    <i class="ti ti-alert-triangle"></i>
+                                    Hành động này không thể hoàn tác!
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                <form action="{{ route('backend.club.invoices.destroy', $invoice) }}" method="POST"
+                                    style="display: inline;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger">Xóa</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            <!-- Add Payment Modal -->
+            @if (
+                ($invoice->status === 'pending' || $invoice->status === 'overdue') &&
+                    auth()->user()->hasPermissionForModuleCode('invoice_management', 'mark_as_paid', 'branch'))
+                <div class="modal fade" id="addPaymentModal{{ $invoice->id }}" tabindex="-1"
+                    aria-labelledby="addPaymentModalLabel{{ $invoice->id }}" aria-hidden="true"
+                    data-bs-backdrop="static" data-bs-keyboard="false">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="addPaymentModalLabel{{ $invoice->id }}">Ghi Nhận
+                                    Thanh Toán</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <form action="{{ route('backend.club.invoices.transactions.mark-as-paid', $invoice) }}"
+                                method="POST">
+                                @csrf
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Số Tiền Thanh Toán <span
+                                                class="text-danger">*</span></label>
+                                        <input type="number" class="form-control" name="paid_amount"
+                                            value="{{ $invoice->remaining_amount }}" readonly required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Ngày Thanh Toán <span
+                                                class="text-danger">*</span></label>
+                                        <input type="datetime-local" class="form-control" name="payment_date"
+                                            value="{{ date('Y-m-d\TH:i') }}"
+                                            min="{{ $invoice->created_at->format('Y-m-d\TH:i') }}"
+                                            max="{{ $invoice->due_date->format('Y-m-d\TH:i') }}" required>
+                                        <small class="text-muted">Từ
+                                            {{ $invoice->created_at->format('d/m/Y H:i') }} đến
+                                            {{ $invoice->due_date->format('d/m/Y H:i') }}</small>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Phương Thức Thanh Toán <span
+                                                class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" value="Tiền Mặt" readonly>
+                                        <input type="hidden" name="payment_method" value="Cash" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Ghi Chú</label>
+                                        <textarea class="form-control" name="note" rows="3" maxlength="500"></textarea>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                    <button type="submit" class="btn btn-success">Ghi
+                                        Nhận</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            @endif
+        @endforeach
 
         <!-- Create Invoice Modal -->
         @if (auth()->user()->hasPermissionForModuleCode('invoice_management', 'create', 'branch'))
@@ -655,7 +628,6 @@
 
 
 @section('scripts')
-   
     <script>
         (function() {
             "use strict"

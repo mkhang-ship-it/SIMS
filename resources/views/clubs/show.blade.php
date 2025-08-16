@@ -1,9 +1,3 @@
-{{-- Club show page - Fixed null role reference error by adding null checks for $leader->role and $member->role --}}
-{{-- Updated: Member details modal is now included from a separate partial file for each user --}}
-{{-- [2024-07-14] Updated: remove unique:users,email from form, add AJAX email check, show message if user exists, password required only if new user --}}
-{{-- [2024-12-19] Updated: Removed addUserModal and related functionality --}}
-{{-- [2024-12-19] Updated: Fixed member display to use new UserClubRole pivot table structure instead of direct role_id relationship --}}
-{{-- [2024-12-19] Updated: Added remove from club functionality with delete buttons and modals for both leaders and members --}}
 @extends('layouts.app')
 
 @section('content')

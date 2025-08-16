@@ -103,168 +103,6 @@
                                                 </div>
                                             </td>
                                         </tr>
-
-                                        <!-- Edit User Modal -->
-                                        @if (auth()->user()->hasPermissionForModuleCode('user_management', 'edit', 'central'))
-                                            <div class="modal fade" id="editUserModal{{ $user->id }}" tabindex="-1"
-                                                aria-labelledby="editUserModalLabel{{ $user->id }}" aria-hidden="true"
-                                                data-bs-backdrop="static" data-bs-keyboard="false">
-                                                <div class="modal-dialog modal-dialog-centered">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title"
-                                                                id="editUserModalLabel{{ $user->id }}">
-                                                                Chỉnh Sửa Người Dùng
-                                                            </h5>
-                                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                                aria-label="Close"></button>
-                                                        </div>
-                                                        <form action="{{ route('backend.users.update', $user->id) }}"
-                                                            method="POST" id="editUserForm{{ $user->id }}">
-                                                            @csrf
-                                                            @method('PUT')
-                                                            <div class="modal-body">
-                                                                <div class="mb-3">
-                                                                    <label for="edit_name{{ $user->id }}"
-                                                                        class="form-label">Họ và Tên <span
-                                                                            class="text-danger">*</span></label>
-                                                                    <input type="text" class="form-control"
-                                                                        id="edit_name{{ $user->id }}" name="name"
-                                                                        value="{{ $user->name }}" required>
-                                                                </div>
-                                                                <div class="mb-3">
-                                                                    <label for="edit_email{{ $user->id }}"
-                                                                        class="form-label">Email <span
-                                                                            class="text-danger">*</span></label>
-                                                                    <input type="email" class="form-control"
-                                                                        id="edit_email{{ $user->id }}" name="email"
-                                                                        value="{{ $user->email }}" required>
-                                                                </div>
-                                                                <div class="mb-3">
-                                                                    <label for="edit_password{{ $user->id }}"
-                                                                        class="form-label">Mật Khẩu Mới</label>
-                                                                    <div class="input-group">
-                                                                        <input type="password" class="form-control"
-                                                                            id="edit_password{{ $user->id }}"
-                                                                            name="password"
-                                                                            placeholder="Để trống nếu không thay đổi">
-                                                                        <button class="btn btn-outline-secondary"
-                                                                            type="button"
-                                                                            onclick="togglePasswordVisibility('edit_password{{ $user->id }}', 'editPasswordIcon{{ $user->id }}')">
-                                                                            <i class="ti ti-eye"
-                                                                                id="editPasswordIcon{{ $user->id }}"></i>
-                                                                        </button>
-                                                                        <div class="form-text">Mật khẩu phải có ít nhất 8
-                                                                            ký tự.</div>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="mb-3">
-                                                                    <label
-                                                                        for="edit_password_confirmation{{ $user->id }}"
-                                                                        class="form-label">Xác Nhận Mật Khẩu Mới</label>
-                                                                    <div class="input-group">
-                                                                        <input type="password" class="form-control"
-                                                                            id="edit_password_confirmation{{ $user->id }}"
-                                                                            name="password_confirmation"
-                                                                            placeholder="Để trống nếu không thay đổi">
-                                                                        <button class="btn btn-outline-secondary"
-                                                                            type="button"
-                                                                            onclick="togglePasswordVisibility('edit_password_confirmation{{ $user->id }}', 'editPasswordConfirmationIcon{{ $user->id }}')">
-                                                                            <i class="ti ti-eye"
-                                                                                id="editPasswordConfirmationIcon{{ $user->id }}"></i>
-                                                                        </button>
-                                                                        <div class="form-text">Mật khẩu phải có ít nhất 8
-                                                                            ký tự.</div>
-                                                                    </div>
-                                                                </div>
-
-                                                                <div class="mb-3">
-                                                                    <label for="edit_status{{ $user->id }}"
-                                                                        class="form-label">Trạng Thái <span
-                                                                            class="text-danger">*</span></label>
-                                                                    <select class="form-select"
-                                                                        id="edit_status{{ $user->id }}"
-                                                                        name="status" required>
-                                                                        <option value="">Chọn trạng thái</option>
-                                                                        <option value="active"
-                                                                            {{ $user->status == 'active' ? 'selected' : '' }}>
-                                                                            Hoạt Động</option>
-                                                                        <option value="inactive"
-                                                                            {{ $user->status == 'inactive' ? 'selected' : '' }}>
-                                                                            Tạm Ngưng</option>
-                                                                    </select>
-                                                                </div>
-                                                                <div class="mb-3">
-                                                                    <label for="edit_role_id{{ $user->id }}"
-                                                                        class="form-label">Vai Trò <span
-                                                                            class="text-danger">*</span></label>
-                                                                    <select class="form-select"
-                                                                        id="edit_role_id{{ $user->id }}"
-                                                                        name="role_id" required>
-                                                                        <option value="">Chọn vai trò</option>
-                                                                        @foreach ($roles as $role)
-                                                                            <option value="{{ $role->id }}"
-                                                                                {{ $user->role_id == $role->id ? 'selected' : '' }}>
-                                                                                {{ $role->name }}
-                                                                            </option>
-                                                                        @endforeach
-                                                                    </select>
-                                                                </div>
-                                                            </div>
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary"
-                                                                    data-bs-dismiss="modal">Hủy</button>
-                                                                <button type="submit" class="btn btn-primary">Cập
-                                                                    Nhật</button>
-                                                            </div>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endif
-
-                                        <!-- Delete User Modal -->
-                                        @if (auth()->user()->hasPermissionForModuleCode('user_management', 'delete', 'central'))
-                                            <div class="modal fade" id="deleteUserModal{{ $user->id }}"
-                                                tabindex="-1" aria-labelledby="deleteUserModalLabel{{ $user->id }}"
-                                                aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-                                                <div class="modal-dialog modal-dialog-centered">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title text-danger"
-                                                                id="deleteUserModalLabel{{ $user->id }}">
-                                                                Xác Nhận Xóa</h5>
-                                                            <button type="button" class="btn-close"
-                                                                data-bs-dismiss="modal" aria-label="Close"></button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <div class="text-center">
-                                                                <p class="mb-2">Bạn có chắc chắn muốn xóa người dùng
-                                                                    <strong>{{ $user->name }}</strong>?
-                                                                </p>
-                                                                <p class="text-danger small">Hành động này sẽ xóa tất cả dữ
-                                                                    liệu liên quan và không thể hoàn tác!</p>
-                                                                <div class="alert alert-danger mt-3">
-                                                                    <i class="ri-error-warning-line me-2"></i>
-                                                                    <strong>Cảnh báo:</strong> Người dùng sẽ bị xóa hoàn
-                                                                    toàn khỏi hệ thống.
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary"
-                                                                data-bs-dismiss="modal">Hủy</button>
-                                                            <form action="{{ route('backend.users.destroy', $user->id) }}"
-                                                                method="POST" style="display: inline;">
-                                                                @csrf
-                                                                @method('DELETE')
-                                                                <button type="submit" class="btn btn-danger">Xóa</button>
-                                                            </form>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endif
                                     @endforeach
                                 </tbody>
                             </table>
@@ -276,6 +114,147 @@
         <!-- End::row-1 -->
 
     </div>
+
+    @foreach ($users as $user)
+        <!-- Edit User Modal -->
+        @if (auth()->user()->hasPermissionForModuleCode('user_management', 'edit', 'central'))
+            <div class="modal fade" id="editUserModal{{ $user->id }}" tabindex="-1"
+                aria-labelledby="editUserModalLabel{{ $user->id }}" aria-hidden="true" data-bs-backdrop="static"
+                data-bs-keyboard="false">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="editUserModalLabel{{ $user->id }}">
+                                Chỉnh Sửa Người Dùng
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form action="{{ route('backend.users.update', $user->id) }}" method="POST"
+                            id="editUserForm{{ $user->id }}">
+                            @csrf
+                            @method('PUT')
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label for="edit_name{{ $user->id }}" class="form-label">Họ và Tên <span
+                                            class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="edit_name{{ $user->id }}"
+                                        name="name" value="{{ $user->name }}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="edit_email{{ $user->id }}" class="form-label">Email <span
+                                            class="text-danger">*</span></label>
+                                    <input type="email" class="form-control" id="edit_email{{ $user->id }}"
+                                        name="email" value="{{ $user->email }}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="edit_password{{ $user->id }}" class="form-label">Mật Khẩu Mới</label>
+                                    <div class="input-group">
+                                        <input type="password" class="form-control" id="edit_password{{ $user->id }}"
+                                            name="password" placeholder="Để trống nếu không thay đổi">
+                                        <button class="btn btn-outline-secondary" type="button"
+                                            onclick="togglePasswordVisibility('edit_password{{ $user->id }}', 'editPasswordIcon{{ $user->id }}')">
+                                            <i class="ti ti-eye" id="editPasswordIcon{{ $user->id }}"></i>
+                                        </button>
+                                        <div class="form-text">Mật khẩu phải có ít nhất 8
+                                            ký tự.</div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="edit_password_confirmation{{ $user->id }}" class="form-label">Xác
+                                        Nhận Mật Khẩu Mới</label>
+                                    <div class="input-group">
+                                        <input type="password" class="form-control"
+                                            id="edit_password_confirmation{{ $user->id }}"
+                                            name="password_confirmation" placeholder="Để trống nếu không thay đổi">
+                                        <button class="btn btn-outline-secondary" type="button"
+                                            onclick="togglePasswordVisibility('edit_password_confirmation{{ $user->id }}', 'editPasswordConfirmationIcon{{ $user->id }}')">
+                                            <i class="ti ti-eye"
+                                                id="editPasswordConfirmationIcon{{ $user->id }}"></i>
+                                        </button>
+                                        <div class="form-text">Mật khẩu phải có ít nhất 8
+                                            ký tự.</div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="edit_status{{ $user->id }}" class="form-label">Trạng Thái <span
+                                            class="text-danger">*</span></label>
+                                    <select class="form-select" id="edit_status{{ $user->id }}" name="status"
+                                        required>
+                                        <option value="">Chọn trạng thái</option>
+                                        <option value="active" {{ $user->status == 'active' ? 'selected' : '' }}>
+                                            Hoạt Động</option>
+                                        <option value="inactive" {{ $user->status == 'inactive' ? 'selected' : '' }}>
+                                            Tạm Ngưng</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="edit_role_id{{ $user->id }}" class="form-label">Vai Trò <span
+                                            class="text-danger">*</span></label>
+                                    <select class="form-select" id="edit_role_id{{ $user->id }}" name="role_id"
+                                        required>
+                                        <option value="">Chọn vai trò</option>
+                                        @foreach ($roles as $role)
+                                            <option value="{{ $role->id }}"
+                                                {{ $user->role_id == $role->id ? 'selected' : '' }}>
+                                                {{ $role->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                <button type="submit" class="btn btn-primary">Cập
+                                    Nhật</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        <!-- Delete User Modal -->
+        @if (auth()->user()->hasPermissionForModuleCode('user_management', 'delete', 'central'))
+            <div class="modal fade" id="deleteUserModal{{ $user->id }}" tabindex="-1"
+                aria-labelledby="deleteUserModalLabel{{ $user->id }}" aria-hidden="true" data-bs-backdrop="static"
+                data-bs-keyboard="false">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title text-danger" id="deleteUserModalLabel{{ $user->id }}">
+                                Xác Nhận Xóa</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="text-center">
+                                <p class="mb-2">Bạn có chắc chắn muốn xóa người dùng
+                                    <strong>{{ $user->name }}</strong>?
+                                </p>
+                                <p class="text-danger small">Hành động này sẽ xóa tất cả dữ
+                                    liệu liên quan và không thể hoàn tác!</p>
+                                <div class="alert alert-danger mt-3">
+                                    <i class="ri-error-warning-line me-2"></i>
+                                    <strong>Cảnh báo:</strong> Người dùng sẽ bị xóa hoàn
+                                    toàn khỏi hệ thống.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                            <form action="{{ route('backend.users.destroy', $user->id) }}" method="POST"
+                                style="display: inline;">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-danger">Xóa</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+    @endforeach
 
     <!-- Add User Modal -->
     @if (auth()->user()->hasPermissionForModuleCode('user_management', 'create', 'central'))

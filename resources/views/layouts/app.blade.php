@@ -55,24 +55,6 @@ foreach ($cssProperties as $property => $value) {
 
     @include('layouts.css')
 
-    <style>
-        @supports (-webkit-overflow-scrolling: touch) {
-            body.modal-open {
-                overflow: auto !important;
-                position: static !important;
-            }
-
-            .modal {
-                position: absolute !important;
-                z-index: 1050 !important;
-            }
-
-            .modal-backdrop {
-                z-index: 1040 !important;
-            }
-        }
-    </style>
-
 </head>
 
 <body>

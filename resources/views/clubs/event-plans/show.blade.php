@@ -189,7 +189,7 @@ Updated: Added Excel export button in header to export comprehensive event infor
             flex-wrap: nowrap !important;
             overflow-x: auto;
             overflow-y: hidden;
-            -webkit-overflow-scrolling: touch;
+            /* -webkit-overflow-scrolling: touch; */
             scrollbar-width: none;
             /* Firefox */
             -ms-overflow-style: none;

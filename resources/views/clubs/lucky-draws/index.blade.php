@@ -187,7 +187,7 @@
             <div class="modal fade" id="editLuckyDrawModal{{ $luckyDraw->id }}" tabindex="-1"
                 aria-labelledby="editLuckyDrawModalLabel{{ $luckyDraw->id }}" aria-hidden="true"
                 data-bs-backdrop="static" data-bs-keyboard="false">
-                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title" id="editLuckyDrawModalLabel{{ $luckyDraw->id }}">
@@ -393,108 +393,112 @@
         @endif
     @endforeach
 
-    <!-- Add Lucky Draw Modal -->
-    <div class="modal fade" id="addLuckyDrawModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-        aria-labelledby="addLuckyDrawModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addLuckyDrawModalLabel">
-                        Tạo Lucky Draw mới
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    @if (auth()->user()->hasPermissionForModuleCode('lucky_draw_management', 'create', 'branch'))
+        <!-- Add Lucky Draw Modal -->
+        <div class="modal fade" id="addLuckyDrawModal" data-bs-backdrop="static" data-bs-keyboard="false"
+            tabindex="-1" aria-labelledby="addLuckyDrawModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addLuckyDrawModalLabel">
+                            Tạo Lucky Draw mới
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form action="{{ route('backend.club.lucky-draws.store') }}" method="POST" id="addLuckyDrawForm"
+                        enctype="multipart/form-data">
+                        @csrf
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="mb-3">
+                                        <label for="title" class="form-label">Tiêu đề <span
+                                                class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="title" name="title"
+                                            required>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="security_code" class="form-label">Mã bảo mật</label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" id="security_code"
+                                                name="security_code" placeholder="Để trống để tự động tạo">
+                                            <button class="btn btn-outline-secondary" type="button"
+                                                onclick="generateSecurityCode('security_code')">
+                                                <i class="ti ti-refresh"></i> Tạo tự động
+                                            </button>
+                                        </div>
+                                        <small class="form-text text-danger">Mã bảo mật để truy cập modal setting ở trang
+                                            quay
+                                            thưởng, bỏ trống nếu không cần mã bảo mật.</small>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="background_image" class="form-label">Hình nền <span
+                                                        class="text-danger">*</span></label>
+                                                <input type="file" class="form-control" id="background_image"
+                                                    name="background_image" accept="image/*" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="modal_background_image" class="form-label">Hình nền modal quay
+                                                    thưởng
+                                                    <span class="text-danger">*</span></label>
+                                                <input type="file" class="form-control" id="modal_background_image"
+                                                    name="modal_background_image" accept="image/*">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="start_date" class="form-label">Thời gian bắt đầu <span
+                                                        class="text-danger">*</span></label>
+                                                <input type="datetime-local" class="form-control" id="start_date"
+                                                    name="start_date" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="end_date" class="form-label">Thời gian kết thúc <span
+                                                        class="text-danger">*</span></label>
+                                                <input type="datetime-local" class="form-control" id="end_date"
+                                                    name="end_date" required>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="mb-3">
+                                        <label for="participants" class="form-label">
+                                            <i class="ti ti-users text-success"></i>
+                                            Danh sách người tham gia (tùy chọn)
+                                        </label>
+                                        <textarea class="form-control" id="participants" name="participants" rows="6"
+                                            placeholder="Mỗi người tham gia một dòng&#10;Ví dụ:&#10;Nguyễn Văn A&#10;Trần Thị B&#10;Lê Văn C"></textarea>
+                                        <small class="form-text text-muted">Mỗi người tham gia trên một dòng.</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="ti ti-device-floppy"></i> Tạo Lucky Draw
+                            </button>
+                        </div>
+                    </form>
                 </div>
-                <form action="{{ route('backend.club.lucky-draws.store') }}" method="POST" id="addLuckyDrawForm"
-                    enctype="multipart/form-data">
-                    @csrf
-                    <div class="modal-body">
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="mb-3">
-                                    <label for="title" class="form-label">Tiêu đề <span
-                                            class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="title" name="title" required>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="security_code" class="form-label">Mã bảo mật</label>
-                                    <div class="input-group">
-                                        <input type="text" class="form-control" id="security_code"
-                                            name="security_code" placeholder="Để trống để tự động tạo">
-                                        <button class="btn btn-outline-secondary" type="button"
-                                            onclick="generateSecurityCode('security_code')">
-                                            <i class="ti ti-refresh"></i> Tạo tự động
-                                        </button>
-                                    </div>
-                                    <small class="form-text text-danger">Mã bảo mật để truy cập modal setting ở trang quay
-                                        thưởng, bỏ trống nếu không cần mã bảo mật.</small>
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label for="background_image" class="form-label">Hình nền <span
-                                                    class="text-danger">*</span></label>
-                                            <input type="file" class="form-control" id="background_image"
-                                                name="background_image" accept="image/*" required>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label for="modal_background_image" class="form-label">Hình nền modal quay
-                                                thưởng
-                                                <span class="text-danger">*</span></label>
-                                            <input type="file" class="form-control" id="modal_background_image"
-                                                name="modal_background_image" accept="image/*">
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label for="start_date" class="form-label">Thời gian bắt đầu <span
-                                                    class="text-danger">*</span></label>
-                                            <input type="datetime-local" class="form-control" id="start_date"
-                                                name="start_date" required>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label for="end_date" class="form-label">Thời gian kết thúc <span
-                                                    class="text-danger">*</span></label>
-                                            <input type="datetime-local" class="form-control" id="end_date"
-                                                name="end_date" required>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="mb-3">
-                                    <label for="participants" class="form-label">
-                                        <i class="ti ti-users text-success"></i>
-                                        Danh sách người tham gia (tùy chọn)
-                                    </label>
-                                    <textarea class="form-control" id="participants" name="participants" rows="6"
-                                        placeholder="Mỗi người tham gia một dòng&#10;Ví dụ:&#10;Nguyễn Văn A&#10;Trần Thị B&#10;Lê Văn C"></textarea>
-                                    <small class="form-text text-muted">Mỗi người tham gia trên một dòng.</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="ti ti-device-floppy"></i> Tạo Lucky Draw
-                        </button>
-                    </div>
-                </form>
             </div>
         </div>
-    </div>
+    @endif
 @endsection
 
 @section('scripts')

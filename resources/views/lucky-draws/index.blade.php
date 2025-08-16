@@ -6,7 +6,7 @@
 
         <!-- Page Header -->
         <div class="d-flex align-items-center justify-content-between flex-wrap my-4 page-header-breadcrumb">
-            <h1 class="page-title fw-semibold fs-18 mb-2 mb-md-0">Quản Lý Lucky Draw Trung Tâm</h1>
+            <h1 class="page-title fw-semibold fs-18 mb-2 mb-md-0">Quản Lý Lucky Draw</h1>
 
             <!-- Nút trên desktop -->
             <div class="d-none d-md-block">
@@ -179,7 +179,7 @@
                                 <div class="modal fade" id="editLuckyDrawModal{{ $luckyDraw->id }}" tabindex="-1"
                                     aria-labelledby="editLuckyDrawModalLabel{{ $luckyDraw->id }}" aria-hidden="true"
                                     data-bs-backdrop="static" data-bs-keyboard="false">
-                                    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+                                    <div class="modal-dialog modal-dialog-centered modal-lg">
                                         <div class="modal-content">
                                             <div class="modal-header">
                                                 <h5 class="modal-title" id="editLuckyDrawModalLabel{{ $luckyDraw->id }}">

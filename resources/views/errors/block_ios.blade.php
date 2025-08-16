@@ -47,13 +47,15 @@ $generalSettings = Setting::getMany(null, ['site_name', 'image_square_light']);
                 <div class="text-center p-5 my-auto">
                     <div class="row align-items-center justify-content-center h-100">
                         <div class="col-xl-7">
-                            <p class="error-text mb-sm-0 mb-2">Hệ Thống Không Khả Dụng Trên Thiết Bị iOS</p>
-                            <p class="fs-18 fw-semibold mb-3">Hệ Thống Không Khả Dụng Trên Thiết Bị iOS
-                            </p>
+                            <p class="error-text mb-sm-0 mb-2">Truy Cập Bị Giới Hạn</p>
+                            <p class="fs-18 fw-semibold mb-3">Xin lỗi, hệ thống hiện chưa hỗ trợ thiết bị iOS</p>
                             <div class="row justify-content-center mb-5">
-                                <div class="col-xl-6">
-                                    <p class="mb-0 op-7">Hệ thống hiện tại không khả dụng trên thiết bị iOS. Vui lòng sử
-                                        dụng thiết bị khác.</p>
+                                <div class="col-xl-8">
+                                    <p class="mb-0 op-7">
+                                        Chúng tôi rất tiếc vì sự bất tiện này. Hiện tại, hệ thống không thể truy cập từ
+                                        các thiết bị iOS (iPhone, iPad, Mac).<br>
+                                        Vui lòng sử dụng thiết bị khác để tiếp tục truy cập hệ thống.
+                                    </p>
                                 </div>
                             </div>
                         </div>

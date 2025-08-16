@@ -60,6 +60,10 @@ foreach ($cssProperties as $property => $value) {
             position: static !important;
             overflow: visible !important;
         }
+
+        .modal {
+            position: absolute !important;
+        }
     </style>
 
 </head>

@@ -19,10 +19,10 @@ Updated: Added Excel export button in header to export comprehensive event infor
     <div class="container-fluid">
 
         <!--
-            Page Header
-            Updated: Fixed desktop buttons showing on mobile by adding d-none d-md-flex to desktop button group,
-            and d-md-none to mobile dropdown.
-        -->
+                Page Header
+                Updated: Fixed desktop buttons showing on mobile by adding d-none d-md-flex to desktop button group,
+                and d-md-none to mobile dropdown.
+            -->
         <div class="d-flex align-items-center justify-content-between flex-wrap my-4 page-header-breadcrumb">
             <h1 class="page-title fw-semibold fs-18 mb-2 mb-md-0">Quản Lý Kế Hoạch Sự Kiện</h1>
 
@@ -32,7 +32,8 @@ Updated: Added Excel export button in header to export comprehensive event infor
                     <i class="ti ti-arrow-left me-1"></i>Quay Lại
                 </a>
                 @if (auth()->user()->hasPermissionForModuleCode('event_management', 'view_plan', 'central'))
-                    <a href="{{ route('backend.events.event-plans.export.excel', $eventPlan->event->id) }}" class="btn btn-primary-light">
+                    <a href="{{ route('backend.events.event-plans.export.excel', $eventPlan->event->id) }}"
+                        class="btn btn-primary-light">
                         <i class="ti ti-download me-1"></i>Xuất Excel
                     </a>
                 @endif
@@ -52,7 +53,8 @@ Updated: Added Excel export button in header to export comprehensive event infor
                     </li>
                     @if (auth()->user()->hasPermissionForModuleCode('event_management', 'view_plan', 'central'))
                         <li>
-                            <a class="dropdown-item" href="{{ route('backend.events.event-plans.export.excel', $eventPlan->event->id) }}">
+                            <a class="dropdown-item"
+                                href="{{ route('backend.events.event-plans.export.excel', $eventPlan->event->id) }}">
                                 <i class="ti ti-download me-1"></i>Xuất Excel
                             </a>
                         </li>
@@ -205,7 +207,7 @@ Updated: Added Excel export button in header to export comprehensive event infor
             flex-wrap: nowrap !important;
             overflow-x: auto;
             overflow-y: hidden;
-            /* -webkit-overflow-scrolling: touch; */
+            -webkit-overflow-scrolling: touch;
             scrollbar-width: none;
             /* Firefox */
             -ms-overflow-style: none;

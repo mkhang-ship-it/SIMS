@@ -55,6 +55,29 @@ foreach ($cssProperties as $property => $value) {
 
     @include('layouts.css')
 
+    <script>
+        function isIOS() {
+            return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        }
+        // Khi modal đã mở
+        document.addEventListener('shown.bs.modal', function() {
+            if (isIOS()) {
+                // Gỡ overflow: hidden mà Bootstrap tự thêm
+                document.body.style.overflow = 'auto';
+
+                // Nếu modal không hiển thị đúng do stacking
+                const modal = document.querySelector('.modal.show');
+                if (modal) {
+                    modal.style.position = 'absolute';
+                    modal.style.zIndex = 1050;
+                }
+
+                // Optional: fix scroll chạm
+                document.addEventListener('touchstart', function() {}, true);
+            }
+        });
+    </script>
+
 </head>
 
 <body>

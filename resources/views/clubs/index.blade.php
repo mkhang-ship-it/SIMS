@@ -42,7 +42,7 @@
             <div class="col-xl-12">
                 <div class="card custom-card">
                     <div class="card-body">
-                        <div class="table mb-4" style="overflow: auto;">
+                        <div class="table-responsive mb-4">
                             <table class="table text-nowrap table-bordered" id="data-table">
                                 <thead>
                                     <tr>
@@ -59,7 +59,6 @@
                                     @foreach ($clubs as $index => $club)
                                         <tr>
                                             <td class="text-center">{{ $index + 1 }}</td>
-
                                             <td class="fw-semibold">{{ $club->name }}</td>
                                             <td class="text-center">{{ $club->email }}</td>
                                             <td class="text-center">{{ $club->phone }}</td>
@@ -106,193 +105,185 @@
                                                 </div>
                                             </td>
                                         </tr>
-
-                                        <!-- Edit Club Modal -->
-                                        @if (auth()->user()->hasPermissionForModuleCode('club_management', 'edit', 'central'))
-                                            <div class="modal fade" id="editClubModal{{ $club->id }}" tabindex="-1"
-                                                aria-labelledby="editClubModalLabel{{ $club->id }}" aria-hidden="true"
-                                                data-bs-backdrop="static" data-bs-keyboard="false">
-                                                <div class="modal-dialog modal-dialog-centered modal-lg">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title"
-                                                                id="editClubModalLabel{{ $club->id }}">
-                                                                Chỉnh Sửa Câu Lạc Bộ
-                                                            </h5>
-                                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                                aria-label="Close"></button>
-                                                        </div>
-                                                        <form action="{{ route('backend.clubs.update', $club->id) }}"
-                                                            method="POST" id="editClubForm{{ $club->id }}"
-                                                            enctype="multipart/form-data">
-                                                            @csrf
-                                                            @method('PUT')
-                                                            <div class="modal-body">
-                                                                <div class="mb-3">
-                                                                    <label for="edit_name{{ $club->id }}"
-                                                                        class="form-label">Tên Câu Lạc Bộ <span
-                                                                            class="text-danger">*</span></label>
-                                                                    <input type="text" class="form-control"
-                                                                        id="edit_name{{ $club->id }}" name="name"
-                                                                        value="{{ $club->name }}" required>
-                                                                </div>
-                                                                <div class="row">
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label for="edit_email{{ $club->id }}"
-                                                                                class="form-label">Email <span
-                                                                                    class="text-danger">*</span></label>
-                                                                            <input type="email" class="form-control"
-                                                                                id="edit_email{{ $club->id }}"
-                                                                                name="email" value="{{ $club->email }}"
-                                                                                required>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label for="edit_phone{{ $club->id }}"
-                                                                                class="form-label">Điện Thoại <span
-                                                                                    class="text-danger">*</span></label>
-                                                                            <input type="text" class="form-control"
-                                                                                id="edit_phone{{ $club->id }}"
-                                                                                name="phone"
-                                                                                value="{{ $club->phone }}" required>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <!-- Address Selection -->
-                                                                <div class="row">
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label
-                                                                                for="edit_province_id{{ $club->id }}"
-                                                                                class="form-label">Tỉnh/Thành <span
-                                                                                    class="text-danger">*</span></label>
-                                                                            <select class="form-select"
-                                                                                id="edit_province_id{{ $club->id }}"
-                                                                                name="province_id" required>
-                                                                                <option value="">-- Chọn tỉnh/thành
-                                                                                    --</option>
-                                                                                @foreach ($provinces as $province)
-                                                                                    <option value="{{ $province->id }}"
-                                                                                        @if ($club->address && $club->address->province_id == $province->id) selected @endif>
-                                                                                        {{ $province->name }}
-                                                                                        ({{ $province->code }})
-                                                                                    </option>
-                                                                                @endforeach
-                                                                            </select>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label
-                                                                                for="edit_commune_id{{ $club->id }}"
-                                                                                class="form-label">Xã/Phường <span
-                                                                                    class="text-danger">*</span></label>
-                                                                            <select class="form-select"
-                                                                                id="edit_commune_id{{ $club->id }}"
-                                                                                name="commune_id" required>
-                                                                                <option value="">-- Chọn xã/phường --
-                                                                                </option>
-                                                                                @if ($club->address && $club->address->commune)
-                                                                                    <option
-                                                                                        value="{{ $club->address->commune->id }}"
-                                                                                        selected>
-                                                                                        {{ $club->address->commune->name }}
-                                                                                        ({{ $club->address->commune->code }})
-                                                                                    </option>
-                                                                                @endif
-                                                                            </select>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="mb-3">
-                                                                    <label for="edit_address{{ $club->id }}"
-                                                                        class="form-label">Địa Chỉ Chi Tiết <span
-                                                                            class="text-danger">*</span></label>
-                                                                    <textarea class="form-control" id="edit_address{{ $club->id }}" name="address" rows="3"
-                                                                        placeholder="Nhập địa chỉ chi tiết (số nhà, đường, phố...)" required>{{ $club->address ? $club->address->address : '' }}</textarea>
-                                                                </div>
-                                                                <div class="row">
-                                                                    <div class="col-md-6">
-                                                                        <div class="mb-3">
-                                                                            <label for="edit_status{{ $club->id }}"
-                                                                                class="form-label">Trạng Thái <span
-                                                                                    class="text-danger">*</span></label>
-                                                                            <select class="form-select"
-                                                                                id="edit_status{{ $club->id }}"
-                                                                                name="status" required>
-                                                                                <option value="">Chọn trạng thái
-                                                                                </option>
-                                                                                <option value="active"
-                                                                                    {{ $club->status == 'active' ? 'selected' : '' }}>
-                                                                                    Hoạt Động</option>
-                                                                                <option value="inactive"
-                                                                                    {{ $club->status == 'inactive' ? 'selected' : '' }}>
-                                                                                    Tạm Ngưng</option>
-                                                                            </select>
-                                                                        </div>
-                                                                    </div>
-
-                                                                </div>
-                                                            </div>
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary"
-                                                                    data-bs-dismiss="modal">Hủy</button>
-                                                                <button type="submit" class="btn btn-primary">Cập
-                                                                    Nhật</button>
-                                                            </div>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endif
-                                        <!-- Delete Club Modal -->
-                                        @if (auth()->user()->hasPermissionForModuleCode('club_management', 'delete', 'central'))
-                                            <div class="modal fade" id="deleteClubModal{{ $club->id }}"
-                                                tabindex="-1" aria-labelledby="deleteClubModalLabel{{ $club->id }}"
-                                                aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-                                                <div class="modal-dialog modal-dialog-centered">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title text-danger"
-                                                                id="deleteClubModalLabel{{ $club->id }}">
-                                                                Xác Nhận Xóa</h5>
-                                                            <button type="button" class="btn-close"
-                                                                data-bs-dismiss="modal" aria-label="Close"></button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <div class="text-center">
-                                                                <p class="mb-2">Bạn có chắc chắn muốn xóa câu lạc bộ
-                                                                    <span
-                                                                        class="fw-bold text-danger">{{ $club->name }}</span>
-                                                                    không?
-                                                                </p>
-                                                                @if ($club->image)
-                                                                    <img src="{{ asset('storage/' . $club->image) }}"
-                                                                        alt="{{ $club->name }}" class="rounded mb-2"
-                                                                        style="width: 100px; height: 100px; object-fit: cover;">
-                                                                @endif
-                                                            </div>
-                                                        </div>
-                                                        <form action="{{ route('backend.clubs.destroy', $club->id) }}"
-                                                            method="POST" id="deleteClubForm{{ $club->id }}">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary"
-                                                                    data-bs-dismiss="modal">Hủy</button>
-                                                                <button type="submit" class="btn btn-danger">Xóa</button>
-                                                            </div>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endif
                                     @endforeach
                                 </tbody>
                             </table>
                         </div>
+                        @foreach ($clubs as $club)
+                            <!-- Edit Club Modal -->
+                            @if (auth()->user()->hasPermissionForModuleCode('club_management', 'edit', 'central'))
+                                <div class="modal fade" id="editClubModal{{ $club->id }}" tabindex="-1"
+                                    aria-labelledby="editClubModalLabel{{ $club->id }}" aria-hidden="true"
+                                    data-bs-backdrop="static" data-bs-keyboard="false">
+                                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="editClubModalLabel{{ $club->id }}">
+                                                    Chỉnh Sửa Câu Lạc Bộ
+                                                </h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                    aria-label="Close"></button>
+                                            </div>
+                                            <form action="{{ route('backend.clubs.update', $club->id) }}" method="POST"
+                                                id="editClubForm{{ $club->id }}" enctype="multipart/form-data">
+                                                @csrf
+                                                @method('PUT')
+                                                <div class="modal-body">
+                                                    <div class="mb-3">
+                                                        <label for="edit_name{{ $club->id }}" class="form-label">Tên
+                                                            Câu Lạc Bộ <span class="text-danger">*</span></label>
+                                                        <input type="text" class="form-control"
+                                                            id="edit_name{{ $club->id }}" name="name"
+                                                            value="{{ $club->name }}" required>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <div class="mb-3">
+                                                                <label for="edit_email{{ $club->id }}"
+                                                                    class="form-label">Email <span
+                                                                        class="text-danger">*</span></label>
+                                                                <input type="email" class="form-control"
+                                                                    id="edit_email{{ $club->id }}" name="email"
+                                                                    value="{{ $club->email }}" required>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="mb-3">
+                                                                <label for="edit_phone{{ $club->id }}"
+                                                                    class="form-label">Điện Thoại <span
+                                                                        class="text-danger">*</span></label>
+                                                                <input type="text" class="form-control"
+                                                                    id="edit_phone{{ $club->id }}" name="phone"
+                                                                    value="{{ $club->phone }}" required>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <!-- Address Selection -->
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <div class="mb-3">
+                                                                <label for="edit_province_id{{ $club->id }}"
+                                                                    class="form-label">Tỉnh/Thành <span
+                                                                        class="text-danger">*</span></label>
+                                                                <select class="form-select"
+                                                                    id="edit_province_id{{ $club->id }}"
+                                                                    name="province_id" required>
+                                                                    <option value="">-- Chọn tỉnh/thành
+                                                                        --</option>
+                                                                    @foreach ($provinces as $province)
+                                                                        <option value="{{ $province->id }}"
+                                                                            @if ($club->address && $club->address->province_id == $province->id) selected @endif>
+                                                                            {{ $province->name }}
+                                                                            ({{ $province->code }})
+                                                                        </option>
+                                                                    @endforeach
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="mb-3">
+                                                                <label for="edit_commune_id{{ $club->id }}"
+                                                                    class="form-label">Xã/Phường <span
+                                                                        class="text-danger">*</span></label>
+                                                                <select class="form-select"
+                                                                    id="edit_commune_id{{ $club->id }}"
+                                                                    name="commune_id" required>
+                                                                    <option value="">-- Chọn xã/phường --
+                                                                    </option>
+                                                                    @if ($club->address && $club->address->commune)
+                                                                        <option value="{{ $club->address->commune->id }}"
+                                                                            selected>
+                                                                            {{ $club->address->commune->name }}
+                                                                            ({{ $club->address->commune->code }})
+                                                                        </option>
+                                                                    @endif
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="edit_address{{ $club->id }}"
+                                                            class="form-label">Địa Chỉ Chi Tiết <span
+                                                                class="text-danger">*</span></label>
+                                                        <textarea class="form-control" id="edit_address{{ $club->id }}" name="address" rows="3"
+                                                            placeholder="Nhập địa chỉ chi tiết (số nhà, đường, phố...)" required>{{ $club->address ? $club->address->address : '' }}</textarea>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <div class="mb-3">
+                                                                <label for="edit_status{{ $club->id }}"
+                                                                    class="form-label">Trạng Thái <span
+                                                                        class="text-danger">*</span></label>
+                                                                <select class="form-select"
+                                                                    id="edit_status{{ $club->id }}" name="status"
+                                                                    required>
+                                                                    <option value="">Chọn trạng thái
+                                                                    </option>
+                                                                    <option value="active"
+                                                                        {{ $club->status == 'active' ? 'selected' : '' }}>
+                                                                        Hoạt Động</option>
+                                                                    <option value="inactive"
+                                                                        {{ $club->status == 'inactive' ? 'selected' : '' }}>
+                                                                        Tạm Ngưng</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary"
+                                                        data-bs-dismiss="modal">Hủy</button>
+                                                    <button type="submit" class="btn btn-primary">Cập
+                                                        Nhật</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+                            <!-- Delete Club Modal -->
+                            @if (auth()->user()->hasPermissionForModuleCode('club_management', 'delete', 'central'))
+                                <div class="modal fade" id="deleteClubModal{{ $club->id }}" tabindex="-1"
+                                    aria-labelledby="deleteClubModalLabel{{ $club->id }}" aria-hidden="true"
+                                    data-bs-backdrop="static" data-bs-keyboard="false">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title text-danger"
+                                                    id="deleteClubModalLabel{{ $club->id }}">
+                                                    Xác Nhận Xóa</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                    aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="text-center">
+                                                    <p class="mb-2">Bạn có chắc chắn muốn xóa câu lạc bộ
+                                                        <span class="fw-bold text-danger">{{ $club->name }}</span>
+                                                        không?
+                                                    </p>
+                                                    @if ($club->image)
+                                                        <img src="{{ asset('storage/' . $club->image) }}"
+                                                            alt="{{ $club->name }}" class="rounded mb-2"
+                                                            style="width: 100px; height: 100px; object-fit: cover;">
+                                                    @endif
+                                                </div>
+                                            </div>
+                                            <form action="{{ route('backend.clubs.destroy', $club->id) }}" method="POST"
+                                                id="deleteClubForm{{ $club->id }}">
+                                                @csrf
+                                                @method('DELETE')
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary"
+                                                        data-bs-dismiss="modal">Hủy</button>
+                                                    <button type="submit" class="btn btn-danger">Xóa</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+                        @endforeach
                     </div>
                 </div>
             </div>

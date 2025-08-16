@@ -42,7 +42,7 @@
             <div class="col-xl-12">
                 <div class="card custom-card">
                     <div class="card-body">
-                        <div class="table-responsive mb-4" style="overflow: auto;">
+                        <div class="table mb-4" style="overflow: auto;">
                             <table class="table text-nowrap table-bordered" id="data-table">
                                 <thead>
                                     <tr>

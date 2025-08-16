@@ -41,7 +41,7 @@ foreach ($cssProperties as $property => $value) {
 <head>
 
     <meta charset="UTF-8">
-    <meta name='viewport' content='width=device-width, initial-scale=1.0, user-scalable=no'>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title> {{ $generalSettings['site_name'] ?? '-' }} </title>
     <meta name="Description" content="{{ $generalSettings['site_name'] ?? '-' }}">

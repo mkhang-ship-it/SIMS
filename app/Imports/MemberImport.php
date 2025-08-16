@@ -468,7 +468,7 @@ class MemberImport implements ToCollection, WithValidation, WithStartRow
     {
         return [
             '0' => 'nullable|string|max:255',      // Column A: Tên thành viên
-            '1' => 'nullable|email|max:255',       // Column B: Email
+            '1' => 'nullable|max:255',       // Column B: Email
             '2' => 'nullable|string|max:50',       // Column C: Giới tính
             '3' => 'nullable|string|max:20',       // Column D: Số điện thoại
             '4' => 'nullable|date',                // Column E: Ngày sinh

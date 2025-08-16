@@ -55,6 +55,13 @@ foreach ($cssProperties as $property => $value) {
 
     @include('layouts.css')
 
+    <style>
+        body.modal-open {
+            position: static !important;
+            overflow: visible !important;
+        }
+    </style>
+
 </head>
 
 <body>

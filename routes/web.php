@@ -53,7 +53,7 @@ use App\Http\Controllers\Club\ShortUrlController as ClubShortUrlController;
 use App\Http\Controllers\UserController;
 
 // Bypass route for maintenance mode - handled entirely by middleware
-Route::middleware('logsystem')->get('/bypass/{token}', function ($token) {
+Route::middleware(['logsystem', 'block_ios'])->get('/bypass/{token}', function ($token) {
 
     if (!Auth::check()) {
         return redirect()->route('login');
@@ -68,7 +68,7 @@ Route::middleware('logsystem')->get('/bypass/{token}', function ($token) {
     }
 })->where('token', '[a-zA-Z0-9_]+');
 
-Route::middleware('logsystem')->get('/', function () {
+Route::middleware(['logsystem', 'block_ios'])->get('/', function () {
     if (!Auth::check()) {
         return redirect()->route('login');
     }
@@ -84,7 +84,7 @@ Route::middleware('logsystem')->get('/', function () {
 
 
 // Authentication routes
-Route::middleware(['guest', 'logsystem'])->group(function () {
+Route::middleware(['guest', 'logsystem', 'block_ios'])->group(function () {
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [LoginController::class, 'login']);
 
@@ -97,7 +97,7 @@ Route::middleware(['guest', 'logsystem'])->group(function () {
     Route::get('/auth/microsoft/callback', [LoginController::class, 'handleMicrosoftCallback'])->name('auth.microsoft.callback');
 });
 
-Route::middleware(['auth', 'logsystem'])->group(function () {
+Route::middleware(['auth', 'logsystem', 'block_ios'])->group(function () {
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
     Route::name('backend.')->group(function () {
@@ -272,7 +272,7 @@ Route::middleware(['auth', 'logsystem'])->group(function () {
 });
 
 
-Route::middleware(['auth', 'logsystem'])->prefix('club')->group(function () {
+Route::middleware(['auth', 'logsystem', 'block_ios'])->prefix('club')->group(function () {
     Route::name('backend.club.')->group(function () {
         Route::get('/dashboard', [ClubDashboardController::class, 'index'])->name('dashboard')->middleware('CheckPermission:dashboard,view,branch');
 
@@ -498,12 +498,12 @@ Route::middleware(['auth', 'logsystem'])->prefix('club')->group(function () {
     });
 });
 
-Route::middleware(['auth', 'logsystem'])->group(function () {
+Route::middleware(['auth', 'logsystem', 'block_ios'])->group(function () {
     Route::post('/switch-default-club', [SwitchClubController::class, 'switch'])->name('switch.default.club')->middleware('auth');
 });
 
 // Public Lucky Draw routes (no authentication required)
-Route::prefix('lucky-draw')->name('lucky-draw.')->middleware('logsystem')->group(function () {
+Route::prefix('lucky-draw')->name('lucky-draw.')->middleware('logsystem', 'block_ios')->group(function () {
     Route::get('/{slug}', [LuckyDrawPublicController::class, 'show'])->name('show');
     Route::get('/{slug}/prizes', [LuckyDrawPublicController::class, 'getPrizes'])->name('prizes');
     Route::get('/{slug}/prizes-details', [LuckyDrawPublicController::class, 'getPrizesWithDetails'])->name('prizes.details');
@@ -514,4 +514,4 @@ Route::prefix('lucky-draw')->name('lucky-draw.')->middleware('logsystem')->group
 });
 
 // Short URL redirect route (public, no authentication required)
-Route::get('sl/{shortCode}', [ShortUrlController::class, 'redirect'])->name('short-url.redirect')->where('shortCode', '[a-zA-Z0-9]{12}');
+Route::get('sl/{shortCode}', [ShortUrlController::class, 'redirect'])->name('short-url.redirect')->where('shortCode', '[a-zA-Z0-9]{12}')->middleware('block_ios');

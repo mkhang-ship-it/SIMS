@@ -7,6 +7,7 @@ use App\Http\Middleware\CheckPermission;
 use App\Http\Middleware\MaintenanceMode;
 use App\Http\Middleware\ImpersonationMiddleware;
 use App\Http\Middleware\LogSystemActivity;
+use App\Http\Middleware\BlockIOSDevices;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -21,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'maintenance' => MaintenanceMode::class,
             'impersonation' => ImpersonationMiddleware::class,
             'logsystem' => LogSystemActivity::class,
+            'block_ios' => BlockIOSDevices::class,
         ]);
 
         // Apply maintenance middleware globally to all routes

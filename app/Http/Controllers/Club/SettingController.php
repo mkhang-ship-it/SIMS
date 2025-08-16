@@ -1,6 +1,4 @@
 <?php
-// Updated: Added support for club address management with province/commune selection
-// Added provinces data to view, address update functionality, and getCommunes AJAX method
 
 namespace App\Http\Controllers\Club;
 
@@ -10,10 +8,9 @@ use App\Models\Club;
 use App\Models\Setting;
 use App\Models\Province;
 use App\Models\Commune;
-use App\Models\Address;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
+
+use App\Models\Role;
 
 class SettingController extends Controller
 {
@@ -22,7 +19,7 @@ class SettingController extends Controller
         $clubId = session('club_id');
         $club = Club::with('address.province', 'address.commune')->findOrFail($clubId);
         $provinces = Province::all();
-        $wordCommitmentTemplate = Setting::getValue($clubId, 'word_commitment_template');
+        $roles = Role::where('club_id', $clubId)->get();
         $bankSettings = Setting::getBankInfo($clubId);
         $mailSettings = Setting::getMany($clubId, [
             'mail_mailer',
@@ -38,7 +35,7 @@ class SettingController extends Controller
             'mail_outlook_tenant_id',
         ]);
 
-        return view('clubs.settings.index', compact('club', 'provinces', 'wordCommitmentTemplate', 'bankSettings', 'mailSettings'));
+        return view('clubs.settings.index', compact('club', 'provinces', 'bankSettings', 'mailSettings', 'roles'));
     }
 
     public function updateGeneralSettings(Request $request)
@@ -106,36 +103,6 @@ class SettingController extends Controller
         $provinceId = $request->province_id;
         $communes = Commune::where('province_id', $provinceId)->get();
         return response()->json($communes);
-    }
-
-    public function updateWordCommitmentTemplate(Request $request)
-    {
-        $request->validate([
-            'word_commitment_template' => 'required|mimes:docx|max:5120',
-        ]);
-        $clubId = session('club_id');
-        $currentTemplate = Setting::getValue($clubId, 'word_commitment_template');
-        if ($currentTemplate && Storage::exists($currentTemplate)) {
-            Storage::delete($currentTemplate);
-        }
-        $file = $request->file('word_commitment_template');
-        $filename = 'commitment_template_' . Str::random(8) . '.' . $file->getClientOriginalExtension();
-        $path = $file->storeAs('word_commitment_templates', $filename);
-        Setting::updateOrCreate(
-            ['club_id' => $clubId, 'key' => 'word_commitment_template'],
-            ['value' => $path]
-        );
-        return back()->with('success', 'Mẫu file cam kết đã được cập nhật thành công.');
-    }
-
-    public function downloadWordCommitmentTemplate()
-    {
-        $clubId = session('club_id');
-        $templatePath = Setting::getValue($clubId, 'word_commitment_template');
-        if (!$templatePath || !Storage::exists($templatePath)) {
-            return back()->with('error', 'File mẫu bản cam kết không tồn tại.');
-        }
-        return Storage::download($templatePath, 'mau_ban_cam_ket.docx');
     }
 
     /**

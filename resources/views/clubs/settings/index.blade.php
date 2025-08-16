@@ -18,11 +18,12 @@
                                     data-bs-toggle="tab" data-bs-target="#tab-general" type="button">Thông Tin
                                     Chung</button>
                             @endif
-                            @if (auth()->user()->hasPermissionForModuleCode('setting_management', 'word_template', 'branch'))
-                                <button class="list-group-item list-group-item-action" id="tab-word-template-btn"
-                                    data-bs-toggle="tab" data-bs-target="#tab-word-template" type="button">Mẫu
-                                    Word</button>
+                            @if (auth()->user()->hasPermissionForModuleCode('setting_management', 'registration', 'branch'))
+                                <button class="list-group-item list-group-item-action" id="tab-registration-btn"
+                                    data-bs-toggle="tab" data-bs-target="#tab-registration" type="button">Đóng/Mở Đăng
+                                    Ký</button>
                             @endif
+
                             @if (auth()->user()->hasPermissionForModuleCode('setting_management', 'payment', 'branch'))
                                 <button class="list-group-item list-group-item-action" id="tab-payment-btn"
                                     data-bs-toggle="tab" data-bs-target="#tab-payment" type="button">Thông Tin Thanh
@@ -52,11 +53,12 @@
                                     @include('clubs.settings.partials.general')
                                 </div>
                             @endif
-                            @if (auth()->user()->hasPermissionForModuleCode('setting_management', 'word_template', 'branch'))
-                                <div class="tab-pane fade" id="tab-word-template">
-                                    @include('clubs.settings.partials.word-template')
+                            @if (auth()->user()->hasPermissionForModuleCode('setting_management', 'registration', 'branch'))
+                                <div class="tab-pane fade" id="tab-registration">
+                                    @include('clubs.settings.partials.registration')
                                 </div>
                             @endif
+
                             @if (auth()->user()->hasPermissionForModuleCode('setting_management', 'payment', 'branch'))
                                 <div class="tab-pane fade" id="tab-payment">
                                     @include('clubs.settings.partials.payment')
@@ -84,7 +86,8 @@
             // Tab titles mapping
             const tabTitles = {
                 'tab-general-btn': 'Thông Tin Chung',
-                'tab-word-template-btn': 'Mẫu Word',
+                'tab-registration-btn': 'Đóng/Mở Đăng Ký',
+
                 'tab-payment-btn': 'Thông Tin Thanh Toán',
                 'tab-mail-btn': 'Cấu Hình Email',
             };

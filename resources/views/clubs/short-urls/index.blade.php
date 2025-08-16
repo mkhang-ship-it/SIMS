@@ -162,7 +162,7 @@
                                         placeholder="https://example.com" required>
                                 </div>
                                 <div class="col-md-12 mb-3">
-                                    <label for="expires_at" class="form-label">Ngày Hết Hạn</label>
+                                    <label for="expires_at" class="form-label">Thời Gian Hết Hạn</label>
                                     <input type="datetime-local" class="form-control" id="expires_at" name="expires_at">
                                     <div class="form-text">Để trống nếu không muốn đặt thời gian hết hạn.</div>
                                 </div>
@@ -241,7 +241,7 @@
                                                 <div class="col-md-6">
                                                     <p><strong>Ngày tạo:</strong>
                                                         {{ $shortUrl->created_at->format('d/m/Y H:i') }}</p>
-                                                    <p><strong>Ngày hết hạn:</strong>
+                                                    <p><strong>Thời gian hết hạn:</strong>
                                                         {{ $shortUrl->expires_at ? $shortUrl->expires_at->format('d/m/Y H:i') : 'Không có' }}
                                                     </p>
                                                     <p><strong>Trạng thái:</strong>

@@ -338,16 +338,18 @@ class MemberImport implements ToCollection, WithValidation, WithStartRow
                 }
 
                 // Validate status
-                $validStatuses = ['hoạt động', 'không hoạt động', 'active', 'inactive'];
+                $validStatuses = ['hoạt động', 'chờ phê duyệt', 'không hoạt động', 'active', 'pending', 'inactive'];
                 $status = strtolower(trim($mappedRow['status']));
                 if (!in_array($status, $validStatuses)) {
-                    $this->errors[] = "Dòng {$rowNumber}: Trạng thái không hợp lệ (Hoạt động/Không hoạt động).";
+                    $this->errors[] = "Dòng {$rowNumber}: Trạng thái không hợp lệ (Hoạt động/Chờ phê duyệt/Không hoạt động).";
                     continue;
                 }
 
                 // Normalize status
                 $normalizedStatus = 'active';
-                if (in_array($status, ['không hoạt động', 'inactive'])) {
+                if (in_array($status, ['chờ phê duyệt', 'pending'])) {
+                    $normalizedStatus = 'pending';
+                } elseif (in_array($status, ['không hoạt động', 'inactive'])) {
                     $normalizedStatus = 'inactive';
                 }
 

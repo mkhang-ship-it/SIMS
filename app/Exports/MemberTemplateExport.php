@@ -367,10 +367,10 @@ class MemberTemplateSheet implements FromArray, WithHeadings, WithStyles, WithTi
         $statusValidation->setShowErrorMessage(true);
         $statusValidation->setShowDropDown(true);
         $statusValidation->setErrorTitle('Lỗi trạng thái');
-        $statusValidation->setError('Chỉ được chọn: Hoạt động hoặc Không hoạt động');
+        $statusValidation->setError('Chỉ được chọn: Hoạt động hoặc Chờ phê duyệt hoặc Không hoạt động');
         $statusValidation->setPromptTitle('Chọn trạng thái');
         $statusValidation->setPrompt('Chọn trạng thái hoạt động của thành viên');
-        $statusValidation->setFormula1('"Hoạt động,Không hoạt động"');
+        $statusValidation->setFormula1('"Hoạt động,Chờ phê duyệt,Không hoạt động"');
 
         // Copy status validation to more rows
         for ($row = 4; $row <= 1000; $row++) {

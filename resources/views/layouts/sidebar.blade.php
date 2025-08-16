@@ -341,17 +341,35 @@
                     @endif
 
                     @if (auth()->user()->hasPermissionForModuleCode('member_management', 'view', 'branch'))
-                        <li class="slide {{ request()->routeIs('backend.club.members.index') ? 'active' : '' }}">
-                            <a href="{{ route('backend.club.members.index') }}"
-                                class="side-menu__item {{ request()->routeIs('backend.club.members.index') ? 'active' : '' }}">
+                        <li
+                            class="slide has-sub {{ request()->routeIs('backend.club.members.index.active') || request()->routeIs('backend.club.members.index.inactive') || request()->routeIs('backend.club.members.index.pending') ? 'active open' : '' }}">
+                            <a href="javascript:void(0);" class="side-menu__item">
                                 <i class="las la-user-friends side-menu__icon"></i>
                                 <span class="side-menu__label">Quản Lý Thành Viên</span>
+                                <i class="fe fe-chevron-right side-menu__angle"></i>
                             </a>
+                            <ul class="slide-menu child1">
+                                <li
+                                    class="slide {{ request()->routeIs('backend.club.members.index.active') ? 'active' : '' }}">
+                                    <a href="{{ route('backend.club.members.index.active') }}"
+                                        class="side-menu__item {{ request()->routeIs('backend.club.members.index.active') ? 'active' : '' }}">Hoạt
+                                        Động</a>
+                                </li>
+                                <li
+                                    class="slide {{ request()->routeIs('backend.club.members.index.inactive') ? 'active' : '' }}">
+                                    <a href="{{ route('backend.club.members.index.inactive') }}"
+                                        class="side-menu__item {{ request()->routeIs('backend.club.members.index.inactive') ? 'active' : '' }}">Tạm
+                                        Ngưng</a>
+                                </li>
+                                <li
+                                    class="slide {{ request()->routeIs('backend.club.members.index.pending') ? 'active' : '' }}">
+                                    <a href="{{ route('backend.club.members.index.pending') }}"
+                                        class="side-menu__item {{ request()->routeIs('backend.club.members.index.pending') ? 'active' : '' }}">Chờ
+                                        Phê Duyệt</a>
+                                </li>
+                            </ul>
                         </li>
                     @endif
-
-
-
 
 
                     @if (auth()->user()->hasPermissionForModuleCode('award_management', 'view', 'branch'))
@@ -361,6 +379,25 @@
                                 <i class="las la-trophy side-menu__icon"></i>
                                 <span class="side-menu__label">Quản Lý Giải Thưởng</span>
                             </a>
+                        </li>
+                    @endif
+
+                    @if (auth()->user()->hasPermissionForModuleCode('document_type_management', 'view', 'branch'))
+                        <li
+                            class="slide has-sub {{ request()->routeIs('backend.club.document-types.index') ? 'active open' : '' }}">
+                            <a href="javascript:void(0);" class="side-menu__item">
+                                <i class="las la-file-alt side-menu__icon"></i>
+                                <span class="side-menu__label">Quản Lý Văn Bản</span>
+                                <i class="fe fe-chevron-right side-menu__angle"></i>
+                            </a>
+                            <ul class="slide-menu child1">
+                                <li
+                                    class="slide {{ request()->routeIs('backend.club.document-types.index') ? 'active' : '' }}">
+                                    <a href="{{ route('backend.club.document-types.index') }}"
+                                        class="side-menu__item {{ request()->routeIs('backend.club.document-types.index') ? 'active' : '' }}">Danh
+                                        Mục Văn Bản</a>
+                                </li>
+                            </ul>
                         </li>
                     @endif
 

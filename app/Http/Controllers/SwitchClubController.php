@@ -1,5 +1,5 @@
 <?php
-// [AI CHANGE 2024-07-14] Controller cho phép user đổi club mặc định từ topbar
+
 
 namespace App\Http\Controllers;
 
@@ -12,10 +12,19 @@ class SwitchClubController extends Controller
     {
         $user = Auth::user();
         $clubId = $request->input('default_club_id');
-        // Kiểm tra user có thuộc club này không
-        if (!$user->clubs->pluck('id')->contains($clubId)) {
+
+        $userClubRole = $user->userClubRoles()
+            ->where('club_id', $clubId)
+            ->first();
+
+        if (!$userClubRole) {
             return redirect()->back()->with('error', 'Bạn không thuộc câu lạc bộ này!');
         }
+
+        if ($userClubRole->status !== 'active') {
+            return redirect()->back()->with('error', 'Bạn không thể chuyển sang câu lạc bộ này vì tài khoản chưa được kích hoạt!');
+        }
+
         $user->default_club_id = $clubId;
         $user->save();
         $request->session()->put('club_id', $clubId);

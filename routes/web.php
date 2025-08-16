@@ -17,6 +17,7 @@ use App\Http\Controllers\Club\DashboardController as ClubDashboardController;
 use App\Http\Controllers\Club\MemberController as ClubMemberController;
 use App\Http\Controllers\Club\AwardController as ClubAwardController;
 use App\Http\Controllers\Club\DisciplineController as ClubDisciplineController;
+use App\Http\Controllers\Club\DocumentTypeController as ClubDocumentTypeController;
 use App\Http\Controllers\Club\DisciplineRecordController as ClubDisciplineRecordController;
 use App\Http\Controllers\Club\MyPointsController as ClubMyPointsController;
 use App\Http\Controllers\DisciplineRecordController;
@@ -51,6 +52,8 @@ use App\Http\Controllers\LogController;
 use App\Http\Controllers\ShortUrlController;
 use App\Http\Controllers\Club\ShortUrlController as ClubShortUrlController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\Club\RegistrationSettingsController as ClubRegistrationSettingsController;
+use App\Http\Controllers\Auth\RegisterController;
 
 // Bypass route for maintenance mode - handled entirely by middleware
 Route::middleware(['logsystem', 'block_ios'])->get('/bypass/{token}', function ($token) {
@@ -87,6 +90,9 @@ Route::middleware(['logsystem', 'block_ios'])->get('/', function () {
 Route::middleware(['guest', 'logsystem', 'block_ios'])->group(function () {
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [LoginController::class, 'login']);
+
+    Route::get('/register/{token}', [RegisterController::class, 'showRegistrationForm'])->name('register');
+    Route::post('/register/{token}', [RegisterController::class, 'register'])->name('register.post');
 
     // GitHub OAuth routes
     Route::get('/auth/github', [LoginController::class, 'redirectToGitHub'])->name('auth.github');
@@ -309,7 +315,9 @@ Route::middleware(['auth', 'logsystem', 'block_ios'])->prefix('club')->group(fun
 
 
         // Members routes
-        Route::get('/members', [ClubMemberController::class, 'index'])->name('members.index')->middleware('CheckPermission:member_management,view,branch');
+        Route::get('/members/list/active', [ClubMemberController::class, 'indexActive'])->name('members.index.active')->middleware('CheckPermission:member_management,view,branch');
+        Route::get('/members/list/inactive', [ClubMemberController::class, 'indexInactive'])->name('members.index.inactive')->middleware('CheckPermission:member_management,view,branch');
+        Route::get('/members/list/pending', [ClubMemberController::class, 'indexPending'])->name('members.index.pending')->middleware('CheckPermission:member_management,view,branch');
         Route::post('/members', [ClubMemberController::class, 'store'])->name('members.store')->middleware('CheckPermission:member_management,create,branch');
         Route::get('/members/{member}', [ClubMemberController::class, 'show'])->name('members.show')->middleware('CheckPermission:member_management,view,branch');
         Route::put('/members/{member}', [ClubMemberController::class, 'update'])->name('members.update')->middleware('CheckPermission:member_management,edit,branch');
@@ -319,6 +327,7 @@ Route::middleware(['auth', 'logsystem', 'block_ios'])->prefix('club')->group(fun
         Route::post('/members/import/excel', [ClubMemberController::class, 'import'])->name('members.import')->middleware('CheckPermission:member_management,create,branch');
         Route::get('/members/export/template', [ClubMemberController::class, 'exportTemplate'])->name('members.export-template')->middleware('CheckPermission:member_management,view,branch');
         Route::get('/members/export/excel', [ClubMemberController::class, 'exportMembersExcel'])->name('members.export')->middleware('CheckPermission:member_management,view,branch');
+        Route::post('/members/{member}/approve', [ClubMemberController::class, 'approveMember'])->name('members.approve')->middleware('CheckPermission:member_management,approve,branch');
 
         // Awards routes
         Route::get('/awards', [ClubAwardController::class, 'index'])->name('awards.index')->middleware('CheckPermission:award_management,view,branch');
@@ -339,6 +348,13 @@ Route::middleware(['auth', 'logsystem', 'block_ios'])->prefix('club')->group(fun
         Route::delete('/disciplines/{discipline}', [ClubDisciplineController::class, 'destroy'])->name('disciplines.destroy')->middleware('CheckPermission:discipline_management,delete,branch');
         Route::post('/disciplines/import', [ClubDisciplineController::class, 'import'])->name('disciplines.import')->middleware('CheckPermission:discipline_management,create,branch');
         Route::get('/disciplines/export-template', [ClubDisciplineController::class, 'exportTemplate'])->name('disciplines.export-template')->middleware('CheckPermission:discipline_management,view,branch');
+
+        // Document Types routes
+        Route::get('/document-types', [ClubDocumentTypeController::class, 'index'])->name('document-types.index')->middleware('CheckPermission:document_type_management,view,branch');
+        Route::post('/document-types', [ClubDocumentTypeController::class, 'store'])->name('document-types.store')->middleware('CheckPermission:document_type_management,create,branch');
+        Route::put('/document-types/{documentType}', [ClubDocumentTypeController::class, 'update'])->name('document-types.update')->middleware('CheckPermission:document_type_management,edit,branch');
+        Route::delete('/document-types/{documentType}', [ClubDocumentTypeController::class, 'destroy'])->name('document-types.destroy')->middleware('CheckPermission:document_type_management,delete,branch');
+        Route::get('/document-types/{documentType}/download-template', [ClubDocumentTypeController::class, 'downloadTemplate'])->name('document-types.download-template')->middleware('CheckPermission:document_type_management,view,branch');
 
         // Discipline Records routes
         Route::get('/discipline-records', [ClubDisciplineRecordController::class, 'index'])->name('discipline-records.index')->middleware('CheckPermission:discipline_record_management,view,branch');
@@ -454,10 +470,9 @@ Route::middleware(['auth', 'logsystem', 'block_ios'])->prefix('club')->group(fun
         Route::post('/settings/general', [ClubSettingController::class, 'updateGeneralSettings'])->name('settings.general.update')->middleware('CheckPermission:setting_management,general,branch');
         // Get communes for address selection (AJAX)
         Route::get('/settings/get-communes', [ClubSettingController::class, 'getCommunes'])->name('settings.get-communes')->middleware('CheckPermission:setting_management,general,branch');
-        // Update word commitment template
-        Route::post('/settings/word-commitment-template', [ClubSettingController::class, 'updateWordCommitmentTemplate'])->name('settings.word-commitment-template.update')->middleware('CheckPermission:setting_management,word_template,branch');
-        // Download word commitment template
-        Route::get('/settings/word-commitment-template/download', [ClubSettingController::class, 'downloadWordCommitmentTemplate'])->name('settings.word-commitment-template.download')->middleware('CheckPermission:setting_management,word_template,branch');
+
+        // Registration settings routes
+        Route::put('/settings/registration', [ClubRegistrationSettingsController::class, 'update'])->name('settings.registration.update')->middleware('CheckPermission:setting_management,registration,branch');
         // Bank settings routes
         Route::get('/settings/banks', [ClubSettingController::class, 'getBanksFromAPI'])->name('settings.banks.api')->middleware('CheckPermission:setting_management,payment,branch');
         Route::post('/settings/bank', [ClubSettingController::class, 'updateBankSettings'])->name('settings.bank.update')->middleware('CheckPermission:setting_management,payment,branch');

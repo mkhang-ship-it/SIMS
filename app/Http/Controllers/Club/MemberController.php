@@ -22,7 +22,7 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class MemberController extends Controller
 {
-    public function index()
+    public function indexActive()
     {
         $clubId = session('club_id');
         $user = Auth::user();
@@ -30,6 +30,7 @@ class MemberController extends Controller
         // Lấy danh sách UserClubRole theo club_id, eager load user, major, course, role
         $members = UserClubRole::with(['user.major', 'user.course', 'role'])
             ->where('club_id', $clubId)
+            ->where('status', 'active')
             ->get();
 
         // Lấy danh sách users chưa trong club để gán
@@ -52,7 +53,75 @@ class MemberController extends Controller
             ->get();
         $courses = Course::where('status', 'active')->get();
 
-        return view('clubs.members.index', compact('members', 'availableUsers', 'roles', 'majors', 'courses'));
+        return view('clubs.members.index_active', compact('members', 'availableUsers', 'roles', 'majors', 'courses'));
+    }
+
+    public function indexPending()
+    {
+        $clubId = session('club_id');
+        $user = Auth::user();
+
+        // Lấy danh sách UserClubRole theo club_id, eager load user, major, course, role
+        $members = UserClubRole::with(['user.major', 'user.course', 'role'])
+            ->where('club_id', $clubId)
+            ->where('status', 'pending')
+            ->get();
+
+        // Lấy danh sách users chưa trong club để gán
+        $availableUsers = User::where('type', 'branch')
+            ->whereNotIn('id', function ($query) use ($clubId) {
+                $query->select('user_id')
+                    ->from('user_club_roles')
+                    ->where('club_id', $clubId);
+            })
+            ->orderBy('name')
+            ->get();
+
+        $roles = Role::where('club_id', $clubId)
+            ->where('status', 'active')
+            ->get();
+
+        $majors = Major::where('status', 'active')
+            ->whereNotNull('parent_id')
+            ->orderBy('name')
+            ->get();
+        $courses = Course::where('status', 'active')->get();
+
+        return view('clubs.members.index_pending', compact('members', 'availableUsers', 'roles', 'majors', 'courses'));
+    }
+
+    public function indexInactive()
+    {
+        $clubId = session('club_id');
+        $user = Auth::user();
+
+        // Lấy danh sách UserClubRole theo club_id, eager load user, major, course, role
+        $members = UserClubRole::with(['user.major', 'user.course', 'role'])
+            ->where('club_id', $clubId)
+            ->where('status', 'inactive')
+            ->get();
+
+        // Lấy danh sách users chưa trong club để gán
+        $availableUsers = User::where('type', 'branch')
+            ->whereNotIn('id', function ($query) use ($clubId) {
+                $query->select('user_id')
+                    ->from('user_club_roles')
+                    ->where('club_id', $clubId);
+            })
+            ->orderBy('name')
+            ->get();
+
+        $roles = Role::where('club_id', $clubId)
+            ->where('status', 'active')
+            ->get();
+
+        $majors = Major::where('status', 'active')
+            ->whereNotNull('parent_id')
+            ->orderBy('name')
+            ->get();
+        $courses = Course::where('status', 'active')->get();
+
+        return view('clubs.members.index_inactive', compact('members', 'availableUsers', 'roles', 'majors', 'courses'));
     }
 
     public function store(Request $request)
@@ -73,7 +142,7 @@ class MemberController extends Controller
             'major_id' => 'nullable|exists:majors,id',
             'course_id' => 'nullable|exists:courses,id',
             'role_id' => 'required|exists:roles,id',
-            'status' => 'required|in:active,inactive'
+            'status' => 'required|in:active,pending,inactive'
         ]);
 
         $role = Role::where('id', $validatedData['role_id'])
@@ -111,7 +180,7 @@ class MemberController extends Controller
                 $existingUser->update(['default_club_id' => $clubId]);
             }
 
-            return redirect()->route('backend.club.members.index')
+            return redirect()->back()
                 ->with('success', 'Thành viên đã tồn tại trong hệ thống và đã được thêm vào câu lạc bộ thành công.');
         }
 
@@ -139,7 +208,7 @@ class MemberController extends Controller
             // Set default_club_id for new user
             $newUser->update(['default_club_id' => $clubId]);
 
-            return redirect()->route('backend.club.members.index')
+            return redirect()->back()
                 ->with('success', 'Thành viên mới đã được tạo và thêm vào câu lạc bộ thành công.');
         } catch (\Exception $e) {
             // Delete uploaded avatar if exists
@@ -158,7 +227,7 @@ class MemberController extends Controller
         $member = User::findOrFail($userId);
         $userClubRole = UserClubRole::where('user_id', $userId)->where('club_id', $clubId)->first();
         if (!$userClubRole) {
-            return redirect()->route('backend.club.members.index')
+            return redirect()->back()
                 ->with('error', 'Không tìm thấy thành viên trong câu lạc bộ này.');
         }
 
@@ -180,7 +249,7 @@ class MemberController extends Controller
             'major_id' => 'nullable|exists:majors,id',
             'course_id' => 'nullable|exists:courses,id',
             'role_id' => 'required|exists:roles,id',
-            'status' => 'required|in:active,inactive'
+            'status' => 'required|in:active,pending,inactive'
         ]);
 
         $role = Role::where('id', $validatedData['role_id'])
@@ -220,7 +289,7 @@ class MemberController extends Controller
         $userClubRole->status = $validatedData['status'];
         $userClubRole->save();
 
-        return redirect()->route('backend.club.members.index')
+        return redirect()->back()
             ->with('success', 'Thành viên đã được cập nhật thành công.');
     }
 
@@ -231,7 +300,7 @@ class MemberController extends Controller
 
         // Check if user is trying to remove themselves
         if ($member->id === $user->id) {
-            return redirect()->route('backend.club.members.index')
+            return redirect()->back()
                 ->with('error', 'Bạn không thể tự xóa chính mình khỏi câu lạc bộ.');
         }
 
@@ -241,13 +310,13 @@ class MemberController extends Controller
             ->first();
 
         if (!$userClubRole) {
-            return redirect()->route('backend.club.members.index')
+            return redirect()->back()
                 ->with('error', 'Không tìm thấy thành viên trong câu lạc bộ này.');
         }
 
         // Check if the member has admin role in this club
         if ($userClubRole->role && $userClubRole->role->is_admin == true) {
-            return redirect()->route('backend.club.members.index')
+            return redirect()->back()
                 ->with('error', 'Bạn không thể xóa thành viên có vai trò là quản trị viên.');
         }
 
@@ -276,10 +345,10 @@ class MemberController extends Controller
             // Delete the UserClubRole record (remove from club only)
             $userClubRole->delete();
 
-            return redirect()->route('backend.club.members.index')
+            return redirect()->back()
                 ->with('success', 'Thành viên đã được xóa khỏi câu lạc bộ thành công.');
         } catch (\Exception $e) {
-            return redirect()->route('backend.club.members.index')
+            return redirect()->back()
                 ->with('error', 'Có lỗi xảy ra khi xóa thành viên khỏi câu lạc bộ: ' . $e->getMessage());
         }
     }
@@ -335,7 +404,7 @@ class MemberController extends Controller
                 $user->update(['default_club_id' => $clubId]);
             }
 
-            return redirect()->route('backend.club.members.index')->with('success', 'Thành viên đã được gán vào câu lạc bộ thành công!');
+            return redirect()->back()->with('success', 'Thành viên đã được gán vào câu lạc bộ thành công!');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Có lỗi xảy ra khi gán thành viên: ' . $e->getMessage());
         }
@@ -381,11 +450,11 @@ class MemberController extends Controller
                 $errorMessage = implode("<br>", $errors);
                 $message .= " Một số lỗi xảy ra:<br>" . $errorMessage;
 
-                return redirect()->route('backend.club.members.index')
+                return redirect()->back()
                     ->with('warning', $message);
             }
 
-            return redirect()->route('backend.club.members.index')
+            return redirect()->back()
                 ->with('success', $message);
         } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
             $failures = $e->failures();
@@ -445,5 +514,18 @@ class MemberController extends Controller
             return redirect()->back()
                 ->with('error', 'Có lỗi xảy ra khi xuất dữ liệu: ' . $e->getMessage());
         }
+    }
+
+    public function approveMember($member)
+    {
+        $updateUserClubRole = UserClubRole::where('id', $member)->first();
+
+        if (!$updateUserClubRole) {
+            return redirect()->back()->with('error', 'Không tìm thấy thành viên trong câu lạc bộ này.');
+        }
+
+        $updateUserClubRole->update(['status' => 'active']);
+
+        return redirect()->back()->with('success', 'Thành viên đã được phê duyệt thành công!');
     }
 }

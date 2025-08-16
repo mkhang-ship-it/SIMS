@@ -186,10 +186,6 @@ foreach ($htmlAttributes as $key => $value) {
                                     </div>
                                 </div>
                             </form>
-                            <div class="text-center">
-                                <p class="fs-12 text-muted mt-3">Không có tài khoản? <a href=""
-                                        class="text-primary">Đăng Ký</a></p>
-                            </div>
                             @php
                                 $githubEnabled =
                                     ($oauthSettings['github_oauth_enabled'] ?? '0') === '1' &&

@@ -563,7 +563,6 @@
                                 <div class="avatar avatar-xl avatar-rounded bg-warning-transparent mb-3">
                                     <i class="ri-user-shared-line fs-2"></i>
                                 </div>
-                                <h6 class="mb-2">Đăng nhập mạo danh</h6>
                                 <p class="mb-2">
                                     Bạn có chắc chắn muốn đăng nhập với tài khoản của
                                     <strong>{{ $member->name }}</strong>?

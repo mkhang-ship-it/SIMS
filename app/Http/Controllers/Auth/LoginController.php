@@ -1,12 +1,5 @@
 <?php
 
-// LoginController.php - Updated to provide specific error messages, account status checking, GitHub and Microsoft OAuth
-// Methods: showLoginForm(), login(), logout() for handling user authentication
-// Added specific error messages for email not found vs wrong password, removed remember functionality
-// Added account status validation to prevent inactive users from logging in
-// Added GitHub OAuth methods: redirectToGitHub(), handleGitHubCallback() for social authentication
-// Added Microsoft OAuth methods: redirectToMicrosoft(), handleMicrosoftCallback() for Microsoft Azure authentication
-
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;

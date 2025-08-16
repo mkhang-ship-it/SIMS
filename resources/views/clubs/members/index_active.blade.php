@@ -1,6 +1,3 @@
-{{-- Club Members Index - Updated: Added email checking functionality for adding new members --}}
-{{-- [2024-12-19] Updated: Added real-time email validation with AJAX, form field disabling when email exists --}}
-{{-- [2024-12-19] Updated: Made all fields required in both edit and add member forms (gender, birthday, identity_card_code, phone, student_code, major_id, course_id) --}}
 @extends('layouts.app')
 
 @section('content')
@@ -91,7 +88,6 @@
                                         <th style="text-align: center !important;">Chuyên Ngành</th>
                                         <th style="text-align: center !important;">Khóa Học</th>
                                         <th style="text-align: center !important;">Vai Trò</th>
-                                        <th style="text-align: center !important;">Trạng Thái</th>
                                         <th style="text-align: center !important;">Thao Tác</th>
                                     </tr>
                                 </thead>
@@ -131,20 +127,6 @@
                                                 @else
                                                     <span class="badge bg-secondary">-</span>
                                                 @endif
-                                            </td>
-                                            <td class="text-center">
-                                                @switch($member->status)
-                                                    @case('active')
-                                                        <span class="badge bg-success">Hoạt Động</span>
-                                                    @break
-
-                                                    @case('inactive')
-                                                        <span class="badge bg-warning">Tạm Ngưng</span>
-                                                    @break
-
-                                                    @default
-                                                        <span class="badge bg-light text-dark">{{ $member->status }}</span>
-                                                @endswitch
                                             </td>
                                             <td class="text-center">
                                                 <div class="gap-2 fs-15">
@@ -210,8 +192,8 @@
         <!-- Edit Member Modal -->
         @if (auth()->user()->hasPermissionForModuleCode('member_management', 'edit', 'branch'))
             <div class="modal fade" id="editMemberModal{{ $member->user->id }}" tabindex="-1"
-                aria-labelledby="editMemberModalLabel{{ $member->user->id }}" aria-hidden="true"
-                data-bs-backdrop="static" data-bs-keyboard="false">
+                aria-labelledby="editMemberModalLabel{{ $member->user->id }}" aria-hidden="true" data-bs-backdrop="static"
+                data-bs-keyboard="false">
                 <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -281,11 +263,11 @@
                                     <div class="col-md-6">
                                         <div class="mb-3">
                                             <label for="edit_identity_card_code{{ $member->user->id }}"
-                                                class="form-label">CCCD/CMND <span class="text-danger">*</span></label>
+                                                class="form-label">CCCD/CMND</label>
                                             <input type="text" class="form-control"
                                                 id="edit_identity_card_code{{ $member->user->id }}"
-                                                name="identity_card_code" value="{{ $member->user->identity_card_code }}"
-                                                required>
+                                                name="identity_card_code"
+                                                value="{{ $member->user->identity_card_code }}">
                                         </div>
                                     </div>
                                     <div class="col-md-6">
@@ -400,6 +382,9 @@
                                                 <option value="active"
                                                     {{ $member->user->status == 'active' ? 'selected' : '' }}>
                                                     Hoạt Động</option>
+                                                <option value="pending"
+                                                    {{ $member->user->status == 'pending' ? 'selected' : '' }}>
+                                                    Chờ Phê Duyệt</option>
                                                 <option value="inactive"
                                                     {{ $member->user->status == 'inactive' ? 'selected' : '' }}>
                                                     Tạm Ngưng</option>
@@ -506,7 +491,6 @@
                                 <div class="avatar avatar-xl avatar-rounded bg-warning-transparent mb-3">
                                     <i class="ri-user-shared-line fs-2"></i>
                                 </div>
-                                <h6 class="mb-2">Đăng nhập mạo danh</h6>
                                 <p class="mb-2">
                                     Bạn có chắc chắn muốn đăng nhập với tài khoản của
                                     <strong>{{ $member->user->name }}</strong>?
@@ -614,11 +598,9 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label for="add_identity_card_code" class="form-label">CCCD/CMND <span
-                                                class="text-danger">*</span></label>
+                                        <label for="add_identity_card_code" class="form-label">CCCD/CMND</label>
                                         <input type="text" class="form-control" id="add_identity_card_code"
-                                            name="identity_card_code" value="{{ old('identity_card_code') }}" required
-                                            disabled>
+                                            name="identity_card_code" value="{{ old('identity_card_code') }}" disabled>
                                         @error('identity_card_code')
                                             <div class="text-danger small">{{ $message }}</div>
                                         @enderror
@@ -729,6 +711,8 @@
                                             <option value="active" {{ old('status') == 'active' ? 'selected' : '' }}>Hoạt
                                                 Động
                                             </option>
+                                            <option value="pending" {{ old('status') == 'pending' ? 'selected' : '' }}>
+                                                Chờ Phê Duyệt</option>
                                             <option value="inactive" {{ old('status') == 'inactive' ? 'selected' : '' }}>
                                                 Tạm Ngưng
                                             </option>

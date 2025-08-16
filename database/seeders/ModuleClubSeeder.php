@@ -36,6 +36,7 @@ class ModuleClubSeeder extends Seeder
                     ['name' => 'create', 'display_name' => 'Tạo mới'],
                     ['name' => 'edit', 'display_name' => 'Chỉnh sửa'],
                     ['name' => 'delete', 'display_name' => 'Xóa'],
+                    ['name' => 'approve', 'display_name' => 'Phê duyệt thành viên'],
                     ['name' => 'my_profile', 'display_name' => 'Hồ sơ cá nhân']
                 ]
             ],
@@ -119,10 +120,10 @@ class ModuleClubSeeder extends Seeder
                 'permissions' => [
                     ['name' => 'view', 'display_name' => 'Xem'],
                     ['name' => 'general', 'display_name' => 'Thông tin chung'],
-                    ['name' => 'word_template', 'display_name' => 'Mẫu word'],
                     ['name' => 'payment', 'display_name' => 'Thanh toán'],
                     ['name' => 'api_key', 'display_name' => 'API Keys'],
-                    ['name' => 'mail', 'display_name' => 'Email']
+                    ['name' => 'mail', 'display_name' => 'Email'],
+                    ['name' => 'registration', 'display_name' => 'Đóng/Mở đăng ký']
                 ]
             ],
             [
@@ -196,6 +197,29 @@ class ModuleClubSeeder extends Seeder
                     ['name' => 'create', 'display_name' => 'Tạo mới'],
                     ['name' => 'edit', 'display_name' => 'Chỉnh sửa'],
                     ['name' => 'delete', 'display_name' => 'Xóa'],
+                ]
+            ],
+            [
+                'module_code' => 'document_type_management',
+                'name' => 'Quản Lý Loại Văn Bản',
+                'permissions' => [
+                    ['name' => 'view', 'display_name' => 'Xem'],
+                    ['name' => 'create', 'display_name' => 'Tạo mới'],
+                    ['name' => 'edit', 'display_name' => 'Chỉnh sửa'],
+                    ['name' => 'delete', 'display_name' => 'Xóa'],
+                ]
+            ],
+            [
+                'module_code' => 'document_management',
+                'name' => 'Quản Lý Văn Bản',
+                'permissions' => [
+                    ['name' => 'view', 'display_name' => 'Xem'],
+                    ['name' => 'create', 'display_name' => 'Tạo mới'],
+                    ['name' => 'edit', 'display_name' => 'Chỉnh sửa'],
+                    ['name' => 'delete', 'display_name' => 'Xóa'],
+                    ['name' => 'approve', 'display_name' => 'Phê duyệt'],
+                    ['name' => 'reject', 'display_name' => 'Từ chối'],
+                    ['name' => 'my_documents', 'display_name' => 'Văn bản của tôi'],
                 ]
             ]
         ];

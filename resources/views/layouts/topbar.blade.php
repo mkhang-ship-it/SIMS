@@ -1,3 +1,4 @@
+{{-- [AI CHANGE 2024-12-19] Topbar chỉ hiển thị clubs có status active cho user --}}
 <header class="app-header">
 
     <div class="main-header-container container-fluid">
@@ -92,7 +93,14 @@
 
             @php
                 $user = Auth::user();
-                $clubs = $user->clubs ?? collect();
+                // Chỉ lấy clubs có status active
+                $clubs = $user
+                    ->userClubRoles()
+                    ->where('status', 'active')
+                    ->with('club')
+                    ->get()
+                    ->pluck('club')
+                    ->filter();
             @endphp
 
             @php
@@ -362,20 +370,6 @@
                                         <small class="text-muted">{{ Auth::user()->email }}</small>
                                     </div>
                                 </div>
-                            </div>
-
-                            <div class="col-12">
-                                <label class="form-label text-muted small">Được mạo danh bởi:</label>
-                                <div class="fw-semibold">{{ $impersonator['name'] }}</div>
-                                <small class="text-muted">
-                                    @if ($impersonator['type'] === 'central')
-                                        Admin Trung Tâm
-                                    @elseif($impersonator['type'] === 'branch')
-                                        Admin Câu Lạc Bộ
-                                    @else
-                                        {{ ucfirst($impersonator['type']) }}
-                                    @endif
-                                </small>
                             </div>
                         </div>
                     </div>

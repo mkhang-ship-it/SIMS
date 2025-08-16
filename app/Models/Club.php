@@ -3,11 +3,13 @@
 // Added roles(), awards(), invoices() and events() relationships to manage club-specific data
 // Updated: Thêm quan hệ userClubRoles (hasMany) và users (belongsToMany qua user_club_roles) cho multi-club
 // Added: address() relationship to support club addresses
+// Added: registration settings fields and methods
 
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Support\Str;
 
 class Club extends Model
 {
@@ -21,8 +23,53 @@ class Club extends Model
         'image_horizontal_light',
         'image_horizontal_dark',
         'image_square_light',
-        'image_square_dark'
+        'image_square_dark',
+        'registration_enabled',
+        'registration_token',
+        'registration_opened_at',
+        'registration_closed_at',
+        'default_role_id'
     ];
+
+    protected $casts = [
+        'registration_enabled' => 'boolean',
+        'registration_opened_at' => 'datetime',
+        'registration_closed_at' => 'datetime',
+    ];
+
+    /**
+     * Generate a unique 12-character registration token
+     */
+    public function generateRegistrationToken()
+    {
+        do {
+            $token = Str::random(12);
+        } while (static::where('registration_token', $token)->exists());
+
+        return $token;
+    }
+
+    /**
+     * Check if registration is currently open
+     */
+    public function isRegistrationOpen()
+    {
+        if (!$this->registration_enabled) {
+            return false;
+        }
+
+        $now = now();
+
+        if ($this->registration_opened_at && $now->lt($this->registration_opened_at)) {
+            return false;
+        }
+
+        if ($this->registration_closed_at && $now->gt($this->registration_closed_at)) {
+            return false;
+        }
+
+        return true;
+    }
 
     /**
      * Get all roles for this club

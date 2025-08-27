@@ -344,3 +344,26 @@
         </div>
     </div>
 </div>
+
+<script type="module">
+    import Typebot from 'https://cdn.jsdelivr.net/npm/@typebot.io/js@0/dist/web.js'
+
+    Typebot.initBubble({
+        typebot: "my-typebot-9bu96b2",
+        apiHost: "https://bot.techzone.edu.vn",
+        previewMessage: {
+            message: "Mình có thể giúp gì cho bạn?",
+            autoShowDelay: 5000,
+            avatarUrl: "https://assets-v2.lottiefiles.com/a/decf4a3e-f47e-11ef-9a9d-2386c1245eb1/LY89s3JCNl.gif",
+        },
+        theme: {
+            button: {
+                backgroundColor: "#0042DA",
+                customIconSrc: "https://assets-v2.lottiefiles.com/a/decf4a3e-f47e-11ef-9a9d-2386c1245eb1/LY89s3JCNl.gif",
+            },
+            chatWindow: {
+                backgroundColor: "#FFFFFF"
+            },
+        },
+    });
+</script>

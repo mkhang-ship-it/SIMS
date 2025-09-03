@@ -1,12 +1,3 @@
-{{--
-Latest Changes: Bổ sung modal thu hồi và xóa
-- Thay thế confirm dialog đơn giản bằng modal có thông tin chi tiết
-- Modal thu hồi: yêu cầu lý do thu hồi, hiển thị thông tin bản ghi, chỉ cho records có status 'active'
-- Modal xóa: yêu cầu lý do xóa, checkbox xác nhận, cảnh báo không thể hoàn tác
-- Cải thiện UX với thông tin rõ ràng và xác nhận an toàn
-- Buttons trong action column được chuyển từ form submission sang modal trigger
---}}
-
 @extends('layouts.app')
 
 @section('content')
@@ -47,8 +38,7 @@ Latest Changes: Bổ sung modal thu hồi và xóa
                     </a>
                 </li>
                 @endif
-                @if (auth()->user()->hasPermissionForModuleCode('discipline_record_management', 'view_summary',
-                'branch'))
+                @if (auth()->user()->hasPermissionForModuleCode('discipline_record_management', 'view_summary', 'branch'))
                 <li>
                     <a class="dropdown-item" href="{{ route('backend.club.discipline-records.summary') }}">
                         <i class="ti ti-chart-bar"></i> Tổng Hợp Điểm
@@ -198,28 +188,21 @@ Latest Changes: Bổ sung modal thu hồi và xóa
                                     </td>
                                     <td class="text-center">
                                         <div class="gap-2 fs-15">
-                                            @if
-                                            (auth()->user()->hasPermissionForModuleCode('discipline_record_management',
-                                            'edit', 'branch'))
+                                            @if (auth()->user()->hasPermissionForModuleCode('discipline_record_management', 'edit', 'branch'))
                                             <button class="btn btn-icon btn-sm btn-info-light" data-bs-toggle="modal"
                                                 data-bs-target="#editRecordModal{{ $record->id }}" title="Chỉnh sửa">
                                                 <i class="ri-edit-line"></i>
                                             </button>
                                             @endif
 
-                                            @if (
-                                            $record->status === 'active' &&
-                                            auth()->user()->hasPermissionForModuleCode('discipline_record_management',
-                                            'revoke', 'branch'))
+                                            @if ($record->status === 'active' && auth()->user()->hasPermissionForModuleCode('discipline_record_management', 'revoke', 'branch'))
                                             <button class="btn btn-icon btn-sm btn-warning-light" data-bs-toggle="modal"
                                                 data-bs-target="#revokeRecordModal{{ $record->id }}" title="Thu hồi">
                                                 <i class="ri-close-circle-line"></i>
                                             </button>
                                             @endif
 
-                                            @if
-                                            (auth()->user()->hasPermissionForModuleCode('discipline_record_management',
-                                            'delete', 'branch'))
+                                            @if (auth()->user()->hasPermissionForModuleCode('discipline_record_management', 'delete', 'branch'))
                                             <button class="btn btn-icon btn-sm btn-danger-light" data-bs-toggle="modal"
                                                 data-bs-target="#deleteRecordModal{{ $record->id }}" title="Xóa">
                                                 <i class="ri-delete-bin-line"></i>
@@ -304,9 +287,7 @@ Latest Changes: Bổ sung modal thu hồi và xóa
 @endif
 
 <!-- Revoke Record Modal -->
-@if (
-$record->status === 'active' &&
-auth()->user()->hasPermissionForModuleCode('discipline_record_management', 'revoke', 'branch'))
+@if ($record->status === 'active' && auth()->user()->hasPermissionForModuleCode('discipline_record_management', 'revoke', 'branch'))
 <div class="modal fade" id="revokeRecordModal{{ $record->id }}" tabindex="-1" aria-hidden="true"
     data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered">

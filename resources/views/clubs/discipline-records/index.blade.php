@@ -206,8 +206,7 @@
                                             </button>
                                             @endif
 
-                                            @if
-                                            (auth()->user()->hasPermissionForModuleCode('discipline_record_management',
+                                            @if(auth()->user()->hasPermissionForModuleCode('discipline_record_management',
                                             'delete', 'branch'))
                                             <button class="btn btn-icon btn-sm btn-danger-light" data-bs-toggle="modal"
                                                 data-bs-target="#deleteRecordModal{{ $record->id }}" title="Xóa">

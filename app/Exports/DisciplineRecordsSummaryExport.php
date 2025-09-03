@@ -89,7 +89,7 @@ class DisciplineRecordsSummaryExport implements FromCollection, WithHeadings, Wi
                     $data->push([
                         'stt' => $rowNumber,
                         'name' => $member->user->name,
-                        'student_id' => $member->user->student_id ?? '',
+                        'student_code' => $member->user->student_code ?? '',
                         'role' => $member->role->name ?? '-',
                         'email' => $member->user->email,
                         'description' => $record->discipline->name . ' (' .
@@ -110,7 +110,7 @@ class DisciplineRecordsSummaryExport implements FromCollection, WithHeadings, Wi
                 $data->push([
                     'stt' => $rowNumber,
                     'name' => $member->user->name,
-                    'student_id' => $member->user->student_id ?? '',
+                    'student_code' => $member->user->student_code ?? '',
                     'role' => $member->role->name ?? '-',
                     'email' => $member->user->email,
                     'description' => '-',

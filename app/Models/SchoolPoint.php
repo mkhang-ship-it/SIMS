@@ -118,18 +118,22 @@ class SchoolPoint extends Model
                 $clubId
             );
 
+            // Check if user is leader - must have role and role.is_leader = 'leader'
+            $isLeader = false;
+            if ($member->role) {
+                $isLeader = $member->role->is_leader === 'leader';
+            }
+
             $memberPoints[$member->user_id] = [
                 'club_points' => $clubPoints,
-                'is_leader' => $member->role && $member->role->is_leader === 'leader'
+                'is_leader' => $isLeader
             ];
 
-            // Track maximum club points (for negative points, we want the least negative/highest value)
             if ($clubPoints > $maxClubPoints) {
                 $maxClubPoints = $clubPoints;
             }
         }
 
-        // If all members have 0 or negative points, set max to 1 to avoid division by zero
         if ($maxClubPoints <= 0) {
             $maxClubPoints = 1;
         }
@@ -147,7 +151,7 @@ class SchoolPoint extends Model
                 $baseSchoolPoints = 0;
             }
 
-            // Add leader bonus (+5 points)
+            // Add leader bonus (+5 points) ONLY if user has leader role
             $finalSchoolPoints = $baseSchoolPoints;
             if ($isLeader) {
                 $finalSchoolPoints += 5;
@@ -187,5 +191,53 @@ class SchoolPoint extends Model
     {
         // Recalculate for the entire club to maintain proper ratios
         static::calculateAndUpdateSchoolPoints($clubId, $semesterId);
+    }
+
+    /**
+     * Check if a user is leader in a specific club
+     */
+    public static function isUserLeaderInClub($userId, $clubId)
+    {
+        $userClubRole = UserClubRole::with('role')
+            ->where('user_id', $userId)
+            ->where('club_id', $clubId)
+            ->where('status', 'active')
+            ->first();
+
+        if (!$userClubRole || !$userClubRole->role) {
+            return false;
+        }
+
+        return $userClubRole->role->is_leader === 'leader';
+    }
+
+    /**
+     * Debug method to check leader status for all users in a club
+     */
+    public static function debugLeaderStatus($clubId)
+    {
+        $clubMembers = UserClubRole::with(['user', 'role'])
+            ->byClub($clubId)
+            ->where('status', 'active')
+            ->get();
+
+        $debug = [];
+        foreach ($clubMembers as $member) {
+            $isLeader = false;
+            if ($member->role) {
+                $isLeader = $member->role->is_leader === 'leader';
+            }
+
+            $debug[] = [
+                'user_id' => $member->user_id,
+                'user_name' => $member->user->name ?? 'Unknown',
+                'role_id' => $member->role_id,
+                'role_name' => $member->role->name ?? 'No Role',
+                'role_is_leader' => $member->role->is_leader ?? 'No Role',
+                'calculated_is_leader' => $isLeader,
+            ];
+        }
+
+        return $debug;
     }
 }

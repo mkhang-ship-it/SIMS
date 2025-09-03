@@ -10,8 +10,6 @@ use App\Models\Club;
 use App\Models\Semester;
 use App\Models\UserClubRole;
 use App\Models\SchoolPoint;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use App\Exports\CentralDisciplineRecordsSummaryExport;
 use Maatwebsite\Excel\Facades\Excel;
 

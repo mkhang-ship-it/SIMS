@@ -189,8 +189,7 @@
                                     </td>
                                     <td class="text-center">
                                         <div class="gap-2 fs-15">
-                                            @if
-                                            (auth()->user()->hasPermissionForModuleCode('discipline_record_management',
+                                            @if(auth()->user()->hasPermissionForModuleCode('discipline_record_management',
                                             'edit', 'branch'))
                                             <button class="btn btn-icon btn-sm btn-info-light" data-bs-toggle="modal"
                                                 data-bs-target="#editRecordModal{{ $record->id }}" title="Chỉnh sửa">

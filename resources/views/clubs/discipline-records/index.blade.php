@@ -341,7 +341,7 @@ auth()->user()->hasPermissionForModuleCode('discipline_record_management', 'revo
                         <strong>Điểm:</strong><br>
                         <span
                             class="badge {{ $record->discipline->discipline_points > 0 ? 'bg-success' : 'bg-danger' }}">
-                            {{ $record->discipline->discipline_points > 0 ? '+' : '' }}{{ $record->formatted_points }}
+                            {{ $record->formatted_points }}
                         </span>
                     </div>
                     <div class="col-md-6">
@@ -408,7 +408,7 @@ auth()->user()->hasPermissionForModuleCode('discipline_record_management', 'revo
                         <strong>Điểm:</strong><br>
                         <span
                             class="badge {{ $record->discipline->discipline_points > 0 ? 'bg-success' : 'bg-danger' }}">
-                            {{ $record->discipline->discipline_points > 0 ? '+' : '' }}{{ $record->formatted_points }}
+                            {{ $record->formatted_points }}
                         </span>
                     </div>
                     <div class="col-md-6">

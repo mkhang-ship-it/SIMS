@@ -38,7 +38,8 @@
                     </a>
                 </li>
                 @endif
-                @if (auth()->user()->hasPermissionForModuleCode('discipline_record_management', 'view_summary', 'branch'))
+                @if (auth()->user()->hasPermissionForModuleCode('discipline_record_management', 'view_summary',
+                'branch'))
                 <li>
                     <a class="dropdown-item" href="{{ route('backend.club.discipline-records.summary') }}">
                         <i class="ti ti-chart-bar"></i> Tổng Hợp Điểm
@@ -188,21 +189,27 @@
                                     </td>
                                     <td class="text-center">
                                         <div class="gap-2 fs-15">
-                                            @if (auth()->user()->hasPermissionForModuleCode('discipline_record_management', 'edit', 'branch'))
+                                            @if
+                                            (auth()->user()->hasPermissionForModuleCode('discipline_record_management',
+                                            'edit', 'branch'))
                                             <button class="btn btn-icon btn-sm btn-info-light" data-bs-toggle="modal"
                                                 data-bs-target="#editRecordModal{{ $record->id }}" title="Chỉnh sửa">
                                                 <i class="ri-edit-line"></i>
                                             </button>
                                             @endif
 
-                                            @if ($record->status === 'active' && auth()->user()->hasPermissionForModuleCode('discipline_record_management', 'revoke', 'branch'))
+                                            @if ($record->status === 'active' &&
+                                            auth()->user()->hasPermissionForModuleCode('discipline_record_management',
+                                            'revoke', 'branch'))
                                             <button class="btn btn-icon btn-sm btn-warning-light" data-bs-toggle="modal"
                                                 data-bs-target="#revokeRecordModal{{ $record->id }}" title="Thu hồi">
                                                 <i class="ri-close-circle-line"></i>
                                             </button>
                                             @endif
 
-                                            @if (auth()->user()->hasPermissionForModuleCode('discipline_record_management', 'delete', 'branch'))
+                                            @if
+                                            (auth()->user()->hasPermissionForModuleCode('discipline_record_management',
+                                            'delete', 'branch'))
                                             <button class="btn btn-icon btn-sm btn-danger-light" data-bs-toggle="modal"
                                                 data-bs-target="#deleteRecordModal{{ $record->id }}" title="Xóa">
                                                 <i class="ri-delete-bin-line"></i>
@@ -287,7 +294,8 @@
 @endif
 
 <!-- Revoke Record Modal -->
-@if ($record->status === 'active' && auth()->user()->hasPermissionForModuleCode('discipline_record_management', 'revoke', 'branch'))
+@if ($record->status === 'active' && auth()->user()->hasPermissionForModuleCode('discipline_record_management',
+'revoke', 'branch'))
 <div class="modal fade" id="revokeRecordModal{{ $record->id }}" tabindex="-1" aria-hidden="true"
     data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered">

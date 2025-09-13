@@ -688,8 +688,8 @@
     let elapsedTicks = 0;
     let excludedIndexes = [];
     let luckyEntries;
-    const stopIntervalAfter = 45;
-    const slowDownIntervalAfter = 30;
+    const stopIntervalAfter = 30;
+    const slowDownIntervalAfter = 50;
 
     function updateLuckyEntries() {
         return $('#participantSetting').val()

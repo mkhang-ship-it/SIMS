@@ -16,6 +16,7 @@ namespace App\Exports;
 use App\Models\UserClubRole;
 use App\Models\DisciplineRecord;
 use App\Models\SchoolPoint;
+use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
@@ -83,45 +84,35 @@ class DisciplineRecordsSummaryExport implements FromCollection, WithHeadings, Wi
             );
             $schoolPoints = $schoolPoint ? $schoolPoint->school_points : 0;
 
+            // Create combined description for all discipline records
+            $descriptions = [];
             if ($disciplineRecords->count() > 0) {
-                // If member has discipline records, add each record as a separate row
                 foreach ($disciplineRecords as $record) {
-                    $data->push([
-                        'stt' => $rowNumber,
-                        'name' => $member->user->name,
-                        'student_id' => $member->user->student_code ?? '',
-                        'role' => $member->role->name ?? '-',
-                        'email' => $member->user->email,
-                        'description' => $record->discipline->name . ' (' .
-                            ($record->discipline->discipline_points > 0 ? '+' : '') .
-                            $record->discipline->discipline_points . ' điểm) - ' .
-                            'Ngày: ' . $record->applied_date->format('d/m/Y') .
-                            ($record->notes ? ' - Ghi chú: ' . $record->notes : ''),
-                        'club_points' => $totalClubPoints,
-                        'school_points' => $schoolPoints,
-                        'record_date' => $record->applied_date->format('d/m/Y'),
-                        'record_points' => $record->discipline->discipline_points,
-                        'member' => $member
-                    ]);
-                    $rowNumber++;
+                    $appliedDate = Carbon::parse($record->applied_date);
+                    $descriptions[] = $record->discipline->name . ' (' .
+                        ($record->discipline->discipline_points > 0 ? '+' : '') .
+                        $record->discipline->discipline_points . ' điểm) - ' .
+                        'Ngày: ' . $appliedDate->format('d/m/Y') .
+                        ($record->notes ? ' - Ghi chú: ' . $record->notes : '');
                 }
+                $combinedDescription = implode("\n", $descriptions);
             } else {
-                // If member has no discipline records, add one row with empty description
-                $data->push([
-                    'stt' => $rowNumber,
-                    'name' => $member->user->name,
-                    'student_id' => $member->user->student_code ?? '',
-                    'role' => $member->role->name ?? '-',
-                    'email' => $member->user->email,
-                    'description' => '-',
-                    'club_points' => $totalClubPoints,
-                    'school_points' => $schoolPoints,
-                    'record_date' => '',
-                    'record_points' => 0,
-                    'member' => $member
-                ]);
-                $rowNumber++;
+                $combinedDescription = '-';
             }
+
+            // Add one row per member with all discipline records combined
+            $data->push([
+                'stt' => $rowNumber,
+                'name' => $member->user->name,
+                'student_id' => $member->user->student_code ?? '',
+                'role' => $member->role->name ?? '-',
+                'email' => $member->user->email,
+                'description' => $combinedDescription,
+                'club_points' => $totalClubPoints,
+                'school_points' => $schoolPoints,
+                'member' => $member
+            ]);
+            $rowNumber++;
         }
 
         return $data;

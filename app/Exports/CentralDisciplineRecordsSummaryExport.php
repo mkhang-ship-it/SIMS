@@ -23,6 +23,7 @@ use PhpOffice\PhpSpreadsheet\Style\Border;
 use App\Models\DisciplineRecord;
 use App\Models\UserClubRole;
 use App\Models\SchoolPoint;
+use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
 class CentralDisciplineRecordsSummaryExport implements FromCollection, WithHeadings, WithMapping, WithStyles, WithTitle, WithEvents
@@ -70,6 +71,31 @@ class CentralDisciplineRecordsSummaryExport implements FromCollection, WithHeadi
                     $this->semesterId
                 );
 
+                // Get all discipline records for description
+                $disciplineRecords = DisciplineRecord::with(['discipline'])
+                    ->byUser($member->user_id)
+                    ->bySemester($this->semesterId)
+                    ->byClub($this->clubId)
+                    ->active()
+                    ->orderBy('applied_date', 'desc')
+                    ->get();
+
+                // Create combined description
+                $descriptions = [];
+                if ($disciplineRecords->count() > 0) {
+                    foreach ($disciplineRecords as $record) {
+                        $appliedDate = Carbon::parse($record->applied_date);
+                        $descriptions[] = $record->discipline->name . ' (' .
+                            ($record->discipline->discipline_points > 0 ? '+' : '') .
+                            $record->discipline->discipline_points . ' điểm) - ' .
+                            'Ngày: ' . $appliedDate->format('d/m/Y') .
+                            ($record->notes ? ' - Ghi chú: ' . $record->notes : '');
+                    }
+                    $combinedDescription = implode("\n", $descriptions);
+                } else {
+                    $combinedDescription = '-';
+                }
+
                 $membersSummary->push([
                     'user' => $member->user,
                     'club' => $member->club,
@@ -77,6 +103,7 @@ class CentralDisciplineRecordsSummaryExport implements FromCollection, WithHeadi
                     'total_points' => $totalClubPoints,
                     'school_points' => $schoolPoint ? $schoolPoint->school_points : 0,
                     'is_leader' => $schoolPoint ? $schoolPoint->is_leader : false,
+                    'description' => $combinedDescription,
                 ]);
             }
         } else {
@@ -105,6 +132,31 @@ class CentralDisciplineRecordsSummaryExport implements FromCollection, WithHeadi
                         $this->semesterId
                     );
 
+                    // Get all discipline records for description
+                    $disciplineRecords = DisciplineRecord::with(['discipline'])
+                        ->byUser($member->user_id)
+                        ->bySemester($this->semesterId)
+                        ->byClub($clubId)
+                        ->active()
+                        ->orderBy('applied_date', 'desc')
+                        ->get();
+
+                    // Create combined description
+                    $descriptions = [];
+                    if ($disciplineRecords->count() > 0) {
+                        foreach ($disciplineRecords as $record) {
+                            $appliedDate = Carbon::parse($record->applied_date);
+                            $descriptions[] = $record->discipline->name . ' (' .
+                                ($record->discipline->discipline_points > 0 ? '+' : '') .
+                                $record->discipline->discipline_points . ' điểm) - ' .
+                                'Ngày: ' . $appliedDate->format('d/m/Y') .
+                                ($record->notes ? ' - Ghi chú: ' . $record->notes : '');
+                        }
+                        $combinedDescription = implode("\n", $descriptions);
+                    } else {
+                        $combinedDescription = '-';
+                    }
+
                     $membersSummary->push([
                         'user' => $member->user,
                         'club' => $member->club,
@@ -112,6 +164,7 @@ class CentralDisciplineRecordsSummaryExport implements FromCollection, WithHeadi
                         'total_points' => $totalClubPoints,
                         'school_points' => $schoolPoint ? $schoolPoint->school_points : 0,
                         'is_leader' => $schoolPoint ? $schoolPoint->is_leader : false,
+                        'description' => $combinedDescription,
                     ]);
                 }
             }
@@ -129,10 +182,11 @@ class CentralDisciplineRecordsSummaryExport implements FromCollection, WithHeadi
         return [
             $index,
             $row['user']->name ?? '-',
-            $row['user']->student_id ?? '-',
+            $row['user']->student_code ?? '-',
             $row['user']->email ?? '-',
             $row['club']->name ?? '-',
             $row['role']->name ?? '-',
+            $row['description'] ?? '-',
             $row['total_points'] > 0 ? '+' . $row['total_points'] : (string) $row['total_points'],
             number_format($row['school_points'], 1),
         ];
@@ -142,11 +196,12 @@ class CentralDisciplineRecordsSummaryExport implements FromCollection, WithHeadi
     {
         return [
             'STT',
-            'Họ tên',
+            'Họ và Tên',
             'MSSV',
             'Email',
-            'Câu lạc bộ',
-            'Chức vụ',
+            'Câu Lạc Bộ',
+            'Chức Vụ',
+            'Mô Tả',
             'Điểm Club',
             'Điểm Trường',
         ];
@@ -200,7 +255,7 @@ class CentralDisciplineRecordsSummaryExport implements FromCollection, WithHeadi
                 $sheet->insertNewRowBefore(1, 2);
 
                 // Set title in row 1
-                $sheet->mergeCells('A1:H1');
+                $sheet->mergeCells('A1:I1');
                 $sheet->setCellValue('A1', 'TỔNG HỢP ĐIỂM THÀNH VIÊN - ' . strtoupper($this->description) . ' - ' . strtoupper($this->semesterName));
 
                 // Style the title
@@ -226,6 +281,11 @@ class CentralDisciplineRecordsSummaryExport implements FromCollection, WithHeadi
                     $sheet->getColumnDimension($column)->setAutoSize(true);
                 }
 
+                // Auto-fit row heights to content for better display of wrapped text
+                for ($row = 1; $row <= $newHighestRow; $row++) {
+                    $sheet->getRowDimension($row)->setRowHeight(-1); // -1 means auto-fit
+                }
+
                 // Set minimum column widths
                 $sheet->getColumnDimension('A')->setWidth(5);   // STT
                 $sheet->getColumnDimension('B')->setWidth(20);  // Họ tên
@@ -233,9 +293,10 @@ class CentralDisciplineRecordsSummaryExport implements FromCollection, WithHeadi
                 $sheet->getColumnDimension('D')->setWidth(25);  // Email
                 $sheet->getColumnDimension('E')->setWidth(20);  // Câu lạc bộ
                 $sheet->getColumnDimension('F')->setWidth(15);  // Chức vụ
-                $sheet->getColumnDimension('G')->setWidth(12);  // Điểm CLB
-                $sheet->getColumnDimension('H')->setWidth(12);  // Điểm Trường
-
+                $sheet->getColumnDimension('G')->setWidth(40);  // Mô tả
+                $sheet->getColumnDimension('H')->setWidth(12);  // Điểm CLB
+                $sheet->getColumnDimension('I')->setWidth(12);  // Điểm Trường
+    
                 // Apply borders to all data cells (now starting from row 3)
                 $newHighestRow = $sheet->getHighestRow();
                 if ($newHighestRow > 3) {
@@ -256,7 +317,11 @@ class CentralDisciplineRecordsSummaryExport implements FromCollection, WithHeadi
 
                     // Center align specific columns (data starts from row 4)
                     $sheet->getStyle('A4:A' . $newHighestRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER); // STT
-                    $sheet->getStyle('G4:H' . $newHighestRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER); // Points columns
+                    $sheet->getStyle('H4:I' . $newHighestRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER); // Points columns
+    
+                    // Set wrap text for description column
+                    $sheet->getStyle('G4:G' . $newHighestRow)->getAlignment()->setWrapText(true);
+                    $sheet->getStyle('G4:G' . $newHighestRow)->getAlignment()->setVertical(Alignment::VERTICAL_TOP);
                 }
 
                 // Set row heights

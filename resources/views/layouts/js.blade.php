@@ -299,7 +299,8 @@
         }
     @endif
 </script>
-<div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
+<div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel"
+    aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
@@ -311,8 +312,8 @@
             </div>
             <div class="modal-body">
                 <div class="text-center mb-3">
-                    <img id="notificationModalImage" src="" alt="Notification Image"
-                        class="img-fluid rounded shadow-sm" style="max-height: 300px; display: none;">
+                    <img id="notificationModalImage" src="" alt="Notification Image" class="img-fluid rounded shadow-sm"
+                        style="max-height: 300px; display: none;">
                 </div>
                 <div class="mb-3">
                     <h4 id="notificationModalTitle" class="text-primary mb-2"></h4>
@@ -344,26 +345,3 @@
         </div>
     </div>
 </div>
-
-<script type="module">
-    import Typebot from 'https://cdn.jsdelivr.net/npm/@typebot.io/js@0/dist/web.js'
-
-    Typebot.initBubble({
-        typebot: "my-typebot-9bu96b2",
-        apiHost: "https://bot.techzone.edu.vn",
-        previewMessage: {
-            message: "Mình có thể giúp gì cho bạn?",
-            autoShowDelay: 5000,
-            avatarUrl: "https://assets-v2.lottiefiles.com/a/decf4a3e-f47e-11ef-9a9d-2386c1245eb1/LY89s3JCNl.gif",
-        },
-        theme: {
-            button: {
-                backgroundColor: "#0042DA",
-                customIconSrc: "https://assets-v2.lottiefiles.com/a/decf4a3e-f47e-11ef-9a9d-2386c1245eb1/LY89s3JCNl.gif",
-            },
-            chatWindow: {
-                backgroundColor: "#FFFFFF"
-            },
-        },
-    });
-</script>

@@ -132,6 +132,7 @@ class RegisterController extends Controller
                 'major_id' => $request->major_id,
                 'course_id' => $request->course_id,
                 'password' => Hash::make($request->password),
+                'type' => 'branch',
                 'status' => 'active',
                 'default_club_id' => $club->id,
             ]);

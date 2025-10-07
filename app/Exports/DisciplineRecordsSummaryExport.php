@@ -279,7 +279,7 @@ class DisciplineRecordsSummaryExport implements FromCollection, WithHeadings, Wi
                 // Add title above the table
                 $sheet->insertNewRowBefore(1, 2);
                 $sheet->mergeCells('A1:H1');
-                $sheet->setCellValue('A1', 'TỔNG HỢP ĐIỂM THÀNH VIÊN CLB - ' . strtoupper($this->semesterName));
+                $sheet->setCellValue('A1', 'TỔNG HỢP ĐIỂM THÀNH VIÊN - HỌC KỲ' . strtoupper($this->semesterName));
                 $sheet->getStyle('A1')->applyFromArray([
                     'font' => [
                         'bold' => true,

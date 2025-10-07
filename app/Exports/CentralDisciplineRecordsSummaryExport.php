@@ -315,13 +315,35 @@ class CentralDisciplineRecordsSummaryExport implements FromCollection, WithHeadi
                         ],
                     ]);
 
-                    // Center align specific columns (data starts from row 4)
-                    $sheet->getStyle('A4:A' . $newHighestRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER); // STT
-                    $sheet->getStyle('H4:I' . $newHighestRow)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER); // Points columns
+                    // Center align specific columns (data starts from row 4) with middle align
+                    $sheet->getStyle('A4:A' . $newHighestRow)->applyFromArray([
+                        'alignment' => [
+                            'horizontal' => Alignment::HORIZONTAL_CENTER,
+                            'vertical' => Alignment::VERTICAL_CENTER,
+                        ],
+                    ]); // STT
     
-                    // Set wrap text for description column
-                    $sheet->getStyle('G4:G' . $newHighestRow)->getAlignment()->setWrapText(true);
-                    $sheet->getStyle('G4:G' . $newHighestRow)->getAlignment()->setVertical(Alignment::VERTICAL_TOP);
+                    $sheet->getStyle('H4:I' . $newHighestRow)->applyFromArray([
+                        'alignment' => [
+                            'horizontal' => Alignment::HORIZONTAL_CENTER,
+                            'vertical' => Alignment::VERTICAL_CENTER,
+                        ],
+                    ]); // Points columns
+    
+                    // Apply middle align to all other columns
+                    $sheet->getStyle('B4:F' . $newHighestRow)->applyFromArray([
+                        'alignment' => [
+                            'vertical' => Alignment::VERTICAL_CENTER,
+                        ],
+                    ]); // Name, MSSV, Email, Club, Role columns
+    
+                    // Set wrap text for description column with middle align
+                    $sheet->getStyle('G4:G' . $newHighestRow)->applyFromArray([
+                        'alignment' => [
+                            'wrapText' => true,
+                            'vertical' => Alignment::VERTICAL_CENTER,
+                        ],
+                    ]);
                 }
 
                 // Set row heights

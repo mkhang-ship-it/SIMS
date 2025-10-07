@@ -233,7 +233,7 @@ class DisciplineRecordsSummaryExport implements FromCollection, WithHeadings, Wi
                         ],
                     ],
                     'alignment' => [
-                        'vertical' => Alignment::VERTICAL_TOP,
+                        'vertical' => Alignment::VERTICAL_CENTER,
                         'wrapText' => true,
                     ],
                     'font' => [
@@ -241,12 +241,41 @@ class DisciplineRecordsSummaryExport implements FromCollection, WithHeadings, Wi
                     ],
                 ]);
 
-                // Center align specific columns
-                $sheet->getStyle('A:A')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                $sheet->getStyle('C:C')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                $sheet->getStyle('G:G')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                $sheet->getStyle('H:H')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-
+                // Center align specific columns with middle align
+                $sheet->getStyle('A:A')->applyFromArray([
+                    'alignment' => [
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                    ],
+                ]); // STT
+    
+                $sheet->getStyle('C:C')->applyFromArray([
+                    'alignment' => [
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                    ],
+                ]); // MSSV
+    
+                $sheet->getStyle('G:G')->applyFromArray([
+                    'alignment' => [
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                    ],
+                ]); // Điểm Club
+    
+                $sheet->getStyle('H:H')->applyFromArray([
+                    'alignment' => [
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                    ],
+                ]); // Điểm Trường
+    
+                // Apply middle align to other columns
+                $sheet->getStyle('B:B')->getAlignment()->setVertical(Alignment::VERTICAL_CENTER); // Họ tên
+                $sheet->getStyle('D:D')->getAlignment()->setVertical(Alignment::VERTICAL_CENTER); // Chức vụ
+                $sheet->getStyle('E:E')->getAlignment()->setVertical(Alignment::VERTICAL_CENTER); // Email
+                $sheet->getStyle('F:F')->getAlignment()->setVertical(Alignment::VERTICAL_CENTER); // Mô tả
+    
                 // Add title above the table
                 $sheet->insertNewRowBefore(1, 2);
                 $sheet->mergeCells('A1:H1');

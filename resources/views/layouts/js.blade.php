@@ -16,6 +16,7 @@
 <script src="{{ asset('assets/js/gallery.js') }}"></script>
 <script src="{{ asset('assets/libs/apexcharts/apexcharts.min.js') }}"></script>
 <script src="{{ asset('assets/libs/chart.js/chart.min.js') }}"></script>
+<script src="{{ asset('assets/js/custom.js') }}"></script>
 <script>
     $(document).ready(function() {
         if ($('#data-table').length) {

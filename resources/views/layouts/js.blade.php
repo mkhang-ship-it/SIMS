@@ -25,6 +25,14 @@
                 ordering: false
             });
         }
+        if ($('#data-table-display').length) {
+            $('#data-table-display').DataTable({
+                scrollX: true,
+                ordering: false,
+                paging: false,
+                info: false
+            });
+        }
         if ($('#budget-items-table').length) {
             $('#budget-items-table').DataTable({
                 scrollX: true,
@@ -300,8 +308,7 @@
         }
     @endif
 </script>
-<div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel"
-    aria-hidden="true">
+<div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
@@ -313,8 +320,8 @@
             </div>
             <div class="modal-body">
                 <div class="text-center mb-3">
-                    <img id="notificationModalImage" src="" alt="Notification Image" class="img-fluid rounded shadow-sm"
-                        style="max-height: 300px; display: none;">
+                    <img id="notificationModalImage" src="" alt="Notification Image"
+                        class="img-fluid rounded shadow-sm" style="max-height: 300px; display: none;">
                 </div>
                 <div class="mb-3">
                     <h4 id="notificationModalTitle" class="text-primary mb-2"></h4>

@@ -1,4 +1,10 @@
-{{-- System Logs Management Page - Admin only --}}
+{{-- Updated: Fixed pagination elements property error and improved pagination
+- Updated stats display to use array structure ($stats, $todayStats)
+- Added pagination with per-page selector
+- Improved STT numbering for paginated results
+- Fixed Laravel pagination by replacing custom elements loop with built-in links() method
+- Resolved "Undefined property: elements" error
+--}}
 @extends('layouts.app')
 
 @section('content')
@@ -78,7 +84,7 @@
                                     </div>
                                     <div class="flex-fill">
                                         <h6 class="fw-semibold mb-1">Tổng Số Log</h6>
-                                        <h4 class="fw-bold mb-0">{{ number_format($totalLogs) }}</h4>
+                                        <h4 class="fw-bold mb-0">{{ number_format($stats['totalLogs']) }}</h4>
                                     </div>
                                 </div>
                             </div>
@@ -95,7 +101,7 @@
                                     </div>
                                     <div class="flex-fill">
                                         <h6 class="fw-semibold mb-1">Log Hôm Nay</h6>
-                                        <h4 class="fw-bold mb-0">{{ number_format($todayLogs) }}</h4>
+                                        <h4 class="fw-bold mb-0">{{ number_format($todayStats['todayLogs']) }}</h4>
                                     </div>
                                 </div>
                             </div>
@@ -112,7 +118,7 @@
                                     </div>
                                     <div class="flex-fill">
                                         <h6 class="fw-semibold mb-1">Người Dùng</h6>
-                                        <h4 class="fw-bold mb-0">{{ number_format($uniqueUsers) }}</h4>
+                                        <h4 class="fw-bold mb-0">{{ number_format($stats['uniqueUsers']) }}</h4>
                                     </div>
                                 </div>
                             </div>
@@ -129,7 +135,7 @@
                                     </div>
                                     <div class="flex-fill">
                                         <h6 class="fw-semibold mb-1">IP Khác Biệt</h6>
-                                        <h4 class="fw-bold mb-0">{{ number_format($uniqueIPs) }}</h4>
+                                        <h4 class="fw-bold mb-0">{{ number_format($stats['uniqueIPs']) }}</h4>
                                     </div>
                                 </div>
                             </div>
@@ -182,7 +188,7 @@
                     </div>
                     <div class="card-body">
                         <form method="GET" action="{{ route('backend.logs.index') }}" class="row g-3">
-                            <div class="col-md-2">
+                            <div class="col-lg-2 col-md-4 col-sm-6">
                                 <label class="form-label">Người Dùng</label>
                                 <select name="user_id" class="form-select">
                                     <option value="">Tất cả</option>
@@ -194,7 +200,7 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="col-md-2">
+                            <div class="col-lg-2 col-md-4 col-sm-6">
                                 <label class="form-label">Method</label>
                                 <select name="method" class="form-select">
                                     <option value="">Tất cả</option>
@@ -206,25 +212,40 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="col-md-2">
+                            {{-- <div class="col-lg-2 col-md-4 col-sm-6">
                                 <label class="form-label">IP</label>
                                 <input type="text" name="ip" class="form-control" value="{{ request('ip') }}"
                                     placeholder="Nhập IP...">
                             </div>
-                            <div class="col-md-2">
+                            <div class="col-lg-2 col-md-4 col-sm-6">
                                 <label class="form-label">URL</label>
                                 <input type="text" name="url" class="form-control" value="{{ request('url') }}"
                                     placeholder="Nhập URL...">
-                            </div>
-                            <div class="col-md-2">
+                            </div> --}}
+                            <div class="col-lg-2 col-md-4 col-sm-6">
                                 <label class="form-label">Từ Ngày</label>
                                 <input type="date" name="date_from" class="form-control"
                                     value="{{ request('date_from') }}">
                             </div>
-                            <div class="col-md-2">
+                            <div class="col-lg-2 col-md-4 col-sm-6">
                                 <label class="form-label">Đến Ngày</label>
                                 <input type="date" name="date_to" class="form-control"
                                     value="{{ request('date_to') }}">
+                            </div>
+                            <div class="col-lg-2 col-md-4 col-sm-6">
+                                <label class="form-label">Số bản ghi/trang</label>
+                                <select name="per_page" class="form-select">
+                                    <option value="10" {{ request('per_page', 10) == 10 ? 'selected' : '' }}>10
+                                    </option>
+                                    <option value="25" {{ request('per_page', 25) == 25 ? 'selected' : '' }}>25
+                                    </option>
+                                    <option value="50" {{ request('per_page', 50) == 50 ? 'selected' : '' }}>50
+                                    </option>
+                                    <option value="100" {{ request('per_page', 100) == 100 ? 'selected' : '' }}>100
+                                    </option>
+                                    <option value="200" {{ request('per_page', 200) == 200 ? 'selected' : '' }}>200
+                                    </option>
+                                </select>
                             </div>
                             <div class="col-12">
                                 <button type="submit" class="btn btn-primary">
@@ -244,7 +265,7 @@
                 <div class="card custom-card">
                     <div class="card-body">
                         <div class="table-responsive mb-4">
-                            <table class="table text-nowrap table-bordered" id="data-table">
+                            <table class="table text-nowrap table-bordered" id="data-table-display">
                                 <thead>
                                     <tr>
                                         <th style="text-align: center !important;">STT</th>
@@ -259,9 +280,10 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($logs as $index => $log)
+                                    @foreach ($logs as $index => $log)
                                         <tr>
-                                            <td class="text-center">{{ $index + 1 }}</td>
+                                            <td class="text-center">
+                                                {{ ($logs->currentPage() - 1) * $logs->perPage() + $loop->iteration }}</td>
                                             <td class="text-center">
                                                 <div class="d-flex flex-column">
                                                     <span
@@ -365,6 +387,18 @@
                                     @endforeach
                                 </tbody>
                             </table>
+                        </div>
+
+                        <!-- Pagination Links -->
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <div class="text-muted">
+                                Hiển thị {{ $logs->firstItem() ?? 0 }} đến {{ $logs->lastItem() ?? 0 }}
+                                trong {{ number_format($logs->total()) }} bản ghi
+                            </div>
+                            <div class="d-flex justify-content-center mt-3">
+                                {{ $logs->links('vendor.pagination.bootstrap-5') }}
+                            </div>
+
                         </div>
                     </div>
                 </div>

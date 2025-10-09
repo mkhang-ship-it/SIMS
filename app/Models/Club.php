@@ -4,6 +4,7 @@
 // Updated: Thêm quan hệ userClubRoles (hasMany) và users (belongsToMany qua user_club_roles) cho multi-club
 // Added: address() relationship to support club addresses
 // Added: registration settings fields and methods
+// Updated: Cập nhật getFullAddressAttribute() để sử dụng full_address từ Address model, bao gồm address, commune và province
 
 namespace App\Models;
 
@@ -132,5 +133,14 @@ class Club extends Model
     public function shortUrls()
     {
         return $this->hasMany(ShortUrl::class);
+    }
+
+    public function getFullAddressAttribute()
+    {
+        if (!$this->address) {
+            return '';
+        }
+
+        return $this->address->full_address;
     }
 }

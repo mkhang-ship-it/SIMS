@@ -214,12 +214,22 @@ class ModuleClubSeeder extends Seeder
                 'name' => 'Quản Lý Văn Bản',
                 'permissions' => [
                     ['name' => 'view', 'display_name' => 'Xem'],
-                    ['name' => 'create', 'display_name' => 'Tạo mới'],
+                    ['name' => 'view_all', 'display_name' => 'Xem tất cả'],
                     ['name' => 'edit', 'display_name' => 'Chỉnh sửa'],
                     ['name' => 'delete', 'display_name' => 'Xóa'],
                     ['name' => 'approve', 'display_name' => 'Phê duyệt'],
-                    ['name' => 'reject', 'display_name' => 'Từ chối'],
                     ['name' => 'my_documents', 'display_name' => 'Văn bản của tôi'],
+                    ['name' => 'create_own', 'display_name' => 'Tạo văn bản cá nhân'],
+                ]
+            ],
+            [
+                'module_code' => 'document_request_management',
+                'name' => 'Quản Lý Yêu Cầu Nộp Tài Liệu',
+                'permissions' => [
+                    ['name' => 'view', 'display_name' => 'Xem'],
+                    ['name' => 'create', 'display_name' => 'Tạo mới'],
+                    ['name' => 'edit', 'display_name' => 'Chỉnh sửa'],
+                    ['name' => 'delete', 'display_name' => 'Xóa'],
                 ]
             ]
         ];

@@ -264,4 +264,27 @@ class User extends Authenticatable
 
         return false;
     }
+
+    public function documents()
+    {
+        return $this->hasMany(Document::class, 'uploaded_by');
+    }
+
+    public function documentRequests()
+    {
+        return $this->hasMany(DocumentRequestUser::class, 'user_id');
+    }
+
+    public function accessibleDocuments()
+    {
+        return $this->belongsToMany(Document::class, 'document_user_access', 'user_id', 'document_id');
+    }
+
+    public function getFullAddressAttribute()
+    {
+        if (!$this->address) {
+            return '';
+        }
+        return $this->address->full_address;
+    }
 }

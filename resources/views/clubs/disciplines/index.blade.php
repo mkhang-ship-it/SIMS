@@ -182,7 +182,7 @@
                                                 </option>
                                                 <option value="inactive"
                                                     {{ $discipline->status === 'inactive' ? 'selected' : '' }}>
-                                                    Không hoạt động
+                                                    Tạm ngưng
                                                 </option>
                                             </select>
                                         </div>
@@ -293,7 +293,7 @@
                                         class="text-danger">*</span></label>
                                 <select class="form-select" id="add_status" name="status" required>
                                     <option value="active" selected>Hoạt động</option>
-                                    <option value="inactive">Không hoạt động</option>
+                                    <option value="inactive">Tạm ngưng</option>
                                 </select>
                             </div>
                         </div>

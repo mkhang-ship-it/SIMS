@@ -382,9 +382,11 @@
                         </li>
                     @endif
 
-                    @if (auth()->user()->hasPermissionForModuleCode('document_type_management', 'view', 'branch'))
+                    @if (auth()->user()->hasPermissionForModuleCode('document_type_management', 'view', 'branch') ||
+                            auth()->user()->hasPermissionForModuleCode('document_management', 'view', 'branch') ||
+                            auth()->user()->hasPermissionForModuleCode('document_request_management', 'view', 'branch'))
                         <li
-                            class="slide has-sub {{ request()->routeIs('backend.club.document-types.index') ? 'active open' : '' }}">
+                            class="slide has-sub {{ request()->routeIs('backend.club.document-types.index') || request()->routeIs('backend.club.documents.index') || request()->routeIs('backend.club.document-requests.index') ? 'active open' : '' }}">
                             <a href="javascript:void(0);" class="side-menu__item">
                                 <i class="las la-file-alt side-menu__icon"></i>
                                 <span class="side-menu__label">Quản Lý Văn Bản</span>
@@ -396,6 +398,18 @@
                                     <a href="{{ route('backend.club.document-types.index') }}"
                                         class="side-menu__item {{ request()->routeIs('backend.club.document-types.index') ? 'active' : '' }}">Danh
                                         Mục Văn Bản</a>
+                                </li>
+                                <li
+                                    class="slide {{ request()->routeIs('backend.club.documents.index') ? 'active' : '' }}">
+                                    <a href="{{ route('backend.club.documents.index') }}"
+                                        class="side-menu__item {{ request()->routeIs('backend.club.documents.index') ? 'active' : '' }}">Danh
+                                        Sách Văn Bản</a>
+                                </li>
+                                <li
+                                    class="slide {{ request()->routeIs('backend.club.document-requests.index') ? 'active' : '' }}">
+                                    <a href="{{ route('backend.club.document-requests.index') }}"
+                                        class="side-menu__item {{ request()->routeIs('backend.club.document-requests.index') ? 'active' : '' }}">Yêu
+                                        Cầu Nộp</a>
                                 </li>
                             </ul>
                         </li>
@@ -527,6 +541,41 @@
                                 class="side-menu__item {{ request()->routeIs('backend.club.expenses.my-expenses') ? 'active' : '' }}">
                                 <i class="las la-hand-holding-usd side-menu__icon"></i>
                                 <span class="side-menu__label">Yêu Cầu Thanh Toán</span>
+                            </a>
+                        </li>
+                    @endif
+
+                    <li class="slide__category"><span class="category-name">Quản Lý Văn Bản</span></li>
+
+                    @if (auth()->user()->hasPermissionForModuleCode('document_management', 'my_documents', 'branch'))
+                        <li
+                            class="slide {{ request()->routeIs('backend.club.my-documents.requests') ? 'active' : '' }}">
+                            <a href="{{ route('backend.club.my-documents.requests') }}"
+                                class="side-menu__item {{ request()->routeIs('backend.club.my-documents.requests') ? 'active' : '' }}">
+                                <i class="las la-clock side-menu__icon"></i>
+                                <span class="side-menu__label">Yêu Cầu Nộp Của Tôi</span>
+                            </a>
+                        </li>
+                    @endif
+
+                    @if (auth()->user()->hasPermissionForModuleCode('document_management', 'my_documents', 'branch'))
+                        <li
+                            class="slide {{ request()->routeIs('backend.club.my-documents.index') ? 'active' : '' }}">
+                            <a href="{{ route('backend.club.my-documents.index') }}"
+                                class="side-menu__item {{ request()->routeIs('backend.club.my-documents.index') ? 'active' : '' }}">
+                                <i class="las la-file-upload side-menu__icon"></i>
+                                <span class="side-menu__label">Tài Liệu Của Tôi</span>
+                            </a>
+                        </li>
+                    @endif
+
+                    @if (auth()->user()->hasPermissionForModuleCode('document_management', 'my_documents', 'branch'))
+                        <li
+                            class="slide {{ request()->routeIs('backend.club.my-documents.accessible') ? 'active' : '' }}">
+                            <a href="{{ route('backend.club.my-documents.accessible') }}"
+                                class="side-menu__item {{ request()->routeIs('backend.club.my-documents.accessible') ? 'active' : '' }}">
+                                <i class="las la-eye side-menu__icon"></i>
+                                <span class="side-menu__label">Tài Liệu Có Thể Xem</span>
                             </a>
                         </li>
                     @endif

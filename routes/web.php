@@ -18,6 +18,9 @@ use App\Http\Controllers\Club\MemberController as ClubMemberController;
 use App\Http\Controllers\Club\AwardController as ClubAwardController;
 use App\Http\Controllers\Club\DisciplineController as ClubDisciplineController;
 use App\Http\Controllers\Club\DocumentTypeController as ClubDocumentTypeController;
+use App\Http\Controllers\Club\DocumentController as ClubDocumentController;
+use App\Http\Controllers\Club\DocumentRequestController as ClubDocumentRequestController;
+use App\Http\Controllers\Club\UserDocumentController as ClubUserDocumentController;
 use App\Http\Controllers\Club\DisciplineRecordController as ClubDisciplineRecordController;
 use App\Http\Controllers\Club\MyPointsController as ClubMyPointsController;
 use App\Http\Controllers\DisciplineRecordController;
@@ -355,6 +358,40 @@ Route::middleware(['auth', 'logsystem', 'block_ios'])->prefix('club')->group(fun
         Route::put('/document-types/{documentType}', [ClubDocumentTypeController::class, 'update'])->name('document-types.update')->middleware('CheckPermission:document_type_management,edit,branch');
         Route::delete('/document-types/{documentType}', [ClubDocumentTypeController::class, 'destroy'])->name('document-types.destroy')->middleware('CheckPermission:document_type_management,delete,branch');
         Route::get('/document-types/{documentType}/download-template', [ClubDocumentTypeController::class, 'downloadTemplate'])->name('document-types.download-template')->middleware('CheckPermission:document_type_management,view,branch');
+
+        // Documents routes (Admin management)
+        Route::get('/documents', [ClubDocumentController::class, 'index'])->name('documents.index')->middleware('CheckPermission:document_management,view,branch');
+        Route::get('/documents/{document}', [ClubDocumentController::class, 'show'])->name('documents.show')->middleware('CheckPermission:document_management,view,branch');
+        Route::patch('/documents/{document}/status', [ClubDocumentController::class, 'updateStatus'])->name('documents.update-status')->middleware('CheckPermission:document_management,approve,branch');
+        Route::patch('/documents/{document}/visibility', [ClubDocumentController::class, 'updateVisibility'])->name('documents.update-visibility')->middleware('CheckPermission:document_management,edit,branch');
+        Route::get('/documents/{document}/download', [ClubDocumentController::class, 'download'])->name('documents.download')->middleware('CheckPermission:document_management,view,branch');
+        Route::get('/documents/{document}/manage-access', [ClubDocumentController::class, 'manageAccess'])->name('documents.manage-access')->middleware('CheckPermission:document_management,edit,branch');
+        Route::post('/documents/{document}/manage-access', [ClubDocumentController::class, 'manageAccess'])->name('documents.manage-access.store')->middleware('CheckPermission:document_management,edit,branch');
+        Route::delete('/documents/{document}', [ClubDocumentController::class, 'destroy'])->name('documents.destroy')->middleware('CheckPermission:document_management,delete,branch');
+
+        // Document Requests routes (Admin creates requests)
+        Route::get('/document-requests', [ClubDocumentRequestController::class, 'index'])->name('document-requests.index')->middleware('CheckPermission:document_request_management,view,branch');
+        Route::get('/document-requests/create', [ClubDocumentRequestController::class, 'create'])->name('document-requests.create')->middleware('CheckPermission:document_request_management,create,branch');
+        Route::post('/document-requests', [ClubDocumentRequestController::class, 'store'])->name('document-requests.store')->middleware('CheckPermission:document_request_management,create,branch');
+        Route::get('/document-requests/{documentRequest}', [ClubDocumentRequestController::class, 'show'])->name('document-requests.show')->middleware('CheckPermission:document_request_management,view,branch');
+        Route::get('/document-requests/{documentRequest}/edit', [ClubDocumentRequestController::class, 'edit'])->name('document-requests.edit')->middleware('CheckPermission:document_request_management,edit,branch');
+        Route::put('/document-requests/{documentRequest}', [ClubDocumentRequestController::class, 'update'])->name('document-requests.update')->middleware('CheckPermission:document_request_management,edit,branch');
+        Route::delete('/document-requests/{documentRequest}', [ClubDocumentRequestController::class, 'destroy'])->name('document-requests.destroy')->middleware('CheckPermission:document_request_management,delete,branch');
+        Route::post('/document-requests/{documentRequest}/send-reminder', [ClubDocumentRequestController::class, 'sendReminder'])->name('document-requests.send-reminder')->middleware('CheckPermission:document_request_management,edit,branch');
+
+        // My Documents routes (User interface)
+        Route::get('/my-documents/requests', [ClubUserDocumentController::class, 'myRequests'])->name('my-documents.requests')->middleware('CheckPermission:document_management,my_documents,branch');
+        Route::get('/my-documents', [ClubUserDocumentController::class, 'myDocuments'])->name('my-documents.index')->middleware('CheckPermission:document_management,my_documents,branch');
+        Route::get('/my-documents/accessible', [ClubUserDocumentController::class, 'accessibleDocuments'])->name('my-documents.accessible')->middleware('CheckPermission:document_management,my_documents,branch');
+        Route::get('/my-documents/create', [ClubUserDocumentController::class, 'createForm'])->name('my-documents.create')->middleware('CheckPermission:document_management,create_own,branch');
+        Route::post('/my-documents', [ClubUserDocumentController::class, 'store'])->name('my-documents.store')->middleware('CheckPermission:document_management,create_own,branch');
+        Route::get('/my-documents/{document}', [ClubUserDocumentController::class, 'show'])->name('my-documents.show')->middleware('CheckPermission:document_management,my_documents,branch');
+        Route::get('/my-documents/{document}/edit', [ClubUserDocumentController::class, 'edit'])->name('my-documents.edit')->middleware('CheckPermission:document_management,create_own,branch');
+        Route::put('/my-documents/{document}', [ClubUserDocumentController::class, 'update'])->name('my-documents.update')->middleware('CheckPermission:document_management,create_own,branch');
+        Route::get('/my-documents/{document}/download', [ClubUserDocumentController::class, 'download'])->name('my-documents.download')->middleware('CheckPermission:document_management,my_documents,branch');
+        Route::delete('/my-documents/{document}', [ClubUserDocumentController::class, 'destroy'])->name('my-documents.destroy')->middleware('CheckPermission:document_management,create_own,branch');
+        Route::get('/my-documents/upload/{documentRequestUser}', [ClubUserDocumentController::class, 'uploadForm'])->name('my-documents.upload-form')->middleware('CheckPermission:document_management,create_own,branch');
+        Route::post('/my-documents/upload/{documentRequestUser}', [ClubUserDocumentController::class, 'upload'])->name('my-documents.upload')->middleware('CheckPermission:document_management,create_own,branch');
 
         // Discipline Records routes
         Route::get('/discipline-records', [ClubDisciplineRecordController::class, 'index'])->name('discipline-records.index')->middleware('CheckPermission:discipline_record_management,view,branch');

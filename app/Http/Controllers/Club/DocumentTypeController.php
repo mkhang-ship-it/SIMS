@@ -12,11 +12,10 @@ namespace App\Http\Controllers\Club;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\DocumentType;
-use App\Imports\DocumentTypeImport;
-use App\Exports\DocumentTypeTemplateExport;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Maatwebsite\Excel\Facades\Excel;
+use PhpOffice\PhpWord\TemplateProcessor;
+use App\Models\Club;
 
 class DocumentTypeController extends Controller
 {
@@ -47,29 +46,28 @@ class DocumentTypeController extends Controller
             'name' => 'required|string|max:255',
             'code' => 'nullable|string|max:50|unique:document_types,code,NULL,id,club_id,' . $clubId,
             'description' => 'nullable|string',
-            'template_file' => 'required|file|mimes:docx|max:10240', // 10MB max, chỉ cho phép DOCX
+            'template_file' => 'nullable|file|mimes:docx|max:10240', // thêm nullable để không bắt buộc upload
             'status' => 'required|in:active,inactive'
         ]);
 
         try {
-            // Handle file upload
-            $templateFilePath = null;
-            if ($request->hasFile('template_file')) {
-                $file = $request->file('template_file');
-                $fileName = time() . '_' . $file->getClientOriginalName();
-                $filePath = $file->storeAs('document-templates', $fileName, 'public');
-                $templateFilePath = $filePath;
-            }
-
+            // Tạo dữ liệu cơ bản
             $documentTypeData = [
                 'name' => $validatedData['name'],
                 'club_id' => $clubId,
-                'description' => $validatedData['description'],
-                'template_file_path' => $templateFilePath,
+                'description' => $validatedData['description'] ?? null,
                 'status' => $validatedData['status']
             ];
 
-            // Only set code if provided
+            // Xử lý file upload (chỉ nếu có)
+            if ($request->hasFile('template_file')) {
+                $file = $request->file('template_file');
+                $fileName = time() . '.' . $file->getClientOriginalExtension();
+                $filePath = $file->storeAs('document-templates', $fileName, 'public');
+                $documentTypeData['template_file_path'] = $filePath;
+            }
+
+            // Thêm code nếu có nhập
             if (!empty($validatedData['code'])) {
                 $documentTypeData['code'] = $validatedData['code'];
             }
@@ -77,12 +75,13 @@ class DocumentTypeController extends Controller
             DocumentType::create($documentTypeData);
 
             return redirect()->route('backend.club.document-types.index')
-                ->with('success', 'Loại văn bản đã được tạo thành công!');
+                ->with('success', 'Danh mục văn bản đã được tạo thành công!');
         } catch (\Exception $e) {
             return redirect()->back()->withInput()
-                ->with('error', 'Có lỗi xảy ra khi tạo loại văn bản: ' . $e->getMessage());
+                ->with('error', 'Có lỗi xảy ra khi tạo danh mục văn bản: ' . $e->getMessage());
         }
     }
+
 
     /**
      * Update the specified document type
@@ -99,7 +98,7 @@ class DocumentTypeController extends Controller
         // Check if document type belongs to user's club
         if ($documentType->club_id !== $clubId) {
             return redirect()->route('backend.club.document-types.index')
-                ->with('error', 'Bạn không có quyền chỉnh sửa loại văn bản này!');
+                ->with('error', 'Bạn không có quyền chỉnh sửa danh mục văn bản này!');
         }
 
         $validatedData = $request->validate([
@@ -137,10 +136,10 @@ class DocumentTypeController extends Controller
             $documentType->update($updateData);
 
             return redirect()->route('backend.club.document-types.index')
-                ->with('success', 'Loại văn bản đã được cập nhật thành công!');
+                ->with('success', 'Danh mục văn bản đã được cập nhật thành công!');
         } catch (\Exception $e) {
             return redirect()->back()->withInput()
-                ->with('error', 'Có lỗi xảy ra khi cập nhật loại văn bản: ' . $e->getMessage());
+                ->with('error', 'Có lỗi xảy ra khi cập nhật danh mục văn bản: ' . $e->getMessage());
         }
     }
 
@@ -152,22 +151,61 @@ class DocumentTypeController extends Controller
         $user = Auth::user();
         $clubId = session('club_id');
 
-        // Check if document type belongs to user's club
+        // Kiểm tra quyền truy cập
         if ($documentType->club_id !== $clubId) {
             return redirect()->route('backend.club.document-types.index')
                 ->with('error', 'Bạn không có quyền tải xuống file này!');
         }
 
-        // Check if file exists
+        // Kiểm tra file tồn tại
         if (!$documentType->template_file_path || !Storage::disk('public')->exists($documentType->template_file_path)) {
             return redirect()->route('backend.club.document-types.index')
                 ->with('error', 'File template không tồn tại!');
         }
 
-        $filePath = Storage::disk('public')->path($documentType->template_file_path);
-        $fileName = basename($documentType->template_file_path);
+        // Lấy đường dẫn tuyệt đối
+        $templatePath = Storage::disk('public')->path($documentType->template_file_path);
 
-        return response()->download($filePath, $fileName);
+        // Đọc template bằng PhpWord
+        $template = new TemplateProcessor($templatePath);
+
+        // Dữ liệu thay thế
+        $club = Club::find($clubId);
+        $data = [
+            'full_name' => $user->name ?? '',
+            'email_address' => $user->email ?? '',
+            'phone_number' => $user->phone ?? '',
+            'full_address' => $user->full_address ?? '',
+            'identity_card_code' => $user->identity_card_code ?? '',
+            'student_code' => $user->student_code ?? '',
+            'birthday' => $user->birthday ?? '',
+            'gender' => $user->gender === 'male'
+                ? 'Nam'
+                : ($user->gender === 'female' ? 'Nữ' : ''),
+            'major' => $user->major->name ?? '',
+            'course' => $user->course->name ?? '',
+
+            'club_name' => $club->name ?? '',
+            'club_phone' => $club->phone ?? '',
+            'club_email' => $club->email ?? '',
+            'club_address' => $club->full_address ?? ''
+        ];
+
+        // Gán các biến vào template
+        foreach ($data as $key => $value) {
+            $template->setValue("{{$key}}", $value);
+        }
+
+        // Lưu file tạm thời
+        $outputFileName = time() . '_' . $documentType->name . '.docx';
+        $tempPath = storage_path('app/temp/' . $outputFileName);
+        if (!file_exists(dirname($tempPath))) {
+            mkdir(dirname($tempPath), 0777, true);
+        }
+        $template->saveAs($tempPath);
+
+        // Trả file về client
+        return response()->download($tempPath, $outputFileName)->deleteFileAfterSend(true);
     }
 
     /**
@@ -181,7 +219,7 @@ class DocumentTypeController extends Controller
         // Check if document type belongs to user's club
         if ($documentType->club_id !== $clubId) {
             return redirect()->route('backend.club.document-types.index')
-                ->with('error', 'Bạn không có quyền xóa loại văn bản này!');
+                ->with('error', 'Bạn không có quyền xóa danh mục văn bản này!');
         }
 
         try {
@@ -193,10 +231,10 @@ class DocumentTypeController extends Controller
             $documentType->delete();
 
             return redirect()->route('backend.club.document-types.index')
-                ->with('success', 'Loại văn bản đã được xóa thành công!');
+                ->with('success', 'Danh mục văn bản đã được xóa thành công!');
         } catch (\Exception $e) {
             return redirect()->back()
-                ->with('error', 'Có lỗi xảy ra khi xóa loại văn bản: ' . $e->getMessage());
+                ->with('error', 'Có lỗi xảy ra khi xóa danh mục văn bản: ' . $e->getMessage());
         }
     }
 }

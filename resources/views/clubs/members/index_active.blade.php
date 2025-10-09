@@ -78,7 +78,7 @@
                 <div class="card custom-card">
                     <div class="card-body">
                         <div class="table-responsive mb-4">
-                            <table class="table text-nowrap table-bordered" id="data-table">
+                            <table class="table text-nowrap table-bordered" id="data-table-display">
                                 <thead>
                                     <tr>
                                         <th style="text-align: center !important;">STT</th>

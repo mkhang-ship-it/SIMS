@@ -75,7 +75,7 @@
                 <div class="card custom-card">
                     <div class="card-body">
                         <div class="table-responsive mb-4">
-                            <table class="table text-nowrap table-bordered" id="data-table">
+                            <table class="table text-nowrap table-bordered" id="data-table-display">
                                 <thead>
                                     <tr>
                                         <th style="text-align: center !important;">STT</th>
@@ -88,9 +88,11 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($members as $index => $member)
+                                    @foreach ($members as $member)
                                         <tr>
-                                            <td class="text-center">{{ $index + 1 }}</td>
+                                            <td class="text-center">
+                                                {{ ($members->currentPage() - 1) * $members->perPage() + $loop->iteration }}
+                                            </td>
                                             <td class="text-center">
                                                 <img src="{{ !empty($member->avatar) ? asset('storage/' . $member->avatar) : asset('assets/images/avatar_example.png') }}"
                                                     alt="{{ $member->name }}" class="avatar rounded-circle"
@@ -223,6 +225,18 @@
                                     @endforeach
                                 </tbody>
                             </table>
+                        </div>
+
+                        <!-- Pagination Links -->
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="text-muted">
+                                Hiển thị {{ $members->firstItem() ?? 0 }} đến {{ $members->lastItem() ?? 0 }}
+                                trong {{ number_format($members->total()) }} bản ghi
+                            </div>
+                            <div class="d-flex justify-content-center">
+                                {{ $members->links('vendor.pagination.bootstrap-5') }}
+                            </div>
+
                         </div>
 
                     </div>

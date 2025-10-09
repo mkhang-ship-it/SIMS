@@ -5,6 +5,7 @@
 // When removing a member from a club, all related data (awards, invoices, checkins) for that club are also deleted
 // [2024-12-19] Updated: Admin destroy method completely deletes user from system (all clubs and related data)
 // [2024-12-19] Fixed: Award recipient deletion to use user_club_role_id instead of user_id column
+// [2025-01-09] Fixed: Changed member listing order from 'desc' to 'asc' to fix STT display issue
 
 namespace App\Http\Controllers;
 
@@ -24,33 +25,46 @@ use App\Models\EventCheckin;
 use App\Models\Semester;
 use App\Exports\CentralMemberExport;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Cache;
 
 class MemberController extends Controller
 {
     public function index()
     {
-        // Get all users with their club memberships
-        $members = User::with(['userClubRoles.club', 'userClubRoles.role', 'major', 'course'])
-            ->where('type', 'branch')
-            ->orderBy('created_at', 'desc')
-            ->get();
+        // Cache danh sách members trong 5 phút
+        $members = Cache::remember('members.index', 300, function () {
+            return User::with(['userClubRoles.club', 'userClubRoles.role', 'major', 'course'])
+                ->where('type', 'branch')
+                ->orderBy('created_at', 'asc')
+                ->paginate(10);
+        });
 
-        // Get all clubs for assignment
-        $clubs = Club::where('status', 'active')->orderBy('name')->get();
+        // Cache danh sách clubs
+        $clubs = Cache::remember('clubs.active', 300, function () {
+            return Club::where('status', 'active')->orderBy('name')->get();
+        });
 
-        // Get all roles for assignment
-        $roles = Role::where('type', 'branch')
-            ->where('status', 'active')
-            ->with('club')
-            ->orderBy('name')
-            ->get();
+        // Cache danh sách roles
+        $roles = Cache::remember('roles.branch.active', 300, function () {
+            return Role::where('type', 'branch')
+                ->where('status', 'active')
+                ->with('club')
+                ->orderBy('name')
+                ->get();
+        });
 
-        // Get majors and courses for form
-        $majors = Major::where('status', 'active')
-            ->whereNotNull('parent_id')
-            ->orderBy('name')
-            ->get();
-        $courses = Course::where('status', 'active')->orderBy('name')->get();
+        // Cache majors
+        $majors = Cache::remember('majors.active', 300, function () {
+            return Major::where('status', 'active')
+                ->whereNotNull('parent_id')
+                ->orderBy('name')
+                ->get();
+        });
+
+        // Cache courses
+        $courses = Cache::remember('courses.active', 300, function () {
+            return Course::where('status', 'active')->orderBy('name')->get();
+        });
 
         return view('members.index', compact('members', 'clubs', 'roles', 'majors', 'courses'));
     }
@@ -101,6 +115,7 @@ class MemberController extends Controller
             $user = User::create($userData);
 
             DB::commit();
+            Cache::forget('members.index');
 
             return redirect()->route('backend.members.index')->with('success', 'Thành viên đã được tạo thành công!');
         } catch (\Exception $e) {
@@ -164,7 +179,7 @@ class MemberController extends Controller
             $member->update($userData);
 
             DB::commit();
-
+            Cache::forget('members.index');
             return redirect()->route('backend.members.index')->with('success', 'Thông tin thành viên đã được cập nhật thành công!');
         } catch (\Exception $e) {
             DB::rollback();
@@ -236,6 +251,8 @@ class MemberController extends Controller
 
             DB::commit();
 
+            Cache::forget('members.index');
+
             return redirect()->route('backend.members.index')->with('success', 'Thành viên đã được xóa hoàn toàn khỏi hệ thống!');
         } catch (\Exception $e) {
             DB::rollback();
@@ -287,6 +304,8 @@ class MemberController extends Controller
                 $user->update(['default_club_id' => $request->club_id]);
             }
 
+            Cache::forget('members.index');
+
             return redirect()->route('backend.members.index')->with('success', 'Thành viên đã được gán vào câu lạc bộ thành công!');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Có lỗi xảy ra khi gán thành viên: ' . $e->getMessage());
@@ -331,6 +350,8 @@ class MemberController extends Controller
 
             DB::commit();
 
+            Cache::forget('members.index');
+
             return redirect()->route('backend.members.index')->with('success', 'Thành viên đã được gỡ khỏi câu lạc bộ thành công!');
         } catch (\Exception $e) {
             DB::rollback();
@@ -362,6 +383,8 @@ class MemberController extends Controller
             $userClubRole->update([
                 'role_id' => $request->role_id,
             ]);
+
+            Cache::forget('members.index');
 
             return redirect()->route('backend.members.index')->with('success', 'Vai trò của thành viên đã được cập nhật thành công!');
         } catch (\Exception $e) {

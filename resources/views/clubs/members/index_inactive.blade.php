@@ -78,7 +78,7 @@
                 <div class="card custom-card">
                     <div class="card-body">
                         <div class="table-responsive mb-4">
-                            <table class="table text-nowrap table-bordered" id="data-table">
+                            <table class="table text-nowrap table-bordered" id="data-table-display">
                                 <thead>
                                     <tr>
                                         <th style="text-align: center !important;">STT</th>
@@ -93,9 +93,11 @@
                                 </thead>
                                 <tbody>
                                     {{-- Updated: Hiển thị thành viên theo bảng UserClubRole, truy cập thông tin user qua $member->user, role qua $member->role, status qua $member->status --}}
-                                    @foreach ($members as $index => $member)
+                                    @foreach ($members as $member)
                                         <tr>
-                                            <td class="text-center">{{ $index + 1 }}</td>
+                                            <td class="text-center">
+                                                {{ ($members->currentPage() - 1) * $members->perPage() + $loop->iteration }}
+                                            </td>
                                             <td class="text-center">
                                                 <img src="{{ !empty($member->user->avatar) ? asset('storage/' . $member->user->avatar) : asset('assets/images/avatar_example.png') }}"
                                                     alt="{{ $member->user->name }}" class="avatar rounded-circle"
@@ -180,6 +182,16 @@
                                 </tbody>
                             </table>
                         </div>
+                        <!-- Pagination Links -->
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="text-muted">
+                                Hiển thị {{ $members->firstItem() ?? 0 }} đến {{ $members->lastItem() ?? 0 }}
+                                trong {{ number_format($members->total()) }} bản ghi
+                            </div>
+                            <div class="d-flex justify-content-center">
+                                {{ $members->links('vendor.pagination.bootstrap-5') }}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -192,8 +204,8 @@
         <!-- Edit Member Modal -->
         @if (auth()->user()->hasPermissionForModuleCode('member_management', 'edit', 'branch'))
             <div class="modal fade" id="editMemberModal{{ $member->user->id }}" tabindex="-1"
-                aria-labelledby="editMemberModalLabel{{ $member->user->id }}" aria-hidden="true" data-bs-backdrop="static"
-                data-bs-keyboard="false">
+                aria-labelledby="editMemberModalLabel{{ $member->user->id }}" aria-hidden="true"
+                data-bs-backdrop="static" data-bs-keyboard="false">
                 <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
                     <div class="modal-content">
                         <div class="modal-header">

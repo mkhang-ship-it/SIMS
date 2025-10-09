@@ -390,12 +390,12 @@
                         </div>
 
                         <!-- Pagination Links -->
-                        <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div class="d-flex justify-content-between align-items-center">
                             <div class="text-muted">
                                 Hiển thị {{ $logs->firstItem() ?? 0 }} đến {{ $logs->lastItem() ?? 0 }}
                                 trong {{ number_format($logs->total()) }} bản ghi
                             </div>
-                            <div class="d-flex justify-content-center mt-3">
+                            <div class="d-flex justify-content-center">
                                 {{ $logs->links('vendor.pagination.bootstrap-5') }}
                             </div>
 

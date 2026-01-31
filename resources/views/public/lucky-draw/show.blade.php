@@ -32,10 +32,10 @@
         <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5 w-100 text-center" id="exampleModalLabel">
+                    <!-- <h1 class="modal-title fs-5 w-100 text-center" id="exampleModalLabel">
                         <img src="{{ asset('assets/luckydraw/assets/images/LOGO_BTEC.png') }}" style="height: 40px"
                             alt="">
-                    </h1>
+                    </h1> -->
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">

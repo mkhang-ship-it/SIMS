@@ -174,7 +174,7 @@
         $totalPrizes = $prizesChunk1->count() + $prizesChunk2->count();
         $bottomValue = $totalPrizes <= 3 ? 100 : 30;
     @endphp
-    <div style="position: absolute; bottom: {{ $bottomValue }}px" class="text-center w-100 d-lg-block d-none">
+    <!-- <div style="position: absolute; bottom: {{ $bottomValue }}px" class="text-center w-100 d-lg-block d-none">
         @if ($prizesChunk1->isNotEmpty())
             <div class="container gift1 w-100 d-flex justify-content-evenly align-items-center">
                 @foreach ($prizesChunk1 as $index => $prize)
@@ -204,7 +204,7 @@
                 @endforeach
             </div>
         @endif
-    </div>
+    </div> -->
 </body>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
     integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous">

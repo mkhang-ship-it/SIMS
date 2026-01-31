@@ -55,13 +55,23 @@ class Prize extends Model
         return max(0, $this->quantity - $this->won_count);
     }
 
-    public function isAvailable()
+    public function getIsAvailableAttribute()
     {
         return $this->remaining_quantity > 0;
     }
 
-    public function isFullyWon()
+    public function isAvailable()
+    {
+        return $this->is_available;
+    }
+
+    public function getIsFullyWonAttribute()
     {
         return $this->remaining_quantity <= 0;
+    }
+
+    public function isFullyWon()
+    {
+        return $this->is_fully_won;
     }
 }

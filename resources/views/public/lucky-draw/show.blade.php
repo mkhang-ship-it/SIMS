@@ -155,7 +155,7 @@ body {
                             BẮT ĐẦU
                         </a>
                     </div>
-                    <div class="spinResult" style="display: none;     margin-top: 5%;">
+                    <div class="spinResult" style="display: none;     margin-top: 0%;">
                         {{-- <dotlottie-player
                             src="https://lottie.host/f1ff7b5d-aa51-4bdc-ba73-fdcb8388dee9/7QM24NkP8I.json?v=2"
                             background="transparent" speed="1"

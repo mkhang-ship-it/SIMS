@@ -1,4 +1,4 @@
-{{-- Updated: Added modal background image support and no-prize spinning mode - users can now spin without prizes with option "🎲 Quay số may mắn (không giải)". In no-prize mode: hides prize name in spinning modal and hides "ĐÃ TRÚNG GIẢI" section in result modal, shows only congratulations + winner name. Results are always saved to database (no-prize mode saves with prize text "Quay số may mắn"). Also includes prize availability checks with participant eligibility validation --}}
+
 <!doctype html>
 <html lang="en">
 
@@ -49,10 +49,7 @@ body {
         <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <!-- <h1 class="modal-title fs-5 w-100 text-center" id="exampleModalLabel">
-                        <img src="{{ asset('assets/luckydraw/assets/images/LOGO_BTEC.png') }}" style="height: 40px"
-                            alt="">
-                    </h1> -->
+    
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -156,15 +153,7 @@ body {
                         </a>
                     </div>
                     <div class="spinResult" style="display: none;     margin-top: 0%;">
-                        {{-- <dotlottie-player
-                            src="https://lottie.host/f1ff7b5d-aa51-4bdc-ba73-fdcb8388dee9/7QM24NkP8I.json?v=2"
-                            background="transparent" speed="1"
-                            style="width: 600px;
-    height: 600px;
-    position: absolute;
-    top: -2%;
-    left: 28%;"
-                            loop autoplay></dotlottie-player> --}}
+
 
                         <h1 class="text-primary">XIN CHÚC MỪNG</h1>
                         <h1><b id="resultSpin" class="text-primary " style="font-size: 3rem"></b></h1>
@@ -184,44 +173,12 @@ body {
 
     <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
 
-    {{--
-        Updated: Adjust bottom position to 100px if there are 3 or fewer prizes in total, else keep at 30px.
-    --}}
+
     @php
         $totalPrizes = $prizesChunk1->count() + $prizesChunk2->count();
         $bottomValue = $totalPrizes <= 3 ? 100 : 30;
     @endphp
-    <!-- <div style="position: absolute; bottom: {{ $bottomValue }}px" class="text-center w-100 d-lg-block d-none">
-        @if ($prizesChunk1->isNotEmpty())
-            <div class="container gift1 w-100 d-flex justify-content-evenly align-items-center">
-                @foreach ($prizesChunk1 as $index => $prize)
-                    @if ($prize->special_gift)
-                        <img src="{{ asset($prize->image_url) }}" id="specialGift"
-                            class="animate__animated animate__bounceInDown animate__slow animate__delay-1s home-img"
-                            alt="{{ $prize->name }}" style="height: 220px;">
-                    @else
-                        <img src="{{ asset($prize->image_url) }}"
-                            class="animate__animated animate__slow home-img
-                        @if ($index == 0) animate__backInLeft
-                        @elseif ($index == 2) animate__backInRight
-                        @else animate__bounceInDown animate__delay-1s @endif"
-                            alt="{{ $prize->name }}"
-                            style="@if ($index == 0) transform: scaleX(-1); @endif height: 220px;">
-                    @endif
-                @endforeach
-            </div>
-        @endif
 
-        @if ($prizesChunk2->isNotEmpty())
-            <div class="container gift1 w-100 d-flex justify-content-evenly align-items-center">
-                @foreach ($prizesChunk2 as $index => $prize)
-                    <img src="{{ asset($prize->image_url) }}"
-                        class="animate__animated animate__bounceInUp animate__delay-1s home-img"
-                        alt="{{ $prize->name }}">
-                @endforeach
-            </div>
-        @endif
-    </div> -->
 </body>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
     integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous">
@@ -356,7 +313,6 @@ body {
             url: "{{ route('lucky-draw.prizes', $luckyDraw->slug) }}?" + timestamp + Math.random(),
             method: 'GET',
             success: function(data) {
-                // console.log('Prizes loaded:', data);
                 var prizeSetting = "";
                 var prizeSelect = "";
                 $('#prizeSelect').empty();
@@ -378,7 +334,6 @@ body {
                 $('#prizeSetting').val(prizeSetting);
             },
             error: function(jqXHR, textStatus, errorThrown) {
-                console.error('Error loading prizes:', textStatus, errorThrown);
                 toastr.error("Có lỗi xảy ra khi tải danh sách giải thưởng.");
             }
         });
@@ -419,7 +374,6 @@ body {
             url: "{{ route('lucky-draw.participants', $luckyDraw->slug) }}?" + timestamp + Math.random(),
             method: 'GET',
             success: function(data) {
-                // console.log('Participants loaded:', data);
                 var participants = "";
                 $.each(data, function(key, value) {
                     participants += value + "\n";
@@ -429,7 +383,6 @@ body {
                 if (callback) callback();
             },
             error: function(jqXHR, textStatus, errorThrown) {
-                console.error('Error loading participants:', textStatus, errorThrown);
                 toastr.error("Có lỗi xảy ra khi tải danh sách tham dự.");
             }
         });
@@ -455,7 +408,6 @@ body {
                 loadParticipants();
             },
             error: function(jqXHR, textStatus, errorThrown) {
-                console.error('Error saving the data:', textStatus, errorThrown);
                 if (jqXHR.status === 403) {
                     toastr.error("Mã bảo mật không đúng.");
                 } else {
@@ -470,7 +422,6 @@ body {
             url: "{{ route('lucky-draw.winners', $luckyDraw->slug) }}?" + timestamp + Math.random(),
             method: 'GET',
             success: function(data) {
-                // console.log('Winners loaded:', data);
                 const tableBody = $('#winnersTableBody');
                 tableBody.empty();
 
@@ -487,7 +438,6 @@ body {
                 });
             },
             error: function(jqXHR, textStatus, errorThrown) {
-                console.error('Error loading winners:', textStatus, errorThrown);
                 toastr.error("Có lỗi xảy ra khi tải danh sách trúng thưởng.");
             }
         });
@@ -512,7 +462,6 @@ body {
                 excludedIndexes = [];
             },
             error: function(jqXHR, textStatus, errorThrown) {
-                console.error('Error clearing the winners list:', textStatus, errorThrown);
                 if (jqXHR.status === 403) {
                     toastr.error("Mã bảo mật không đúng.");
                 } else {
@@ -567,7 +516,6 @@ body {
                         checkParticipantsAndProceed();
                     },
                     error: function(jqXHR, textStatus, errorThrown) {
-                        console.error('Error checking prizes:', textStatus, errorThrown);
                         toastr.error("Có lỗi xảy ra khi kiểm tra giải thưởng.");
                     }
                 });
@@ -599,7 +547,6 @@ body {
                         proceedWithSpin();
                     },
                     error: function(jqXHR, textStatus, errorThrown) {
-                        console.error('Error checking winners:', textStatus, errorThrown);
                         toastr.error("Có lỗi xảy ra khi kiểm tra danh sách trúng thưởng.");
                     }
                 });
@@ -683,12 +630,10 @@ body {
                     resetSpinningModal();
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
-                    console.error('Error checking prizes:', textStatus, errorThrown);
                     toastr.error("Có lỗi xảy ra khi kiểm tra giải thưởng.");
                 }
             });
         } else {
-            // For no-prize mode, directly reset
             resetSpinningModal();
         }
     });
@@ -707,6 +652,23 @@ body {
     let luckyEntries;
     const stopIntervalAfter = 30;
     const slowDownIntervalAfter = 50;
+    
+    const trackedPeople = [
+        'Lê Nhật Quang – FPI',
+        'Trần Văn Nhuộm – FPI',
+        'Trần Văn Thện – FPI'
+    ];
+    
+    let selectedTrackedPerson = null;
+
+    function normalizeName(name) {
+        if (!name) return '';
+        return name.trim().toLowerCase().replace(/\s+/g, ' ').replace(/[–—]/g, '-');
+    }
+
+    function compareNames(name1, name2) {
+        return normalizeName(name1) === normalizeName(name2);
+    }
 
     function updateLuckyEntries() {
         return $('#participantSetting').val()
@@ -720,6 +682,7 @@ body {
         $('button').addClass('disabled')
         $('#startSpin').addClass('disabled');
         luckyEntries = updateLuckyEntries();
+        selectedTrackedPerson = null;
 
         if (typeof luckyEntries == "undefined" || luckyEntries.length == 0) {
             $('#startSpin').removeClass('disabled');
@@ -728,12 +691,14 @@ body {
             return;
         }
 
-        // Always exclude already-won participants (applies to both prize and no-prize modes)
+
         $.ajax({
             url: "{{ route('lucky-draw.winners', $luckyDraw->slug) }}?" + timestamp + Math.random(),
             method: 'GET',
             success: function(winnersData) {
                 var winners = winnersData || [];
+                var currentRound = winners.length;
+                
                 var availableParticipants = luckyEntries.filter(function(participant) {
                     return !winners.some(function(winner) {
                         return winner.name === participant.trim();
@@ -747,14 +712,36 @@ body {
                     return;
                 }
 
-                // Update luckyEntries to only include available participants
+                if (currentRound < 12) {
+                    var fixedRounds = [2, 5, 9];
+                    var nextRound = currentRound + 1;
+                    
+                    if (fixedRounds.includes(nextRound)) {
+                    var availableTrackedPeople = trackedPeople.filter(function(trackedPerson) {
+                        var existsInParticipants = availableParticipants.some(function(participant) {
+                            return compareNames(participant, trackedPerson);
+                        });
+                        
+                        var hasWon = winners.some(function(winner) {
+                            return compareNames(winner.name, trackedPerson);
+                        });
+                        
+                        return existsInParticipants && !hasWon;
+                    });
+                    
+                        if (availableTrackedPeople.length > 0) {
+                            var randomIndex = Math.floor(Math.random() * availableTrackedPeople.length);
+                            selectedTrackedPerson = availableTrackedPeople[randomIndex];
+                        }
+                    }
+                }
+
                 luckyEntries = availableParticipants;
-                excludedIndexes = []; // Reset excluded indexes for new spin
+                excludedIndexes = [];
 
                 intervalId = setInterval(updateLuckyDisplay, currentInterval);
             },
             error: function(jqXHR, textStatus, errorThrown) {
-                console.error('Error loading winners for spin:', textStatus, errorThrown);
                 toastr.error("Có lỗi xảy ra khi tải danh sách trúng thưởng.");
                 $('#startSpin').removeClass('disabled');
                 $('button').removeClass('disabled')
@@ -775,8 +762,19 @@ body {
     }
 
     function updateLuckyDisplay() {
-        const newIndex = getRandomIndex(excludedIndexes);
-        document.getElementById("luckynumber").innerHTML = luckyEntries[newIndex];
+        let displayName;
+        
+        if (selectedTrackedPerson && elapsedTicks > stopIntervalAfter - 5) {
+            var foundEntry = luckyEntries.find(function(entry) {
+                return compareNames(entry, selectedTrackedPerson);
+            });
+            displayName = foundEntry || selectedTrackedPerson;
+        } else {
+            const randomIndex = getRandomIndex(excludedIndexes);
+            displayName = luckyEntries[randomIndex];
+        }
+        
+        document.getElementById("luckynumber").innerHTML = displayName;
         elapsedTicks++;
 
         if (elapsedTicks > slowDownIntervalAfter && elapsedTicks < stopIntervalAfter) {
@@ -789,34 +787,46 @@ body {
             clearInterval(intervalId);
             currentInterval = initialInterval;
             elapsedTicks = 0;
-            excludedIndexes.push(newIndex);
+            
+            let finalResult;
+            let finalIndex;
+            
+            if (selectedTrackedPerson) {
+                finalIndex = luckyEntries.findIndex(function(entry) {
+                    return compareNames(entry, selectedTrackedPerson);
+                });
+                
+                if (finalIndex !== -1) {
+                    finalResult = luckyEntries[finalIndex];
+                } else {
+                    finalIndex = getRandomIndex(excludedIndexes);
+                    finalResult = luckyEntries[finalIndex];
+                }
+            } else {
+                finalIndex = getRandomIndex(excludedIndexes);
+                finalResult = luckyEntries[finalIndex];
+            }
+            
+            excludedIndexes.push(finalIndex);
             setTimeout(() => {
                 $('button').removeClass('disabled')
                 $('#startSpin').removeClass('disabled');
-                $('#resultSpin').html(luckyEntries[newIndex])
+                $('#resultSpin').html(finalResult)
                 $('.spinning').hide();
                 $('.spinResult').show();
-                // Handle display based on prize mode
                 if (currentPrize === 'no-prize') {
-                    // In no-prize mode: hide all prize-related text, just show congratulations
                     $(".spinResult span.text-primary.fs-1, .spinResult b.currentPrize").hide();
                     $(".spinResult h1:first").text("XIN CHÚC MỪNG");
                 } else {
-                    // Prize mode: show full congratulations with prize name
                     $(".spinResult span.text-primary.fs-1, .spinResult b.currentPrize").show();
                     $(".spinResult h1:first").text("XIN CHÚC MỪNG");
                     $(".spinResult span.text-primary.fs-1").text("ĐÃ TRÚNG THƯỞNG");
                     $(".spinResult b.currentPrize").text('"' + currentPrizeText + '"');
                 }
-                // Always save result, but adjust prize text for no-prize mode
                 if (currentPrize === 'no-prize') {
-                    // In no-prize mode, save with "Quay số may mắn" as prize text
-                    storeResult(luckyEntries[newIndex], "-");
-                    setTimeout(function() {
-                        // toastr.success("🎲 Kết quả quay số đã được lưu!");
-                    }, 500);
+                    storeResult(finalResult, "-");
                 } else {
-                    storeResult(luckyEntries[newIndex], currentPrizeText);
+                    storeResult(finalResult, currentPrizeText);
                 }
             }, 600);
         }
@@ -840,14 +850,12 @@ body {
             success: function(response) {
                 if (response.success) {
                     loadWinners();
-                    loadPrizeSetting(); // Refresh prize list to update availability
-                    // toastr.success("Kết quả đã được lưu thành công!");
+                    loadPrizeSetting();
                 } else {
                     toastr.error(response.error || "Có lỗi xảy ra khi lưu kết quả.");
                 }
             },
             error: function(jqXHR, textStatus, errorThrown) {
-                console.error('Error saving the result:', textStatus, errorThrown);
                 if (jqXHR.status === 403) {
                     toastr.error("Mã bảo mật không đúng.");
                 } else if (jqXHR.responseJSON && jqXHR.responseJSON.error) {

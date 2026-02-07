@@ -155,7 +155,7 @@ body {
                             BẮT ĐẦU
                         </a>
                     </div>
-                    <div class="spinResult" style="display: none;     margin-top: 10%;">
+                    <div class="spinResult" style="display: none;     margin-top: 5%;">
                         {{-- <dotlottie-player
                             src="https://lottie.host/f1ff7b5d-aa51-4bdc-ba73-fdcb8388dee9/7QM24NkP8I.json?v=2"
                             background="transparent" speed="1"
@@ -166,7 +166,7 @@ body {
     left: 28%;"
                             loop autoplay></dotlottie-player> --}}
 
-                        <h1 class="text-primary fs-1">XIN CHÚC MỪNG</h1>
+                        <h1 class="text-primary">XIN CHÚC MỪNG</h1>
                         <h1><b id="resultSpin" class="text-primary " style="font-size: 3rem"></b></h1>
                         <br>
                         <div class="d-flex align-items-center justify-content-center">

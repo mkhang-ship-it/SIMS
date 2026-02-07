@@ -18,10 +18,27 @@
     <link rel="icon" href="{{ asset('favicon.ico') }}" />
 
     <link rel="stylesheet" href="{{ asset('assets/luckydraw/assets/css/style.css') }}?v=2">
+    <style>
+html, body {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+}
+
+body {
+  background-image: url('{{ $luckyDraw->background_image
+    ? asset('storage/' . $luckyDraw->background_image)
+    : asset('assets/luckydraw/assets/images/bg_1.png')
+  }}');
+  background-size: 100% auto; /* luôn đủ chiều rộng */
+  background-position: top center;
+  background-repeat: no-repeat;
+}
+</style>
 </head>
 
-<body
-    style="background-image: url({{ $luckyDraw->background_image ? asset('storage/' . $luckyDraw->background_image) : asset('assets/luckydraw/assets/images/bg_1.png') }}) !important;">
+<body>
+
     @if (!$luckyDraw->isExpired())
         <button type="button" id="setting" class="btn btn-primary btn-circle mt-3 ms-1">
             <i class="fa-solid fa-gear"></i>

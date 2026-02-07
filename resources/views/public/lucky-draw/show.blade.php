@@ -655,9 +655,16 @@ body {
     
     const trackedPeople = [
         'Lê Nhật Quang – FPI',
-        'Trần Văn Nhuộm – FPI',
-        'Trần Văn Thện – FPI'
+        'Trần Văn Thện – FPI',
+        'Danh Ngọc Thắm - FU'
     ];
+    
+    // Mapping rounds to specific tracked people
+    const roundToPerson = {
+        2: 'Trần Văn Thện – FPI',
+        5: 'Danh Ngọc Thắm - FU',
+        8: 'Lê Nhật Quang – FPI'
+    };
     
     let selectedTrackedPerson = null;
 
@@ -713,25 +720,21 @@ body {
                 }
 
                 if (currentRound < 12) {
-                    var fixedRounds = [2, 5, 9];
                     var nextRound = currentRound + 1;
                     
-                    if (fixedRounds.includes(nextRound)) {
-                    var availableTrackedPeople = trackedPeople.filter(function(trackedPerson) {
+                    if (roundToPerson.hasOwnProperty(nextRound)) {
+                        var assignedPerson = roundToPerson[nextRound];
+                        
                         var existsInParticipants = availableParticipants.some(function(participant) {
-                            return compareNames(participant, trackedPerson);
+                            return compareNames(participant, assignedPerson);
                         });
                         
                         var hasWon = winners.some(function(winner) {
-                            return compareNames(winner.name, trackedPerson);
+                            return compareNames(winner.name, assignedPerson);
                         });
                         
-                        return existsInParticipants && !hasWon;
-                    });
-                    
-                        if (availableTrackedPeople.length > 0) {
-                            var randomIndex = Math.floor(Math.random() * availableTrackedPeople.length);
-                            selectedTrackedPerson = availableTrackedPeople[randomIndex];
+                        if (existsInParticipants && !hasWon) {
+                            selectedTrackedPerson = assignedPerson;
                         }
                     }
                 }
